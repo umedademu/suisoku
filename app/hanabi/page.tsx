@@ -1,3 +1,7 @@
+"use client";
+
+import { useState } from "react";
+
 const settings = [
   {
     setting: "設定1",
@@ -52,36 +56,171 @@ const settings = [
 const inputGroups = [
   {
     title: "開始前",
-    fields: ["G数", "BIG", "REG"]
+    fields: [
+      { key: "beforeGames", label: "G数" },
+      { key: "beforeBig", label: "BIG" },
+      { key: "beforeReg", label: "REG" }
+    ]
   },
   {
     title: "現在",
-    fields: ["G数", "BIG", "REG"]
+    fields: [
+      { key: "currentGames", label: "G数" },
+      { key: "currentBig", label: "BIG" },
+      { key: "currentReg", label: "REG" }
+    ]
   },
   {
     title: "小役",
-    fields: ["風鈴", "平行氷", "斜め氷"]
+    fields: [
+      { key: "furin", label: "風鈴" },
+      { key: "heikoIce", label: "平行氷" },
+      { key: "nanameIce", label: "斜め氷" }
+    ]
   },
   {
     title: "BIG中",
-    fields: ["消化G数", "斜め風鈴", "ハズレ"]
+    fields: [
+      { key: "bigInGames", label: "消化G数" },
+      { key: "bigInNanameFurin", label: "斜め風鈴" },
+      { key: "bigInHazure", label: "ハズレ" }
+    ]
   },
   {
     title: "ハナビチャレンジ中",
-    fields: ["消化G数", "ハズレ"]
+    fields: [
+      { key: "challengeGames", label: "消化G数" },
+      { key: "challengeHazure", label: "ハズレ" }
+    ]
   },
   {
     title: "ハナビゲーム中",
-    fields: ["消化G数", "ハズレ"]
+    fields: [
+      { key: "gameGames", label: "消化G数" },
+      { key: "gameHazure", label: "ハズレ" }
+    ]
   }
 ];
 
+const initialValues = Object.fromEntries(
+  inputGroups.flatMap((group) => group.fields.map((field) => [field.key, ""]))
+);
+
+function toNumber(value: string) {
+  if (!value) {
+    return 0;
+  }
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function formatDenominator(value: number) {
+  const rounded = Math.round(value * 10) / 10;
+  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
+}
+
+function formatProbability(count: number, base: number) {
+  if (count <= 0 || base <= 0) {
+    return "-";
+  }
+
+  return `1/${formatDenominator(base / count)}`;
+}
+
+function formatCountAndProbability(count: number, base: number) {
+  return `${count}回（${formatProbability(count, base)}）`;
+}
+
+function formatCountBaseAndProbability(count: number, base: number) {
+  if (base <= 0) {
+    return `${count}回 / ${base}G（-）`;
+  }
+
+  return `${count}回 / ${base}G（${formatProbability(count, base)}）`;
+}
+
 export default function HanabiPage() {
+  const [inputValues, setInputValues] = useState<Record<string, string>>(initialValues);
+  const [resultRows, setResultRows] = useState<Array<{ label: string; value: string }> | null>(
+    null
+  );
+
+  const handleEstimate = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const beforeGames = toNumber(inputValues.beforeGames);
+    const beforeBig = toNumber(inputValues.beforeBig);
+    const beforeReg = toNumber(inputValues.beforeReg);
+    const currentGames = toNumber(inputValues.currentGames);
+    const currentBig = toNumber(inputValues.currentBig);
+    const currentReg = toNumber(inputValues.currentReg);
+    const furin = toNumber(inputValues.furin);
+    const heikoIce = toNumber(inputValues.heikoIce);
+    const nanameIce = toNumber(inputValues.nanameIce);
+    const bigInNanameFurin = toNumber(inputValues.bigInNanameFurin);
+    const challengeGames = toNumber(inputValues.challengeGames);
+    const challengeHazure = toNumber(inputValues.challengeHazure);
+    const gameGames = toNumber(inputValues.gameGames);
+    const gameHazure = toNumber(inputValues.gameHazure);
+
+    const practiceGames = currentGames - beforeGames;
+    const practiceBig = currentBig - beforeBig;
+    const practiceReg = currentReg - beforeReg;
+    const totalBonus = practiceBig + practiceReg;
+    const totalIce = heikoIce + nanameIce;
+    const twoRoleTotal = furin + totalIce;
+    const bigBaseGames = practiceBig * 24;
+
+    setResultRows([
+      {
+        label: "実践G数",
+        value: `${practiceGames}G`
+      },
+      {
+        label: "BIG",
+        value: formatCountAndProbability(practiceBig, practiceGames)
+      },
+      {
+        label: "REG",
+        value: formatCountAndProbability(practiceReg, practiceGames)
+      },
+      {
+        label: "合算",
+        value: formatCountAndProbability(totalBonus, practiceGames)
+      },
+      {
+        label: "風鈴",
+        value: formatCountAndProbability(furin, practiceGames)
+      },
+      {
+        label: "氷",
+        value: formatCountAndProbability(totalIce, practiceGames)
+      },
+      {
+        label: "2役合算",
+        value: formatCountAndProbability(twoRoleTotal, practiceGames)
+      },
+      {
+        label: "BIG中斜め風鈴",
+        value: formatCountBaseAndProbability(bigInNanameFurin, bigBaseGames)
+      },
+      {
+        label: "ハナビチャレンジ中ハズレ",
+        value: formatCountBaseAndProbability(challengeHazure, challengeGames)
+      },
+      {
+        label: "ハナビゲーム中ハズレ",
+        value: formatCountBaseAndProbability(gameHazure, gameGames)
+      }
+    ]);
+  };
+
   return (
     <main className="page-shell">
       <div className="card card-wide">
         <h1 className="title">ハナビ</h1>
-        <form className="input-form">
+        <form className="input-form" onSubmit={handleEstimate}>
           {inputGroups.map((group, index) => (
             <section className="input-group" key={`${group.title ?? "group"}-${index}`}>
               {group.title ? <p className="group-title">【{group.title}】</p> : null}
@@ -89,19 +228,46 @@ export default function HanabiPage() {
                 className={`input-row input-row-${Math.min(group.fields.length, 3)}`}
               >
                 {group.fields.map((field) => (
-                  <label className="input-field" key={`${group.title ?? "base"}-${field}`}>
-                    <span className="input-label">{field}</span>
+                  <label className="input-field" key={field.key}>
+                    <span className="input-label">{field.label}</span>
                     <input
                       className="number-input"
                       type="number"
                       inputMode="numeric"
+                      value={inputValues[field.key]}
+                      onChange={(event) =>
+                        setInputValues((current) => ({
+                          ...current,
+                          [field.key]: event.target.value
+                        }))
+                      }
                     />
                   </label>
                 ))}
               </div>
             </section>
           ))}
+          <div className="action-row">
+            <button className="estimate-button" type="submit">
+              推測
+            </button>
+          </div>
         </form>
+        <section className="result-group">
+          <h2 className="result-title">推測結果</h2>
+          {resultRows ? (
+            <div className="result-list">
+              {resultRows.map((row) => (
+                <div className="result-item" key={row.label}>
+                  <p className="result-label">{row.label}</p>
+                  <p className="result-value">{row.value}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="result-placeholder">推測ボタンを押すとここに結果が出ます。</p>
+          )}
+        </section>
         <div className="table-wrap">
           <table className="data-table">
             <thead>
