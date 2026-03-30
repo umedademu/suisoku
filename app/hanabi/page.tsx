@@ -51,16 +51,12 @@ const settings = [
 
 const inputGroups = [
   {
-    fields: ["開始G数"]
+    title: "開始前",
+    fields: ["G数", "BIG", "REG"]
   },
   {
-    fields: ["開始前BIG", "開始前REG"]
-  },
-  {
-    fields: ["総G数"]
-  },
-  {
-    fields: ["BIG", "REG"]
+    title: "現在",
+    fields: ["G数", "BIG", "REG"]
   },
   {
     title: "小役",
