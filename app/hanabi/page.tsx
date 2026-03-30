@@ -49,20 +49,35 @@ const settings = [
   }
 ];
 
-const inputFields = [
-  "総G数",
-  "BIG",
-  "REG",
-  "風鈴",
-  "氷",
-  "斜氷",
-  "BIG中G数",
-  "BIG中斜め風鈴",
-  "BIG中ハズレ",
-  "ハナビチャレンジG数",
-  "チャレンジ中ハズレ",
-  "ハナビゲームG数",
-  "ハナビゲーム中ハズレ"
+const inputGroups = [
+  {
+    fields: ["開始G数"]
+  },
+  {
+    fields: ["開始前BIG", "開始前REG"]
+  },
+  {
+    fields: ["総G数"]
+  },
+  {
+    fields: ["BIG", "REG"]
+  },
+  {
+    title: "小役",
+    fields: ["風鈴", "平行氷", "斜め氷"]
+  },
+  {
+    title: "BIG中",
+    fields: ["消化G数", "斜め風鈴", "ハズレ"]
+  },
+  {
+    title: "ハナビチャレンジ中",
+    fields: ["消化G数", "ハズレ"]
+  },
+  {
+    title: "ハナビゲーム中",
+    fields: ["消化G数", "ハズレ"]
+  }
 ];
 
 export default function HanabiPage() {
@@ -71,11 +86,24 @@ export default function HanabiPage() {
       <div className="card card-wide">
         <h1 className="title">ハナビ</h1>
         <form className="input-form">
-          {inputFields.map((field) => (
-            <label className="input-field" key={field}>
-              <span className="input-label">{field}</span>
-              <input className="number-input" type="number" inputMode="numeric" />
-            </label>
+          {inputGroups.map((group, index) => (
+            <section className="input-group" key={`${group.title ?? "group"}-${index}`}>
+              {group.title ? <p className="group-title">【{group.title}】</p> : null}
+              <div
+                className={`input-row input-row-${Math.min(group.fields.length, 3)}`}
+              >
+                {group.fields.map((field) => (
+                  <label className="input-field" key={`${group.title ?? "base"}-${field}`}>
+                    <span className="input-label">{field}</span>
+                    <input
+                      className="number-input"
+                      type="number"
+                      inputMode="numeric"
+                    />
+                  </label>
+                ))}
+              </div>
+            </section>
           ))}
         </form>
         <div className="table-wrap">

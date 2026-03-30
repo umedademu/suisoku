@@ -81,10 +81,38 @@ a {
 
 .input-form {
   display: grid;
-  gap: 14px;
-  width: min(100%, 420px);
+  gap: 18px;
+  width: min(100%, 720px);
   margin: 28px auto 0;
   text-align: left;
+}
+
+.input-group {
+  display: grid;
+  gap: 10px;
+}
+
+.group-title {
+  margin: 6px 0 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.input-row {
+  display: grid;
+  gap: 14px;
+}
+
+.input-row-1 {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.input-row-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.input-row-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .input-field {
@@ -110,6 +138,13 @@ a {
 .number-input:focus {
   outline: 2px solid rgba(197, 75, 44, 0.28);
   border-color: var(--accent);
+}
+
+@media (max-width: 720px) {
+  .input-row-2,
+  .input-row-3 {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .table-wrap {
