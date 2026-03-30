@@ -158,7 +158,9 @@ export default function HanabiPage() {
     const furin = toNumber(inputValues.furin);
     const heikoIce = toNumber(inputValues.heikoIce);
     const nanameIce = toNumber(inputValues.nanameIce);
+    const bigInGames = toNumber(inputValues.bigInGames);
     const bigInNanameFurin = toNumber(inputValues.bigInNanameFurin);
+    const bigInHazure = toNumber(inputValues.bigInHazure);
     const challengeGames = toNumber(inputValues.challengeGames);
     const challengeHazure = toNumber(inputValues.challengeHazure);
     const gameGames = toNumber(inputValues.gameGames);
@@ -170,7 +172,6 @@ export default function HanabiPage() {
     const totalBonus = practiceBig + practiceReg;
     const totalIce = heikoIce + nanameIce;
     const twoRoleTotal = furin + totalIce;
-    const bigBaseGames = practiceBig * 24;
 
     setResultRows([
       {
@@ -203,7 +204,11 @@ export default function HanabiPage() {
       },
       {
         label: "BIG中斜め風鈴",
-        value: formatCountBaseAndProbability(bigInNanameFurin, bigBaseGames)
+        value: formatCountBaseAndProbability(bigInNanameFurin, bigInGames)
+      },
+      {
+        label: "BIG中ハズレ",
+        value: formatCountBaseAndProbability(bigInHazure, bigInGames)
       },
       {
         label: "ハナビチャレンジ中ハズレ",
