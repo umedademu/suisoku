@@ -48,6 +48,10 @@ a {
   text-align: center;
 }
 
+.card-wide {
+  width: min(100%, 1080px);
+}
+
 .title {
   margin: 0;
   font-size: clamp(2rem, 6vw, 3rem);
@@ -73,4 +77,38 @@ a {
 .link-button:hover {
   background: var(--accent-strong);
   transform: translateY(-1px);
+}
+
+.table-wrap {
+  margin-top: 28px;
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  min-width: 860px;
+  border-collapse: collapse;
+  font-size: 0.98rem;
+}
+
+.data-table th,
+.data-table td {
+  border: 1px solid var(--border);
+  padding: 12px 14px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.data-table thead th {
+  background: #f0dfc1;
+  font-weight: 700;
+}
+
+.data-table tbody th {
+  background: #f8efdf;
+  font-weight: 700;
+}
+
+.data-table tbody td {
+  background: rgba(255, 255, 255, 0.72);
 }
