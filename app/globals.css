@@ -117,12 +117,15 @@ a {
 
 .input-field {
   display: grid;
-  gap: 8px;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
 }
 
 .input-label {
   font-size: 0.95rem;
   font-weight: 700;
+  line-height: 1.3;
 }
 
 .number-input {
@@ -144,6 +147,11 @@ a {
   .input-row-2,
   .input-row-3 {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .input-field {
+    grid-template-columns: 96px minmax(0, 1fr);
+    gap: 10px;
   }
 }
 
