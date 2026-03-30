@@ -117,8 +117,8 @@ a {
 
 .input-field {
   display: grid;
-  grid-template-columns: 110px minmax(0, 1fr);
-  gap: 12px;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 6px;
   align-items: center;
 }
 
@@ -150,8 +150,8 @@ a {
   }
 
   .input-field {
-    grid-template-columns: 96px minmax(0, 1fr);
-    gap: 10px;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 6px;
   }
 }
 
