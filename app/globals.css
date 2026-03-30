@@ -79,6 +79,39 @@ a {
   transform: translateY(-1px);
 }
 
+.input-form {
+  display: grid;
+  gap: 14px;
+  width: min(100%, 420px);
+  margin: 28px auto 0;
+  text-align: left;
+}
+
+.input-field {
+  display: grid;
+  gap: 8px;
+}
+
+.input-label {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.number-input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--text);
+  font: inherit;
+  padding: 12px 14px;
+}
+
+.number-input:focus {
+  outline: 2px solid rgba(197, 75, 44, 0.28);
+  border-color: var(--accent);
+}
+
 .table-wrap {
   margin-top: 28px;
   overflow-x: auto;

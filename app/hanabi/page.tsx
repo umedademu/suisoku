@@ -49,11 +49,35 @@ const settings = [
   }
 ];
 
+const inputFields = [
+  "総G数",
+  "BIG",
+  "REG",
+  "風鈴",
+  "氷",
+  "斜氷",
+  "BIG中G数",
+  "BIG中斜め風鈴",
+  "BIG中ハズレ",
+  "ハナビチャレンジG数",
+  "チャレンジ中ハズレ",
+  "ハナビゲームG数",
+  "ハナビゲーム中ハズレ"
+];
+
 export default function HanabiPage() {
   return (
     <main className="page-shell">
       <div className="card card-wide">
         <h1 className="title">ハナビ</h1>
+        <form className="input-form">
+          {inputFields.map((field) => (
+            <label className="input-field" key={field}>
+              <span className="input-label">{field}</span>
+              <input className="number-input" type="number" inputMode="numeric" />
+            </label>
+          ))}
+        </form>
         <div className="table-wrap">
           <table className="data-table">
             <thead>
