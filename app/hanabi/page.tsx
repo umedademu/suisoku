@@ -119,7 +119,8 @@ const specGroups = [
     title: "通常時小役",
     columns: [
       { label: "風鈴", key: "furin" },
-      { label: "平行氷", key: "ice" }
+      { label: "平行氷", key: "ice" },
+      { label: "2役合算", key: "pairTotal" }
     ]
   },
   {
@@ -152,7 +153,8 @@ const probabilityDisplayGroups = [
     title: "通常時小役",
     items: [
       { title: "通常時風鈴", key: "furin" as const },
-      { title: "通常時平行氷", key: "ice" as const }
+      { title: "通常時平行氷", key: "ice" as const },
+      { title: "2役合算", key: "pairTotal" as const }
     ]
   },
   {
@@ -178,6 +180,7 @@ type RateKey =
   | "sum"
   | "furin"
   | "ice"
+  | "pairTotal"
   | "nanameBell"
   | "bHazure"
   | "cHazure"
@@ -201,10 +204,16 @@ const settingRates = settings.map((setting) => ({
   sum: parseRate(setting.bb) + parseRate(setting.rb),
   furin: parseRate(setting.furin),
   ice: parseRate(setting.ice),
+  pairTotal: parseRate(setting.furin) + parseRate(setting.ice),
   nanameBell: parseRate(setting.nanameBell),
   bHazure: parseRate(setting.bHazure),
   cHazure: parseRate(setting.cHazure),
   gHazure: parseRate(setting.gHazure)
+}));
+
+const settingsDisplay = settings.map((setting) => ({
+  ...setting,
+  pairTotal: formatRateFromProbability(parseRate(setting.furin) + parseRate(setting.ice))
 }));
 
 function toNumber(value: string) {
@@ -227,6 +236,14 @@ function formatProbability(count: number, base: number) {
   }
 
   return `1/${formatDenominator(base / count)}`;
+}
+
+function formatRateFromProbability(probability: number) {
+  if (probability <= 0) {
+    return "-";
+  }
+
+  return `1/${formatDenominator(1 / probability)}`;
 }
 
 function formatCountAndProbability(count: number, base: number) {
@@ -394,6 +411,12 @@ export default function HanabiPage() {
         base: practiceGames
       },
       {
+        key: "pairTotal",
+        title: "2役合算",
+        count: furin + heikoIce,
+        base: practiceGames
+      },
+      {
         key: "nanameBell",
         title: "BIG中斜め風鈴",
         count: bigInNanameFurin,
@@ -426,6 +449,7 @@ export default function HanabiPage() {
     const validProbabilityDefinitions = probabilityDefinitions.filter(
       (definition) =>
         definition.key !== "sum" &&
+        definition.key !== "pairTotal" &&
         definition.base > 0 &&
         definition.count >= 0 &&
         definition.count <= definition.base
@@ -614,7 +638,7 @@ export default function HanabiPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {settings.map((row) => (
+                    {settingsDisplay.map((row) => (
                       <tr key={`${group.title}-${row.setting}`}>
                         <th scope="row">{row.setting}</th>
                         {group.columns.map((column) => (
