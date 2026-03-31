@@ -350,9 +350,6 @@ export default function HanabiPage() {
     const practiceBig = currentBig - beforeBig;
     const practiceReg = currentReg - beforeReg;
     const totalBonus = practiceBig + practiceReg;
-    const totalIce = heikoIce + nanameIce;
-    const twoRoleTotal = furin + totalIce;
-
     setResultRows([
       {
         label: "実践G数",
@@ -428,6 +425,7 @@ export default function HanabiPage() {
 
     const validProbabilityDefinitions = probabilityDefinitions.filter(
       (definition) =>
+        definition.key !== "sum" &&
         definition.base > 0 &&
         definition.count >= 0 &&
         definition.count <= definition.base
