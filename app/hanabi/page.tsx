@@ -106,13 +106,13 @@ const inputGroups = [
   },
   {
     title: "攻略率",
+    note: "期待値の計算に使用",
     fields: [
       {
         key: "strategyRate",
         label: "攻略率",
         unit: "%",
-        compact: true,
-        note: "期待値の計算に使用"
+        compact: true
       }
     ]
   },
@@ -425,6 +425,7 @@ export default function HanabiPage() {
     | {
         headerText: string;
         payoutHeaderText: string;
+        hourlyText: string;
       rows: Array<{
           label: string;
           payoutText: string;
@@ -623,6 +624,7 @@ export default function HanabiPage() {
       setSettingExpectationTable({
         headerText: `${practiceGames}G`,
         payoutHeaderText: formatInputPercentage(strategyRate),
+        hourlyText: "-",
         rows: settingExpectationValues.map((row) => ({
           label: row.label,
           payoutText: formatPayout(row.payoutRate),
@@ -680,10 +682,13 @@ export default function HanabiPage() {
       const probability = totalWeight > 0 ? scaledRows[index].weight / totalWeight : 0;
       return sum + settingExpectationValues[index].expectedYen * probability;
     }, 0);
+    const hourlyExpectedYen =
+      practiceGames > 0 ? (totalExpectedYen * 700) / practiceGames : null;
 
     setSettingExpectationTable({
       headerText: `${practiceGames}G`,
       payoutHeaderText: formatInputPercentage(strategyRate),
+      hourlyText: hourlyExpectedYen !== null ? formatYen(hourlyExpectedYen) : "-",
       rows: expectationRows,
       totalText: formatYen(totalExpectedYen)
     });
@@ -696,7 +701,14 @@ export default function HanabiPage() {
         <form className="input-form" onSubmit={handleEstimate}>
           {inputGroups.map((group, index) => (
             <section className="input-group" key={`${group.title ?? "group"}-${index}`}>
-              {group.title ? <p className="group-title">【{group.title}】</p> : null}
+              {group.title ? (
+                <div className="group-title-row">
+                  <p className="group-title">【{group.title}】</p>
+                  {"note" in group && group.note ? (
+                    <p className="group-note">{group.note}</p>
+                  ) : null}
+                </div>
+              ) : null}
               <div
                 className={`input-row input-row-${Math.min(group.fields.length, 3)}`}
               >
@@ -725,9 +737,6 @@ export default function HanabiPage() {
                         ) : null}
                       </span>
                     </label>
-                    {"note" in field && field.note ? (
-                      <p className="input-note">{field.note}</p>
-                    ) : null}
                   </div>
                 ))}
               </div>
@@ -790,6 +799,12 @@ export default function HanabiPage() {
                       </tr>
                     </tbody>
                   </table>
+                </div>
+                <div className="result-list">
+                  <div className="result-item">
+                    <p className="result-label">期待時給</p>
+                    <p className="result-value">{settingExpectationTable.hourlyText}</p>
+                  </div>
                 </div>
               </div>
               {probabilityGroups ? (
