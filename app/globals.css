@@ -123,11 +123,38 @@ a {
   min-width: 0;
 }
 
+.input-field-wrap {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.input-control {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
 .input-label {
   font-size: 0.78rem;
   font-weight: 700;
   line-height: 1.1;
   white-space: nowrap;
+}
+
+.input-unit {
+  font-size: 0.76rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.input-note {
+  margin: 0;
+  color: rgba(29, 29, 27, 0.72);
+  font-size: 0.64rem;
+  line-height: 1.2;
+  text-align: right;
 }
 
 .number-input {

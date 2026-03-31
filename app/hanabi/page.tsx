@@ -103,12 +103,24 @@ const inputGroups = [
       { key: "gameGames", label: "消化G数" },
       { key: "gameHazure", label: "ハズレ" }
     ]
+  },
+  {
+    title: "期待値",
+    fields: [
+      {
+        key: "strategyRate",
+        label: "攻略率",
+        unit: "%",
+        note: "期待値の計算に使用"
+      }
+    ]
   }
 ];
 
-const initialValues = Object.fromEntries(
-  inputGroups.flatMap((group) => group.fields.map((field) => [field.key, ""]))
-);
+const initialValues = {
+  ...Object.fromEntries(inputGroups.flatMap((group) => group.fields.map((field) => [field.key, ""]))),
+  strategyRate: "75"
+};
 
 const specGroups = [
   {
@@ -279,6 +291,30 @@ function formatYen(value: number) {
   return `${sign}${Math.abs(rounded).toLocaleString("ja-JP")}円`;
 }
 
+function clampPercentage(value: number) {
+  if (!Number.isFinite(value)) {
+    return 0;
+  }
+
+  return Math.min(100, Math.max(0, value));
+}
+
+function formatInputPercentage(value: number) {
+  return Number.isInteger(value) ? `${value}%` : `${value.toFixed(1)}%`;
+}
+
+function formatPayout(value: number) {
+  return `${(value * 100).toFixed(1)}%`;
+}
+
+function calculateEffectivePayout(normalPayout: string, fullPayout: string, strategyRate: number) {
+  const normalizedRate = clampPercentage(strategyRate) / 100;
+  const normal = parsePayoutRate(normalPayout);
+  const full = parsePayoutRate(fullPayout);
+
+  return normal + (full - normal) * normalizedRate;
+}
+
 function calculateLogBinomialProbability(
   successCount: number,
   totalCount: number,
@@ -350,6 +386,7 @@ export default function HanabiPage() {
   const [settingExpectationTable, setSettingExpectationTable] = useState<
     | {
         headerText: string;
+        payoutHeaderText: string;
       rows: Array<{
           label: string;
           payoutText: string;
@@ -394,6 +431,7 @@ export default function HanabiPage() {
     const challengeHazure = toNumber(inputValues.challengeHazure);
     const gameGames = toNumber(inputValues.gameGames);
     const gameHazure = toNumber(inputValues.gameHazure);
+    const strategyRate = clampPercentage(toNumber(inputValues.strategyRate));
 
     const practiceGames = currentGames - beforeGames;
     const practiceBig = currentBig - beforeBig;
@@ -401,7 +439,12 @@ export default function HanabiPage() {
     const totalBonus = practiceBig + practiceReg;
     const settingExpectationValues = settings.map((setting) => ({
       label: setting.setting,
-      expectedYen: practiceGames * 3 * 20 * (parsePayoutRate(setting.payout) - 1)
+      payoutRate: calculateEffectivePayout(setting.payout, setting.payoutFull, strategyRate),
+      expectedYen:
+        practiceGames *
+        3 *
+        20 *
+        (calculateEffectivePayout(setting.payout, setting.payoutFull, strategyRate) - 1)
     }));
 
     const probabilityDefinitions: Array<{
@@ -517,9 +560,10 @@ export default function HanabiPage() {
       setOverallSettingRows(null);
       setSettingExpectationTable({
         headerText: `${practiceGames}G`,
+        payoutHeaderText: formatInputPercentage(strategyRate),
         rows: settingExpectationValues.map((row) => ({
           label: row.label,
-          payoutText: settings.find((setting) => setting.setting === row.label)?.payout ?? "-",
+          payoutText: formatPayout(row.payoutRate),
           expectationText: formatYen(row.expectedYen),
           probabilityText: "-",
           weightedText: "-"
@@ -563,7 +607,7 @@ export default function HanabiPage() {
 
       return {
         label: row.label,
-        payoutText: settings[index].payout,
+        payoutText: formatPayout(row.payoutRate),
         expectationText: formatYen(row.expectedYen),
         probabilityText: totalWeight > 0 ? formatPercent(probability) : "0%",
         weightedText: formatYen(weightedYen)
@@ -577,6 +621,7 @@ export default function HanabiPage() {
 
     setSettingExpectationTable({
       headerText: `${practiceGames}G`,
+      payoutHeaderText: formatInputPercentage(strategyRate),
       rows: expectationRows,
       totalText: formatYen(totalExpectedYen)
     });
@@ -594,21 +639,31 @@ export default function HanabiPage() {
                 className={`input-row input-row-${Math.min(group.fields.length, 3)}`}
               >
                 {group.fields.map((field) => (
-                  <label className="input-field" key={field.key}>
-                    <span className="input-label">{field.label}</span>
-                    <input
-                      className="number-input"
-                      type="number"
-                      inputMode="numeric"
-                      value={inputValues[field.key]}
-                      onChange={(event) =>
-                        setInputValues((current) => ({
-                          ...current,
-                          [field.key]: event.target.value
-                        }))
-                      }
-                    />
-                  </label>
+                  <div className="input-field-wrap" key={field.key}>
+                    <label className="input-field">
+                      <span className="input-label">{field.label}</span>
+                      <span className="input-control">
+                        <input
+                          className="number-input"
+                          type="number"
+                          inputMode="numeric"
+                          value={inputValues[field.key]}
+                          onChange={(event) =>
+                            setInputValues((current) => ({
+                              ...current,
+                              [field.key]: event.target.value
+                            }))
+                          }
+                        />
+                        {"unit" in field && field.unit ? (
+                          <span className="input-unit">{field.unit}</span>
+                        ) : null}
+                      </span>
+                    </label>
+                    {"note" in field && field.note ? (
+                      <p className="input-note">{field.note}</p>
+                    ) : null}
+                  </div>
                 ))}
               </div>
             </section>
@@ -642,7 +697,10 @@ export default function HanabiPage() {
                             <div className="table-head-main">実践期待値</div>
                             <div className="table-head-sub">{settingExpectationTable.headerText}</div>
                           </th>
-                          <th>機械割</th>
+                          <th>
+                            <div className="table-head-main">機械割</div>
+                            <div className="table-head-sub">{settingExpectationTable.payoutHeaderText}</div>
+                          </th>
                           <th>設定別期待値</th>
                           <th>推測割合</th>
                           <th>推測期待値</th>
