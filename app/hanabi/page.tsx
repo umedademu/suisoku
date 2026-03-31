@@ -106,6 +106,11 @@ const initialValues = Object.fromEntries(
   inputGroups.flatMap((group) => group.fields.map((field) => [field.key, ""]))
 );
 
+const bigProbabilitySettings = settings.map((setting) => ({
+  label: setting.setting,
+  probability: 1 / Number(setting.bb.replace("1/", ""))
+}));
+
 function toNumber(value: string) {
   if (!value) {
     return 0;
@@ -140,9 +145,60 @@ function formatCountBaseAndProbability(count: number, base: number) {
   return `${count}回 / ${base}G（${formatProbability(count, base)}）`;
 }
 
+function calculateBinomialProbability(successCount: number, totalCount: number, probability: number) {
+  if (
+    totalCount < 0 ||
+    successCount < 0 ||
+    successCount > totalCount ||
+    probability <= 0 ||
+    probability >= 1
+  ) {
+    return 0;
+  }
+
+  if (totalCount === 0) {
+    return successCount === 0 ? 1 : 0;
+  }
+
+  const smallerSide = Math.min(successCount, totalCount - successCount);
+  let logCombination = 0;
+
+  for (let count = 1; count <= smallerSide; count += 1) {
+    logCombination += Math.log(totalCount - smallerSide + count) - Math.log(count);
+  }
+
+  const logProbability =
+    logCombination +
+    successCount * Math.log(probability) +
+    (totalCount - successCount) * Math.log(1 - probability);
+
+  return Math.exp(logProbability);
+}
+
+function formatPercent(probability: number) {
+  const percent = probability * 100;
+
+  if (percent >= 1) {
+    return `${percent.toFixed(2)}%`;
+  }
+
+  if (percent >= 0.01) {
+    return `${percent.toFixed(3)}%`;
+  }
+
+  if (percent > 0) {
+    return `${percent.toFixed(5)}%`;
+  }
+
+  return "0%";
+}
+
 export default function HanabiPage() {
   const [inputValues, setInputValues] = useState<Record<string, string>>(initialValues);
   const [resultRows, setResultRows] = useState<Array<{ label: string; value: string }> | null>(
+    null
+  );
+  const [bigCheckRows, setBigCheckRows] = useState<Array<{ label: string; value: string }> | null>(
     null
   );
 
@@ -219,6 +275,15 @@ export default function HanabiPage() {
         value: formatCountBaseAndProbability(gameHazure, gameGames)
       }
     ]);
+
+    setBigCheckRows(
+      bigProbabilitySettings.map((setting) => ({
+        label: `${setting.label}のBIG`,
+        value: formatPercent(
+          calculateBinomialProbability(practiceBig, practiceGames, setting.probability)
+        )
+      }))
+    );
   };
 
   return (
@@ -261,14 +326,29 @@ export default function HanabiPage() {
         <section className="result-group">
           <h2 className="result-title">推測結果</h2>
           {resultRows ? (
-            <div className="result-list">
-              {resultRows.map((row) => (
-                <div className="result-item" key={row.label}>
-                  <p className="result-label">{row.label}</p>
-                  <p className="result-value">{row.value}</p>
+            <>
+              <div className="result-list">
+                {resultRows.map((row) => (
+                  <div className="result-item" key={row.label}>
+                    <p className="result-label">{row.label}</p>
+                    <p className="result-value">{row.value}</p>
+                  </div>
+                ))}
+              </div>
+              {bigCheckRows ? (
+                <div className="result-subgroup">
+                  <h3 className="result-subtitle">各設定でこのBIG回数になる確率</h3>
+                  <div className="result-list">
+                    {bigCheckRows.map((row) => (
+                      <div className="result-item" key={row.label}>
+                        <p className="result-label">{row.label}</p>
+                        <p className="result-value">{row.value}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              ))}
-            </div>
+              ) : null}
+            </>
           ) : (
             <p className="result-placeholder">推測ボタンを押すとここに結果が出ます。</p>
           )}

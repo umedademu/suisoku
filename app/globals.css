@@ -193,6 +193,15 @@ a {
   margin-top: 18px;
 }
 
+.result-subgroup {
+  margin-top: 22px;
+}
+
+.result-subtitle {
+  margin: 0;
+  font-size: 1rem;
+}
+
 .result-item {
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr);
