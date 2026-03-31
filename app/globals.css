@@ -287,16 +287,19 @@ a {
 
 .table-head-sub {
   margin-top: 2px;
-  display: grid;
-  gap: 1px;
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: 4px;
   font-size: 0.62rem;
   font-weight: 500;
   line-height: 1.1;
+  white-space: nowrap;
 }
 
 .table-head-count,
 .table-head-rate {
-  display: block;
+  display: inline;
 }
 
 .data-table tbody th {
