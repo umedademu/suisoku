@@ -344,8 +344,9 @@ export default function HanabiPage() {
   const [settingExpectationTable, setSettingExpectationTable] = useState<
     | {
         headerText: string;
-        rows: Array<{
+      rows: Array<{
           label: string;
+          payoutText: string;
           expectationText: string;
           probabilityText: string;
           weightedText: string;
@@ -512,6 +513,7 @@ export default function HanabiPage() {
         headerText: `${practiceGames}G`,
         rows: settingExpectationValues.map((row) => ({
           label: row.label,
+          payoutText: settings.find((setting) => setting.setting === row.label)?.payout ?? "-",
           expectationText: formatYen(row.expectedYen),
           probabilityText: "-",
           weightedText: "-"
@@ -555,6 +557,7 @@ export default function HanabiPage() {
 
       return {
         label: row.label,
+        payoutText: settings[index].payout,
         expectationText: formatYen(row.expectedYen),
         probabilityText: totalWeight > 0 ? formatPercent(probability) : "0%",
         weightedText: formatYen(weightedYen)
@@ -628,20 +631,22 @@ export default function HanabiPage() {
                 <div className="table-wrap table-wrap-tight">
                   <table className="data-table data-table-compact">
                     <thead>
-                      <tr>
-                        <th>
-                          <div className="table-head-main">実践期待値</div>
-                          <div className="table-head-sub">{settingExpectationTable.headerText}</div>
-                        </th>
-                        <th>設定別期待値</th>
-                        <th>推測割合</th>
-                        <th>掛け算結果</th>
-                      </tr>
-                    </thead>
-                    <tbody>
+                        <tr>
+                          <th>
+                            <div className="table-head-main">実践期待値</div>
+                            <div className="table-head-sub">{settingExpectationTable.headerText}</div>
+                          </th>
+                          <th>機械割</th>
+                          <th>設定別期待値</th>
+                          <th>推測割合</th>
+                          <th>推測期待値</th>
+                        </tr>
+                      </thead>
+                      <tbody>
                       {settingExpectationTable.rows.map((row) => (
                         <tr key={`expectation-${row.label}`}>
                           <th scope="row">{row.label}</th>
+                          <td>{row.payoutText}</td>
                           <td>{row.expectationText}</td>
                           <td>{row.probabilityText}</td>
                           <td>{row.weightedText}</td>
@@ -649,6 +654,7 @@ export default function HanabiPage() {
                       ))}
                       <tr>
                         <th scope="row">合計</th>
+                        <td>-</td>
                         <td>-</td>
                         <td>-</td>
                         <td>{settingExpectationTable.totalText}</td>
@@ -659,7 +665,7 @@ export default function HanabiPage() {
               </div>
               {probabilityGroups ? (
                 <div className="result-subgroup">
-                  <h3 className="result-section-title">各項目ごとの設定別割合</h3>
+                  <h3 className="result-section-title">各項目ごとの推測値</h3>
                   {probabilityGroups.map((group) => (
                     <section className="result-metric-group" key={group.title}>
                       <div className="table-wrap table-wrap-tight">
