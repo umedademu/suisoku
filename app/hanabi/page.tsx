@@ -13,7 +13,8 @@ const settings = [
     bHazure: "1/16384",
     cHazure: "1/7.0",
     gHazure: "1/13.3",
-    payout: "98.5%"
+    payout: "98.0%",
+    payoutFull: "100.5%"
   },
   {
     setting: "設定2",
@@ -25,7 +26,8 @@ const settings = [
     bHazure: "1/16384",
     cHazure: "1/6.6",
     gHazure: "1/11.8",
-    payout: "100.4%"
+    payout: "99.9%",
+    payoutFull: "102.3%"
   },
   {
     setting: "設定5",
@@ -37,7 +39,8 @@ const settings = [
     bHazure: "1/482",
     cHazure: "1/6.1",
     gHazure: "1/10.4",
-    payout: "103.6%"
+    payout: "103.1%",
+    payoutFull: "105.4%"
   },
   {
     setting: "設定6",
@@ -49,7 +52,8 @@ const settings = [
     bHazure: "1/482",
     cHazure: "1/5.8",
     gHazure: "1/9.4",
-    payout: "106.7%"
+    payout: "106.1%",
+    payoutFull: "108.5%"
   }
 ];
 
@@ -112,7 +116,8 @@ const specGroups = [
     columns: [
       { label: "BIG", key: "bb" },
       { label: "REG", key: "rb" },
-      { label: "機械割", key: "payout" }
+      { label: "機械割", key: "payout" },
+      { label: "機械割(完全攻略)", key: "payoutFull" }
     ]
   },
   {
@@ -233,6 +238,7 @@ const settingsDisplay = settings.map((setting) => ({
   cHazure: formatRateFromProbability(parseRate(setting.cHazure)),
   gHazure: formatRateFromProbability(parseRate(setting.gHazure)),
   payout: setting.payout,
+  payoutFull: setting.payoutFull,
   pairTotal: formatRateFromProbability(parseRate(setting.furin) + parseRate(setting.ice))
 }));
 
