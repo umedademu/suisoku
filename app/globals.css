@@ -206,6 +206,15 @@ a {
   font-size: 0.92rem;
 }
 
+.result-metric-group {
+  margin-top: 14px;
+}
+
+.result-metric-title {
+  margin: 0;
+  font-size: 0.86rem;
+}
+
 .result-item {
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr);

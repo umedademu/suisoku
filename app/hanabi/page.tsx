@@ -106,11 +106,6 @@ const initialValues = Object.fromEntries(
   inputGroups.flatMap((group) => group.fields.map((field) => [field.key, ""]))
 );
 
-const bigProbabilitySettings = settings.map((setting) => ({
-  label: setting.setting,
-  probability: 1 / Number(setting.bb.replace("1/", ""))
-}));
-
 const specGroups = [
   {
     title: "基本スペック",
@@ -143,6 +138,29 @@ const specGroups = [
     columns: [{ label: "ハズレ", key: "gHazure" }]
   }
 ] as const;
+
+function parseRate(value: string) {
+  const trimmed = value.replace("1/", "");
+  const denominator = Number(trimmed);
+
+  if (!Number.isFinite(denominator) || denominator <= 0) {
+    return 0;
+  }
+
+  return 1 / denominator;
+}
+
+const settingRates = settings.map((setting) => ({
+  label: setting.setting,
+  bb: parseRate(setting.bb),
+  rb: parseRate(setting.rb),
+  furin: parseRate(setting.furin),
+  ice: parseRate(setting.ice),
+  nanameBell: parseRate(setting.nanameBell),
+  bHazure: parseRate(setting.bHazure),
+  cHazure: parseRate(setting.cHazure),
+  gHazure: parseRate(setting.gHazure)
+}));
 
 function toNumber(value: string) {
   if (!value) {
@@ -231,9 +249,9 @@ export default function HanabiPage() {
   const [resultRows, setResultRows] = useState<Array<{ label: string; value: string }> | null>(
     null
   );
-  const [bigCheckRows, setBigCheckRows] = useState<Array<{ label: string; value: string }> | null>(
-    null
-  );
+  const [probabilityGroups, setProbabilityGroups] = useState<
+    Array<{ title: string; rows: Array<{ label: string; value: string }> }> | null
+  >(null);
 
   const handleEstimate = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -309,12 +327,70 @@ export default function HanabiPage() {
       }
     ]);
 
-    setBigCheckRows(
-      bigProbabilitySettings.map((setting) => ({
-        label: `${setting.label}のBIG`,
-        value: formatPercent(
-          calculateBinomialProbability(practiceBig, practiceGames, setting.probability)
-        )
+    const probabilityDefinitions = [
+      {
+        title: "BIG",
+        count: practiceBig,
+        base: practiceGames,
+        key: "bb" as const
+      },
+      {
+        title: "REG",
+        count: practiceReg,
+        base: practiceGames,
+        key: "rb" as const
+      },
+      {
+        title: "通常時風鈴",
+        count: furin,
+        base: practiceGames,
+        key: "furin" as const
+      },
+      {
+        title: "通常時平行氷",
+        count: heikoIce,
+        base: practiceGames,
+        key: "ice" as const
+      },
+      {
+        title: "BIG中斜め風鈴",
+        count: bigInNanameFurin,
+        base: bigInGames,
+        key: "nanameBell" as const
+      },
+      {
+        title: "BIG中ハズレ",
+        count: bigInHazure,
+        base: bigInGames,
+        key: "bHazure" as const
+      },
+      {
+        title: "花火チャレンジ中ハズレ",
+        count: challengeHazure,
+        base: challengeGames,
+        key: "cHazure" as const
+      },
+      {
+        title: "花火ゲーム中ハズレ",
+        count: gameHazure,
+        base: gameGames,
+        key: "gHazure" as const
+      }
+    ];
+
+    setProbabilityGroups(
+      probabilityDefinitions.map((definition) => ({
+        title: definition.title,
+        rows: settingRates.map((setting) => ({
+          label: setting.label,
+          value: formatPercent(
+            calculateBinomialProbability(
+              definition.count,
+              definition.base,
+              setting[definition.key]
+            )
+          )
+        }))
       }))
     );
   };
@@ -368,17 +444,22 @@ export default function HanabiPage() {
                   </div>
                 ))}
               </div>
-              {bigCheckRows ? (
+              {probabilityGroups ? (
                 <div className="result-subgroup">
-                  <h3 className="result-subtitle">各設定でこのBIG回数になる確率</h3>
-                  <div className="result-list">
-                    {bigCheckRows.map((row) => (
-                      <div className="result-item" key={row.label}>
-                        <p className="result-label">{row.label}</p>
-                        <p className="result-value">{row.value}</p>
+                  <h3 className="result-subtitle">設定別のその確率になる確率</h3>
+                  {probabilityGroups.map((group) => (
+                    <section className="result-metric-group" key={group.title}>
+                      <h4 className="result-metric-title">{group.title}</h4>
+                      <div className="result-list">
+                        {group.rows.map((row) => (
+                          <div className="result-item" key={`${group.title}-${row.label}`}>
+                            <p className="result-label">{row.label}</p>
+                            <p className="result-value">{row.value}</p>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
+                    </section>
+                  ))}
                 </div>
               ) : null}
             </>
