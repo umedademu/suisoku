@@ -197,6 +197,17 @@ function parseRate(value: string) {
   return 1 / denominator;
 }
 
+function parsePayoutRate(value: string) {
+  const trimmed = value.replace("%", "");
+  const percent = Number(trimmed);
+
+  if (!Number.isFinite(percent)) {
+    return 0;
+  }
+
+  return percent / 100;
+}
+
 const settingRates = settings.map((setting) => ({
   label: setting.setting,
   bb: parseRate(setting.bb),
@@ -326,6 +337,9 @@ export default function HanabiPage() {
   const [resultRows, setResultRows] = useState<Array<{ label: string; value: string }> | null>(
     null
   );
+  const [settingExpectationRows, setSettingExpectationRows] = useState<
+    Array<{ label: string; value: string }> | null
+  >(null);
   const [overallSettingRows, setOverallSettingRows] = useState<
     Array<{ label: string; value: string }> | null
   >(null);
@@ -371,6 +385,18 @@ export default function HanabiPage() {
         value: `${practiceGames}G`
       }
     ]);
+    setSettingExpectationRows(
+      settings.map((setting) => {
+        const expectedYen = practiceGames * 3 * 20 * (parsePayoutRate(setting.payout) - 1);
+        const roundedYen = Math.round(expectedYen);
+        const sign = roundedYen > 0 ? "+" : roundedYen < 0 ? "-" : "";
+
+        return {
+          label: setting.setting,
+          value: `${sign}${Math.abs(roundedYen).toLocaleString("ja-JP")}円`
+        };
+      })
+    );
 
     const probabilityDefinitions: Array<{
       key: RateKey;
@@ -577,6 +603,19 @@ export default function HanabiPage() {
                   </div>
                 ))}
               </div>
+              {settingExpectationRows ? (
+                <div className="result-subgroup">
+                  <h3 className="result-subtitle">設定別期待値</h3>
+                  <div className="result-list">
+                    {settingExpectationRows.map((row) => (
+                      <div className="result-item" key={`expectation-${row.label}`}>
+                        <p className="result-label">{row.label}</p>
+                        <p className="result-value">{row.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
               {probabilityGroups ? (
                 <div className="result-subgroup">
                   <h3 className="result-subtitle">各項目ごとの設定別割合</h3>
