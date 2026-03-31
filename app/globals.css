@@ -242,6 +242,10 @@ a {
   overflow-x: auto;
 }
 
+.table-wrap-tight {
+  margin-top: 6px;
+}
+
 .spec-group-wrap {
   display: grid;
   gap: 10px;

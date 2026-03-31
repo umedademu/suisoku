@@ -139,6 +139,48 @@ const specGroups = [
   }
 ] as const;
 
+const probabilityDisplayGroups = [
+  {
+    title: "基本スペック",
+    items: [
+      { title: "BIG", key: "bb" as const },
+      { title: "REG", key: "rb" as const }
+    ]
+  },
+  {
+    title: "通常時小役",
+    items: [
+      { title: "通常時風鈴", key: "furin" as const },
+      { title: "通常時平行氷", key: "ice" as const }
+    ]
+  },
+  {
+    title: "BIG中",
+    items: [
+      { title: "BIG中斜め風鈴", key: "nanameBell" as const },
+      { title: "BIG中ハズレ", key: "bHazure" as const }
+    ]
+  },
+  {
+    title: "花火チャレンジ中",
+    items: [{ title: "花火チャレンジ中ハズレ", key: "cHazure" as const }]
+  },
+  {
+    title: "花火ゲーム中",
+    items: [{ title: "花火ゲーム中ハズレ", key: "gHazure" as const }]
+  }
+] as const;
+
+type RateKey =
+  | "bb"
+  | "rb"
+  | "furin"
+  | "ice"
+  | "nanameBell"
+  | "bHazure"
+  | "cHazure"
+  | "gHazure";
+
 function parseRate(value: string) {
   const trimmed = value.replace("1/", "");
   const denominator = Number(trimmed);
@@ -271,7 +313,10 @@ export default function HanabiPage() {
     Array<{ label: string; value: string }> | null
   >(null);
   const [probabilityGroups, setProbabilityGroups] = useState<
-    Array<{ title: string; rows: Array<{ label: string; value: string }> }> | null
+    Array<{
+      title: string;
+      columns: Array<{ label: string; values: Array<{ label: string; value: string }> }>;
+    }> | null
   >(null);
 
   const handleEstimate = (event: React.FormEvent<HTMLFormElement>) => {
@@ -348,56 +393,65 @@ export default function HanabiPage() {
       }
     ]);
 
-    const probabilityDefinitions = [
+    const probabilityDefinitions: Array<{
+      key: RateKey;
+      title: string;
+      count: number;
+      base: number;
+    }> = [
       {
+        key: "bb",
         title: "BIG",
         count: practiceBig,
-        base: practiceGames,
-        key: "bb" as const
+        base: practiceGames
       },
       {
+        key: "rb",
         title: "REG",
         count: practiceReg,
-        base: practiceGames,
-        key: "rb" as const
+        base: practiceGames
       },
       {
+        key: "furin",
         title: "通常時風鈴",
         count: furin,
-        base: practiceGames,
-        key: "furin" as const
+        base: practiceGames
       },
       {
+        key: "ice",
         title: "通常時平行氷",
         count: heikoIce,
-        base: practiceGames,
-        key: "ice" as const
+        base: practiceGames
       },
       {
+        key: "nanameBell",
         title: "BIG中斜め風鈴",
         count: bigInNanameFurin,
-        base: bigInGames,
-        key: "nanameBell" as const
+        base: bigInGames
       },
       {
+        key: "bHazure",
         title: "BIG中ハズレ",
         count: bigInHazure,
-        base: bigInGames,
-        key: "bHazure" as const
+        base: bigInGames
       },
       {
+        key: "cHazure",
         title: "花火チャレンジ中ハズレ",
         count: challengeHazure,
-        base: challengeGames,
-        key: "cHazure" as const
+        base: challengeGames
       },
       {
+        key: "gHazure",
         title: "花火ゲーム中ハズレ",
         count: gameHazure,
-        base: gameGames,
-        key: "gHazure" as const
+        base: gameGames
       }
     ];
+
+    const probabilityDefinitionMap = Object.fromEntries(
+      probabilityDefinitions.map((definition) => [definition.key, definition])
+    ) as Record<RateKey, (typeof probabilityDefinitions)[number]>;
 
     const validProbabilityDefinitions = probabilityDefinitions.filter(
       (definition) =>
@@ -407,25 +461,29 @@ export default function HanabiPage() {
     );
 
     setProbabilityGroups(
-      probabilityDefinitions.map((definition) => {
-        const weights = settingRates.map((setting) => ({
-          label: setting.label,
-          weight: calculateBinomialProbability(
-            definition.count,
-            definition.base,
-            setting[definition.key]
-          )
-        }));
-        const totalWeight = weights.reduce((sum, row) => sum + row.weight, 0);
+      probabilityDisplayGroups.map((group) => ({
+        title: group.title,
+        columns: group.items.map((item) => {
+          const definition = probabilityDefinitionMap[item.key];
+          const weights = settingRates.map((setting) => ({
+            label: setting.label,
+            weight: calculateBinomialProbability(
+              definition.count,
+              definition.base,
+              setting[item.key]
+            )
+          }));
+          const totalWeight = weights.reduce((sum, row) => sum + row.weight, 0);
 
-        return {
-          title: definition.title,
-          rows: weights.map((row) => ({
-            label: row.label,
-            value: totalWeight > 0 ? formatPercent(row.weight / totalWeight) : "0%"
-          }))
-        };
-      })
+          return {
+            label: item.title,
+            values: weights.map((row) => ({
+              label: row.label,
+              value: totalWeight > 0 ? formatPercent(row.weight / totalWeight) : "0%"
+            }))
+          };
+        })
+      }))
     );
 
     if (validProbabilityDefinitions.length === 0) {
@@ -530,13 +588,29 @@ export default function HanabiPage() {
                   {probabilityGroups.map((group) => (
                     <section className="result-metric-group" key={group.title}>
                       <h4 className="result-metric-title">{group.title}</h4>
-                      <div className="result-list">
-                        {group.rows.map((row) => (
-                          <div className="result-item" key={`${group.title}-${row.label}`}>
-                            <p className="result-label">{row.label}</p>
-                            <p className="result-value">{row.value}</p>
-                          </div>
-                        ))}
+                      <div className="table-wrap table-wrap-tight">
+                        <table className="data-table data-table-compact">
+                          <thead>
+                            <tr>
+                              <th>設定</th>
+                              {group.columns.map((column) => (
+                                <th key={`${group.title}-${column.label}`}>{column.label}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {settings.map((setting, index) => (
+                              <tr key={`${group.title}-${setting.setting}`}>
+                                <th scope="row">{setting.setting}</th>
+                                {group.columns.map((column) => (
+                                  <td key={`${setting.setting}-${column.label}`}>
+                                    {column.values[index].value}
+                                  </td>
+                                ))}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       </div>
                     </section>
                   ))}
