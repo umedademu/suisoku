@@ -5,87 +5,57 @@ import { useState } from "react";
 const settings = [
   {
     setting: "設定1",
-    bb: "1/277.7",
-    rb: "1/356.2",
-    furinA: "1/15.3",
-    furinB: "1/15.3",
-    iceA: "1/52.9",
-    cherryA2: "1/21.0",
-    cherryB: "1/282.5",
-    bigFurinB: "1/11.0",
-    bigBarake: "1/16384.0",
-    regOneRole: "1/8.0",
-    regHazure: "1/16384.0",
-    regPieceLow: "0.0%",
-    regPieceMiddle: "0.0%",
-    regPieceHigh: "0.0%",
-    challengeHazure: "1/6.0",
-    gameHazure: "1/13.4",
-    payout: "98.1%",
-    payoutFull: "102.0%"
+    bb: "1/273.1",
+    rb: "1/397.2",
+    budo: "1/6.04",
+    payoutPublic: "97.0%",
+    payoutCherry: "97.90%",
+    payoutFull: "98.78%"
   },
   {
     setting: "設定2",
-    bb: "1/268.6",
-    rb: "1/331.0",
-    furinA: "1/14.9",
-    furinB: "1/15.6",
-    iceA: "1/53.5",
-    cherryA2: "1/19.3",
-    cherryB: "1/281.3",
-    bigFurinB: "1/9.0",
-    bigBarake: "1/16384.0",
-    regOneRole: "1/8.0",
-    regHazure: "1/16384.0",
-    regPieceLow: "3.1%",
-    regPieceMiddle: "25.0%",
-    regPieceHigh: "25.0%",
-    challengeHazure: "1/5.8",
-    gameHazure: "1/12.4",
-    payout: "99.9%",
-    payoutFull: "104.0%"
+    bb: "1/270.8",
+    rb: "1/362.1",
+    budo: "1/6.01",
+    payoutPublic: "98.1%",
+    payoutCherry: "99.15%",
+    payoutFull: "100.03%"
+  },
+  {
+    setting: "設定3",
+    bb: "1/263.2",
+    rb: "1/332.7",
+    budo: "1/5.98",
+    payoutPublic: "99.9%",
+    payoutCherry: "101.00%",
+    payoutFull: "101.89%"
+  },
+  {
+    setting: "設定4",
+    bb: "1/254.0",
+    rb: "1/300.6",
+    budo: "1/5.84",
+    payoutPublic: "102.9%",
+    payoutCherry: "104.20%",
+    payoutFull: "105.08%"
   },
   {
     setting: "設定5",
-    bb: "1/256.0",
-    rb: "1/306.2",
-    furinA: "1/14.5",
-    furinB: "1/15.3",
-    iceA: "1/49.6",
-    cherryA2: "1/20.6",
-    cherryB: "1/276.5",
-    bigFurinB: "1/11.0",
-    bigBarake: "1/16384.0",
-    regOneRole: "1/7.0",
-    regHazure: "1/376.6",
-    regPieceLow: "3.1%",
-    regPieceMiddle: "25.0%",
-    regPieceHigh: "50.0%",
-    challengeHazure: "1/5.3",
-    gameHazure: "1/10.1",
-    payout: "102.3%",
-    payoutFull: "106.5%"
+    bb: "1/239.2",
+    rb: "1/273.1",
+    budo: "1/5.81",
+    payoutPublic: "105.8%",
+    payoutCherry: "107.45%",
+    payoutFull: "108.33%"
   },
   {
     setting: "設定6",
-    bb: "1/248.2",
-    rb: "1/280.1",
-    furinA: "1/14.1",
-    furinB: "1/15.1",
-    iceA: "1/50.8",
-    cherryA2: "1/19.9",
-    cherryB: "1/274.2",
-    bigFurinB: "1/9.0",
-    bigBarake: "1/655.4",
-    regOneRole: "1/7.0",
-    regHazure: "1/376.6",
-    regPieceLow: "3.1%",
-    regPieceMiddle: "25.0%",
-    regPieceHigh: "50.0%",
-    challengeHazure: "1/5.1",
-    gameHazure: "1/9.5",
-    payout: "104.6%",
-    payoutFull: "109.0%"
+    bb: "1/226.0",
+    rb: "1/256.0",
+    budo: "1/5.79",
+    payoutPublic: "108.4%",
+    payoutCherry: "110.34%",
+    payoutFull: "111.22%"
   }
 ];
 
@@ -103,18 +73,29 @@ type StandardInputGroup = {
   fields: InputField[];
 };
 
-type PieceInputRow = {
+type ChoiceOption = {
+  value: PayoutMode;
   label: string;
-  trialKey: string;
-  occurrenceKey: string;
 };
 
-type PieceInputGroup = {
+type ChoiceInputGroup = {
   title: string;
-  rows: PieceInputRow[];
+  note?: string;
+  choiceKey: "payoutMode";
+  options: ChoiceOption[];
 };
 
-const inputGroups: Array<StandardInputGroup | PieceInputGroup> = [
+type InputGroup = StandardInputGroup | ChoiceInputGroup;
+
+type PayoutMode = "public" | "cherry" | "full";
+
+const payoutModeLabels: Record<PayoutMode, string> = {
+  public: "公表値",
+  cherry: "チェリー狙い",
+  full: "フル攻略"
+};
+
+const inputGroups: InputGroup[] = [
   {
     title: "開始前",
     fields: [
@@ -132,75 +113,17 @@ const inputGroups: Array<StandardInputGroup | PieceInputGroup> = [
     ]
   },
   {
-    title: "通常時小役",
-    fields: [
-      { key: "furinA", label: "風鈴A" },
-      { key: "furinB", label: "風鈴B" },
-      { key: "iceA", label: "氷A" },
-      { key: "cherryA2", label: "チェリーA2" },
-      { key: "cherryB", label: "チェリーB" }
-    ]
+    title: "小役",
+    fields: [{ key: "budo", label: "ブドウ" }]
   },
   {
-    title: "BIG中",
-    fields: [
-      { key: "bigGames", label: "消化G数" },
-      { key: "bigFurinB", label: "風鈴B" },
-      { key: "bigBarake", label: "バラケ目" }
-    ]
-  },
-  {
-    title: "REG中",
-    fields: [
-      { key: "regGames", label: "消化G数" },
-      { key: "regOneRole", label: "1枚役" },
-      { key: "regHazure", label: "ハズレ" }
-    ]
-  },
-  {
-    title: "REGピース画面",
-    rows: [
-      {
-        label: "0~4回時",
-        trialKey: "regPieceLowTrials",
-        occurrenceKey: "regPieceLowHits"
-      },
-      {
-        label: "5~6回時",
-        trialKey: "regPieceMiddleTrials",
-        occurrenceKey: "regPieceMiddleHits"
-      },
-      {
-        label: "7回以上時",
-        trialKey: "regPieceHighTrials",
-        occurrenceKey: "regPieceHighHits"
-      }
-    ]
-  },
-  {
-    title: "花火チャレ",
-    fields: [
-      { key: "challengeGames", label: "消化G数" },
-      { key: "challengeHazure", label: "ハズレ" }
-    ]
-  },
-  {
-    title: "花火ゲーム",
-    fields: [
-      { key: "gameGames", label: "消化G数" },
-      { key: "gameHazure", label: "ハズレ" }
-    ]
-  },
-  {
-    title: "攻略率",
+    title: "打ち方",
     note: "期待値の計算に使用",
-    fields: [
-      {
-        key: "strategyRate",
-        label: "攻略率",
-        unit: "%",
-        compact: true
-      }
+    choiceKey: "payoutMode",
+    options: [
+      { value: "public", label: "公表値" },
+      { value: "cherry", label: "チェリー狙い" },
+      { value: "full", label: "フル攻略" }
     ]
   },
   {
@@ -231,17 +154,12 @@ const inputGroups: Array<StandardInputGroup | PieceInputGroup> = [
 const initialValues = {
   ...Object.fromEntries(
     inputGroups.flatMap((group) =>
-      "fields" in group
-        ? group.fields.map((field) => [field.key, ""] as const)
-        : group.rows.flatMap((row) => [
-            [row.trialKey, ""] as const,
-            [row.occurrenceKey, ""] as const
-          ])
+      "fields" in group ? group.fields.map((field) => [field.key, ""] as const) : []
     )
   ),
   medalRent: "46",
   exchangeRate: "5.0",
-  strategyRate: "75"
+  payoutMode: "public" as PayoutMode
 };
 
 const specGroups = [
@@ -250,50 +168,21 @@ const specGroups = [
     columns: [
       { label: "BIG", key: "bb" },
       { label: "REG", key: "rb" },
-      { label: "機械割", key: "payout" },
-      { label: "機械割(完全攻略)", key: "payoutFull" }
+      { label: "ボーナス合算", key: "bonusTotal" },
+      { label: "公表値", key: "payoutPublic" }
+    ]
+  },
+  {
+    title: "打ち方ごとの機械割",
+    columns: [
+      { label: "公表値", key: "payoutPublic" },
+      { label: "チェリー狙い", key: "payoutCherry" },
+      { label: "フル攻略", key: "payoutFull" }
     ]
   },
   {
     title: "通常時小役",
-    columns: [
-      { label: "風鈴A", key: "furinA" },
-      { label: "風鈴B", key: "furinB" },
-      { label: "風鈴合算", key: "furinTotal" },
-      { label: "氷A", key: "iceA" },
-      { label: "チェリーA2", key: "cherryA2" },
-      { label: "チェリーB", key: "cherryB" }
-    ]
-  },
-  {
-    title: "BIG中",
-    columns: [
-      { label: "風鈴B", key: "bigFurinB" },
-      { label: "バラケ目", key: "bigBarake" }
-    ]
-  },
-  {
-    title: "REG中",
-    columns: [
-      { label: "1枚役", key: "regOneRole" },
-      { label: "ハズレ", key: "regHazure" }
-    ]
-  },
-  {
-    title: "REGピース画面",
-    columns: [
-      { label: "0~4回時", key: "regPieceLow" },
-      { label: "5~6回時", key: "regPieceMiddle" },
-      { label: "7回以上時", key: "regPieceHigh" }
-    ]
-  },
-  {
-    title: "花火チャレ",
-    columns: [{ label: "ハズレ", key: "challengeHazure" }]
-  },
-  {
-    title: "花火ゲーム",
-    columns: [{ label: "ハズレ", key: "gameHazure" }]
+    columns: [{ label: "ブドウ", key: "budo" }]
   }
 ] as const;
 
@@ -308,75 +197,11 @@ const probabilityDisplayGroups = [
   },
   {
     title: "通常時小役",
-    items: [
-      { title: "風鈴A", key: "furinA" as const },
-      { title: "風鈴B", key: "furinB" as const },
-      { title: "風鈴合算", key: "furinTotal" as const },
-      { title: "氷A", key: "iceA" as const },
-      { title: "チェリーA2", key: "cherryA2" as const },
-      { title: "チェリーB", key: "cherryB" as const }
-    ]
-  },
-  {
-    title: "BIG中",
-    items: [
-      { title: "風鈴B", key: "bigFurinB" as const },
-      { title: "バラケ目", key: "bigBarake" as const }
-    ]
-  },
-  {
-    title: "REG中",
-    items: [
-      { title: "1枚役", key: "regOneRole" as const },
-      { title: "ハズレ", key: "regHazure" as const }
-    ]
-  },
-  {
-    title: "REGピース画面",
-    headerText: "カテゴリ別",
-    items: [
-      { title: "0~4回時", key: "regPieceLow" as const },
-      { title: "5~6回時", key: "regPieceMiddle" as const },
-      { title: "7回以上時", key: "regPieceHigh" as const }
-    ]
-  },
-  {
-    title: "花火チャレ中",
-    items: [{ title: "ハズレ", key: "challengeHazure" as const }]
-  },
-  {
-    title: "花火ゲーム中",
-    items: [{ title: "ハズレ", key: "gameHazure" as const }]
+    items: [{ title: "ブドウ", key: "budo" as const }]
   }
 ] as const;
 
-type RateKey =
-  | "bb"
-  | "rb"
-  | "sum"
-  | "furinA"
-  | "furinB"
-  | "furinTotal"
-  | "iceA"
-  | "cherryA2"
-  | "cherryB"
-  | "bigFurinB"
-  | "bigBarake"
-  | "regOneRole"
-  | "regHazure"
-  | "regPieceLow"
-  | "regPieceMiddle"
-  | "regPieceHigh"
-  | "challengeHazure"
-  | "gameHazure";
-
-type ProbabilityDefinition = {
-  key: RateKey;
-  title: string;
-  count: number;
-  base: number;
-  summaryStyle?: "frequency" | "percent";
-};
+type RateKey = "bb" | "rb" | "sum" | "budo";
 
 function parseRate(value: string) {
   const trimmed = value.replace("1/", "");
@@ -405,43 +230,17 @@ const settingRates = settings.map((setting) => ({
   bb: parseRate(setting.bb),
   rb: parseRate(setting.rb),
   sum: parseRate(setting.bb) + parseRate(setting.rb),
-  furinA: parseRate(setting.furinA),
-  furinB: parseRate(setting.furinB),
-  furinTotal: parseRate(setting.furinA) + parseRate(setting.furinB),
-  iceA: parseRate(setting.iceA),
-  cherryA2: parseRate(setting.cherryA2),
-  cherryB: parseRate(setting.cherryB),
-  bigFurinB: parseRate(setting.bigFurinB),
-  bigBarake: parseRate(setting.bigBarake),
-  regOneRole: parseRate(setting.regOneRole),
-  regHazure: parseRate(setting.regHazure),
-  regPieceLow: parsePayoutRate(setting.regPieceLow),
-  regPieceMiddle: parsePayoutRate(setting.regPieceMiddle),
-  regPieceHigh: parsePayoutRate(setting.regPieceHigh),
-  challengeHazure: parseRate(setting.challengeHazure),
-  gameHazure: parseRate(setting.gameHazure)
+  budo: parseRate(setting.budo)
 }));
 
 const settingsDisplay = settings.map((setting) => ({
   setting: setting.setting,
   bb: formatRateFromProbability(parseRate(setting.bb)),
   rb: formatRateFromProbability(parseRate(setting.rb)),
-  furinA: formatRateFromProbability(parseRate(setting.furinA)),
-  furinB: formatRateFromProbability(parseRate(setting.furinB)),
-  furinTotal: formatRateFromProbability(parseRate(setting.furinA) + parseRate(setting.furinB)),
-  iceA: formatRateFromProbability(parseRate(setting.iceA)),
-  cherryA2: formatRateFromProbability(parseRate(setting.cherryA2)),
-  cherryB: formatRateFromProbability(parseRate(setting.cherryB)),
-  bigFurinB: formatRateFromProbability(parseRate(setting.bigFurinB)),
-  bigBarake: formatRateFromProbability(parseRate(setting.bigBarake)),
-  regOneRole: formatRateFromProbability(parseRate(setting.regOneRole)),
-  regHazure: formatRateFromProbability(parseRate(setting.regHazure)),
-  regPieceLow: formatOccurrenceRate(parsePayoutRate(setting.regPieceLow)),
-  regPieceMiddle: formatOccurrenceRate(parsePayoutRate(setting.regPieceMiddle)),
-  regPieceHigh: formatOccurrenceRate(parsePayoutRate(setting.regPieceHigh)),
-  challengeHazure: formatRateFromProbability(parseRate(setting.challengeHazure)),
-  gameHazure: formatRateFromProbability(parseRate(setting.gameHazure)),
-  payout: setting.payout,
+  bonusTotal: formatRateFromProbability(parseRate(setting.bb) + parseRate(setting.rb)),
+  budo: formatRateFromProbability(parseRate(setting.budo)),
+  payoutPublic: setting.payoutPublic,
+  payoutCherry: setting.payoutCherry,
   payoutFull: setting.payoutFull
 }));
 
@@ -455,8 +254,13 @@ function toNumber(value: string) {
 }
 
 function formatDenominator(value: number) {
-  const rounded = Math.round(value * 10) / 10;
-  return rounded.toFixed(1);
+  const rounded = Math.round(value * 100) / 100;
+
+  if (Number.isInteger(rounded)) {
+    return rounded.toFixed(1);
+  }
+
+  return rounded.toFixed(2);
 }
 
 function formatProbability(count: number, base: number) {
@@ -473,22 +277,6 @@ function formatRateFromProbability(probability: number) {
   }
 
   return `1/${formatDenominator(1 / probability)}`;
-}
-
-function formatOccurrenceRate(probability: number) {
-  if (probability <= 0) {
-    return "-";
-  }
-
-  return `${(probability * 100).toFixed(1)}%`;
-}
-
-function formatOccurrencePercent(count: number, base: number) {
-  if (count < 0 || base <= 0 || count > base) {
-    return "-";
-  }
-
-  return `${((count / base) * 100).toFixed(1)}%`;
 }
 
 function formatYen(value: number) {
@@ -520,28 +308,8 @@ function formatLossYen(value: number) {
   return `${sign}${Math.abs(truncated).toLocaleString("ja-JP")}円`;
 }
 
-function clampPercentage(value: number) {
-  if (!Number.isFinite(value)) {
-    return 0;
-  }
-
-  return Math.min(100, Math.max(0, value));
-}
-
-function formatInputPercentage(value: number) {
-  return Number.isInteger(value) ? `攻略率${value}%` : `攻略率${value.toFixed(1)}%`;
-}
-
 function formatPayout(value: number) {
-  return `${(value * 100).toFixed(1)}%`;
-}
-
-function calculateEffectivePayout(normalPayout: string, fullPayout: string, strategyRate: number) {
-  const normalizedRate = clampPercentage(strategyRate) / 100;
-  const normal = parsePayoutRate(normalPayout);
-  const full = parsePayoutRate(fullPayout);
-
-  return normal + (full - normal) * normalizedRate;
+  return `${(value * 100).toFixed(2)}%`;
 }
 
 function calculateLogBinomialProbability(
@@ -618,8 +386,20 @@ function formatPercent(probability: number) {
   return "0%";
 }
 
-export default function ShinHanabiPage() {
-  const [inputValues, setInputValues] = useState<Record<string, string>>(initialValues);
+function getSelectedPayout(setting: (typeof settings)[number], payoutMode: PayoutMode) {
+  if (payoutMode === "cherry") {
+    return parsePayoutRate(setting.payoutCherry);
+  }
+
+  if (payoutMode === "full") {
+    return parsePayoutRate(setting.payoutFull);
+  }
+
+  return parsePayoutRate(setting.payoutPublic);
+}
+
+export default function HappyJugglerPage() {
+  const [inputValues, setInputValues] = useState<Record<string, string | PayoutMode>>(initialValues);
   const [settingExpectationTable, setSettingExpectationTable] = useState<
     | {
         headerText: string;
@@ -651,9 +431,9 @@ export default function ShinHanabiPage() {
     }> | null
   >(null);
 
-  const medalRentValue = toNumber(inputValues.medalRent);
-  const exchangeRateValue = toNumber(inputValues.exchangeRate);
-  const cashInvestmentValue = Math.max(0, toNumber(inputValues.cashInvestment));
+  const medalRentValue = toNumber(String(inputValues.medalRent ?? ""));
+  const exchangeRateValue = toNumber(String(inputValues.exchangeRate ?? ""));
+  const cashInvestmentValue = Math.max(0, toNumber(String(inputValues.cashInvestment ?? "")));
   const liveYenPerMedal = medalRentValue > 0 ? 1000 / medalRentValue : 0;
   const liveExchangeYen = exchangeRateValue > 0 ? 100 / exchangeRateValue : 0;
   const liveCashGapLoss =
@@ -670,37 +450,17 @@ export default function ShinHanabiPage() {
   const handleEstimate = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const beforeGames = toNumber(inputValues.beforeGames);
-    const beforeBig = toNumber(inputValues.beforeBig);
-    const beforeReg = toNumber(inputValues.beforeReg);
-    const currentGames = toNumber(inputValues.currentGames);
-    const currentBig = toNumber(inputValues.currentBig);
-    const currentReg = toNumber(inputValues.currentReg);
-    const furinA = toNumber(inputValues.furinA);
-    const furinB = toNumber(inputValues.furinB);
-    const iceA = toNumber(inputValues.iceA);
-    const cherryA2 = toNumber(inputValues.cherryA2);
-    const cherryB = toNumber(inputValues.cherryB);
-    const bigGames = toNumber(inputValues.bigGames);
-    const bigFurinB = toNumber(inputValues.bigFurinB);
-    const bigBarake = toNumber(inputValues.bigBarake);
-    const regGames = toNumber(inputValues.regGames);
-    const regOneRole = toNumber(inputValues.regOneRole);
-    const regHazure = toNumber(inputValues.regHazure);
-    const regPieceLowTrials = toNumber(inputValues.regPieceLowTrials);
-    const regPieceLowHits = toNumber(inputValues.regPieceLowHits);
-    const regPieceMiddleTrials = toNumber(inputValues.regPieceMiddleTrials);
-    const regPieceMiddleHits = toNumber(inputValues.regPieceMiddleHits);
-    const regPieceHighTrials = toNumber(inputValues.regPieceHighTrials);
-    const regPieceHighHits = toNumber(inputValues.regPieceHighHits);
-    const challengeGames = toNumber(inputValues.challengeGames);
-    const challengeHazure = toNumber(inputValues.challengeHazure);
-    const gameGames = toNumber(inputValues.gameGames);
-    const gameHazure = toNumber(inputValues.gameHazure);
-    const medalRent = toNumber(inputValues.medalRent);
-    const exchangeRate = toNumber(inputValues.exchangeRate);
-    const cashInvestment = Math.max(0, toNumber(inputValues.cashInvestment));
-    const strategyRate = clampPercentage(toNumber(inputValues.strategyRate));
+    const beforeGames = toNumber(String(inputValues.beforeGames ?? ""));
+    const beforeBig = toNumber(String(inputValues.beforeBig ?? ""));
+    const beforeReg = toNumber(String(inputValues.beforeReg ?? ""));
+    const currentGames = toNumber(String(inputValues.currentGames ?? ""));
+    const currentBig = toNumber(String(inputValues.currentBig ?? ""));
+    const currentReg = toNumber(String(inputValues.currentReg ?? ""));
+    const budo = toNumber(String(inputValues.budo ?? ""));
+    const medalRent = toNumber(String(inputValues.medalRent ?? ""));
+    const exchangeRate = toNumber(String(inputValues.exchangeRate ?? ""));
+    const cashInvestment = Math.max(0, toNumber(String(inputValues.cashInvestment ?? "")));
+    const payoutMode = (inputValues.payoutMode as PayoutMode) ?? "public";
     const yenPerMedal = exchangeRate > 0 ? 100 / exchangeRate : 0;
     const cashGapLoss =
       medalRent > 0 && exchangeRate > 0
@@ -712,7 +472,7 @@ export default function ShinHanabiPage() {
     const practiceReg = currentReg - beforeReg;
     const totalBonus = practiceBig + practiceReg;
     const settingExpectationValues = settings.map((setting) => {
-      const payoutRate = calculateEffectivePayout(setting.payout, setting.payoutFull, strategyRate);
+      const payoutRate = getSelectedPayout(setting, payoutMode);
 
       return {
         label: setting.setting,
@@ -721,117 +481,30 @@ export default function ShinHanabiPage() {
       };
     });
 
-    const probabilityDefinitions: ProbabilityDefinition[] = [
+    const probabilityDefinitions: Array<{
+      key: RateKey;
+      count: number;
+      base: number;
+    }> = [
       {
         key: "bb",
-        title: "BIG",
         count: practiceBig,
         base: practiceGames
       },
       {
         key: "rb",
-        title: "REG",
         count: practiceReg,
         base: practiceGames
       },
       {
         key: "sum",
-        title: "合算",
         count: totalBonus,
         base: practiceGames
       },
       {
-        key: "furinA",
-        title: "通常時風鈴A",
-        count: furinA,
+        key: "budo",
+        count: budo,
         base: practiceGames
-      },
-      {
-        key: "furinB",
-        title: "通常時風鈴B",
-        count: furinB,
-        base: practiceGames
-      },
-      {
-        key: "furinTotal",
-        title: "通常時風鈴合算",
-        count: furinA + furinB,
-        base: practiceGames
-      },
-      {
-        key: "iceA",
-        title: "通常時氷A",
-        count: iceA,
-        base: practiceGames
-      },
-      {
-        key: "cherryA2",
-        title: "通常時チェリーA2",
-        count: cherryA2,
-        base: practiceGames
-      },
-      {
-        key: "cherryB",
-        title: "通常時チェリーB",
-        count: cherryB,
-        base: practiceGames
-      },
-      {
-        key: "bigFurinB",
-        title: "BIG中風鈴B",
-        count: bigFurinB,
-        base: bigGames
-      },
-      {
-        key: "bigBarake",
-        title: "BIG中バラケ目",
-        count: bigBarake,
-        base: bigGames
-      },
-      {
-        key: "regOneRole",
-        title: "REG中1枚役",
-        count: regOneRole,
-        base: regGames
-      },
-      {
-        key: "regHazure",
-        title: "REG中ハズレ",
-        count: regHazure,
-        base: regGames
-      },
-      {
-        key: "regPieceLow",
-        title: "REGピース画面0~4回時",
-        count: regPieceLowHits,
-        base: regPieceLowTrials,
-        summaryStyle: "percent"
-      },
-      {
-        key: "regPieceMiddle",
-        title: "REGピース画面5~6回時",
-        count: regPieceMiddleHits,
-        base: regPieceMiddleTrials,
-        summaryStyle: "percent"
-      },
-      {
-        key: "regPieceHigh",
-        title: "REGピース画面7回以上時",
-        count: regPieceHighHits,
-        base: regPieceHighTrials,
-        summaryStyle: "percent"
-      },
-      {
-        key: "challengeHazure",
-        title: "花火チャレ中ハズレ",
-        count: challengeHazure,
-        base: challengeGames
-      },
-      {
-        key: "gameHazure",
-        title: "花火ゲーム中ハズレ",
-        count: gameHazure,
-        base: gameGames
       }
     ];
 
@@ -842,7 +515,6 @@ export default function ShinHanabiPage() {
     const validProbabilityDefinitions = probabilityDefinitions.filter(
       (definition) =>
         definition.key !== "sum" &&
-        definition.key !== "furinTotal" &&
         definition.base > 0 &&
         definition.count >= 0 &&
         definition.count <= definition.base
@@ -851,8 +523,7 @@ export default function ShinHanabiPage() {
     setProbabilityGroups(
       probabilityDisplayGroups.map((group) => ({
         title: group.title,
-        headerText:
-          "headerText" in group ? group.headerText : `${probabilityDefinitionMap[group.items[0].key].base}G`,
+        headerText: `${probabilityDefinitionMap[group.items[0].key].base}G`,
         columns: group.items.map((item) => {
           const definition = probabilityDefinitionMap[item.key];
           const weights = settingRates.map((setting) => ({
@@ -867,13 +538,7 @@ export default function ShinHanabiPage() {
 
           return {
             label: item.title,
-            summaryText:
-              definition.summaryStyle === "percent"
-                ? `${definition.base}回中${definition.count}回 (${formatOccurrencePercent(
-                    definition.count,
-                    definition.base
-                  )})`
-                : `${definition.count} (${formatProbability(definition.count, definition.base)})`,
+            summaryText: `${definition.count} (${formatProbability(definition.count, definition.base)})`,
             values: weights.map((row) => ({
               label: row.label,
               value: totalWeight > 0 ? formatPercent(row.weight / totalWeight) : "0%"
@@ -887,7 +552,7 @@ export default function ShinHanabiPage() {
       setOverallSettingRows(null);
       setSettingExpectationTable({
         headerText: `${practiceGames}G`,
-        payoutHeaderText: formatInputPercentage(strategyRate),
+        payoutHeaderText: payoutModeLabels[payoutMode],
         hourlyText: "-",
         rows: settingExpectationValues.map((row) => ({
           label: row.label,
@@ -951,7 +616,7 @@ export default function ShinHanabiPage() {
 
     setSettingExpectationTable({
       headerText: `${practiceGames}G`,
-      payoutHeaderText: formatInputPercentage(strategyRate),
+      payoutHeaderText: payoutModeLabels[payoutMode],
       hourlyText: hourlyExpectedYen !== null ? formatHourlyYen(hourlyExpectedYen) : "-",
       rows: expectationRows,
       totalText: formatYen(totalExpectedYen)
@@ -961,18 +626,14 @@ export default function ShinHanabiPage() {
   return (
     <main className="page-shell">
       <div className="card card-wide">
-        <h1 className="title">新ハナビ</h1>
+        <h1 className="title">ハッピージャグラーVⅢ</h1>
         <form className="input-form" onSubmit={handleEstimate}>
           {inputGroups.map((group, index) => (
-            <section className="input-group" key={`${group.title ?? "group"}-${index}`}>
-              {group.title ? (
-                <div className="group-title-row">
-                  <p className="group-title">【{group.title}】</p>
-                  {"note" in group && group.note ? (
-                    <p className="group-note">{group.note}</p>
-                  ) : null}
-                </div>
-              ) : null}
+            <section className="input-group" key={`${group.title}-${index}`}>
+              <div className="group-title-row">
+                <p className="group-title">【{group.title}】</p>
+                {group.note ? <p className="group-note">{group.note}</p> : null}
+              </div>
               {"fields" in group ? (
                 <div className={`input-row input-row-${Math.min(group.fields.length, 3)}`}>
                   {group.fields.map((field) => (
@@ -984,7 +645,7 @@ export default function ShinHanabiPage() {
                             className={`number-input${field.compact ? " number-input-compact" : ""}${field.widthClass ? ` ${field.widthClass}` : ""}`}
                             type="number"
                             inputMode="numeric"
-                            value={inputValues[field.key]}
+                            value={String(inputValues[field.key] ?? "")}
                             onChange={(event) =>
                               setInputValues((current) => ({
                                 ...current,
@@ -1002,47 +663,24 @@ export default function ShinHanabiPage() {
                   ))}
                 </div>
               ) : (
-                <div className="piece-input-group">
-                  {group.rows.map((row) => (
-                    <div className="piece-input-row" key={row.label}>
-                      <p className="piece-input-label">{row.label}</p>
-                      <label className="input-field">
-                        <span className="input-label">試行</span>
-                        <span className="input-control">
-                          <input
-                            className="number-input number-input-piece"
-                            type="number"
-                            inputMode="numeric"
-                            value={inputValues[row.trialKey]}
-                            onChange={(event) =>
-                              setInputValues((current) => ({
-                                ...current,
-                                [row.trialKey]: event.target.value
-                              }))
-                            }
-                          />
-                          <span className="input-unit">回</span>
-                        </span>
-                      </label>
-                      <label className="input-field">
-                        <span className="input-label">発生</span>
-                        <span className="input-control">
-                          <input
-                            className="number-input number-input-piece"
-                            type="number"
-                            inputMode="numeric"
-                            value={inputValues[row.occurrenceKey]}
-                            onChange={(event) =>
-                              setInputValues((current) => ({
-                                ...current,
-                                [row.occurrenceKey]: event.target.value
-                              }))
-                            }
-                          />
-                          <span className="input-unit">回</span>
-                        </span>
-                      </label>
-                    </div>
+                <div className="choice-group">
+                  {group.options.map((option) => (
+                    <label className="choice-option" key={option.value}>
+                      <input
+                        className="choice-radio"
+                        type="radio"
+                        name={group.choiceKey}
+                        value={option.value}
+                        checked={inputValues[group.choiceKey] === option.value}
+                        onChange={() =>
+                          setInputValues((current) => ({
+                            ...current,
+                            [group.choiceKey]: option.value
+                          }))
+                        }
+                      />
+                      <span className="choice-text">{option.label}</span>
+                    </label>
                   ))}
                 </div>
               )}

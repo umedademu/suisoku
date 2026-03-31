@@ -118,6 +118,31 @@ a {
   white-space: nowrap;
 }
 
+.choice-group {
+  display: grid;
+  gap: 8px;
+}
+
+.choice-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.82);
+  padding: 8px 10px;
+}
+
+.choice-radio {
+  margin: 0;
+}
+
+.choice-text {
+  font-size: 0.84rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
 .group-title-row {
   display: flex;
   align-items: baseline;
@@ -222,6 +247,11 @@ a {
 .number-input-medium {
   width: 6.4em;
   flex: 0 0 6.4em;
+}
+
+.number-input-piece {
+  width: 4.2em;
+  flex: 0 0 4.2em;
 }
 
 .number-input:focus {
@@ -503,6 +533,10 @@ a {
 
   .piece-input-label {
     grid-column: 1 / -1;
+  }
+
+  .choice-group {
+    gap: 6px;
   }
 
   .result-item {
