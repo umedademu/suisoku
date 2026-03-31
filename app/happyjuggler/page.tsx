@@ -203,6 +203,13 @@ const probabilityDisplayGroups = [
 
 type RateKey = "bb" | "rb" | "sum" | "budo";
 
+type ProbabilityDefinition = {
+  key: RateKey;
+  count: number;
+  base: number;
+  enabled?: boolean;
+};
+
 function parseRate(value: string) {
   const trimmed = value.replace("1/", "");
   const denominator = Number(trimmed);
@@ -450,13 +457,15 @@ export default function HappyJugglerPage() {
   const handleEstimate = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    const budoRaw = String(inputValues.budo ?? "");
+    const hasBudoInput = budoRaw.trim() !== "";
     const beforeGames = toNumber(String(inputValues.beforeGames ?? ""));
     const beforeBig = toNumber(String(inputValues.beforeBig ?? ""));
     const beforeReg = toNumber(String(inputValues.beforeReg ?? ""));
     const currentGames = toNumber(String(inputValues.currentGames ?? ""));
     const currentBig = toNumber(String(inputValues.currentBig ?? ""));
     const currentReg = toNumber(String(inputValues.currentReg ?? ""));
-    const budo = toNumber(String(inputValues.budo ?? ""));
+    const budo = toNumber(budoRaw);
     const medalRent = toNumber(String(inputValues.medalRent ?? ""));
     const exchangeRate = toNumber(String(inputValues.exchangeRate ?? ""));
     const cashInvestment = Math.max(0, toNumber(String(inputValues.cashInvestment ?? "")));
@@ -481,11 +490,7 @@ export default function HappyJugglerPage() {
       };
     });
 
-    const probabilityDefinitions: Array<{
-      key: RateKey;
-      count: number;
-      base: number;
-    }> = [
+    const probabilityDefinitions: ProbabilityDefinition[] = [
       {
         key: "bb",
         count: practiceBig,
@@ -504,7 +509,8 @@ export default function HappyJugglerPage() {
       {
         key: "budo",
         count: budo,
-        base: practiceGames
+        base: practiceGames,
+        enabled: hasBudoInput
       }
     ];
 
@@ -515,6 +521,7 @@ export default function HappyJugglerPage() {
     const validProbabilityDefinitions = probabilityDefinitions.filter(
       (definition) =>
         definition.key !== "sum" &&
+        definition.enabled !== false &&
         definition.base > 0 &&
         definition.count >= 0 &&
         definition.count <= definition.base
@@ -526,6 +533,18 @@ export default function HappyJugglerPage() {
         headerText: `${probabilityDefinitionMap[group.items[0].key].base}G`,
         columns: group.items.map((item) => {
           const definition = probabilityDefinitionMap[item.key];
+
+          if (definition.enabled === false) {
+            return {
+              label: item.title,
+              summaryText: "未入力",
+              values: settings.map((setting) => ({
+                label: setting.setting,
+                value: "-"
+              }))
+            };
+          }
+
           const weights = settingRates.map((setting) => ({
             label: setting.label,
             weight: calculateBinomialProbability(
