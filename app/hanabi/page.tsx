@@ -692,7 +692,7 @@ export default function HanabiPage() {
   return (
     <main className="page-shell">
       <div className="card card-wide">
-        <h1 className="title">ハナビ</h1>
+        <h1 className="title">ハナビBH</h1>
         <form className="input-form" onSubmit={handleEstimate}>
           {inputGroups.map((group, index) => (
             <section className="input-group" key={`${group.title ?? "group"}-${index}`}>
