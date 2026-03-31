@@ -300,7 +300,7 @@ function clampPercentage(value: number) {
 }
 
 function formatInputPercentage(value: number) {
-  return Number.isInteger(value) ? `${value}%` : `${value.toFixed(1)}%`;
+  return Number.isInteger(value) ? `攻略率${value}%` : `攻略率${value.toFixed(1)}%`;
 }
 
 function formatPayout(value: number) {
