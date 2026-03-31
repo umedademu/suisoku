@@ -477,9 +477,7 @@ export default function HappyJugglerPage() {
         : 0;
 
     const practiceGames = currentGames - beforeGames;
-    const practiceBig = currentBig - beforeBig;
-    const practiceReg = currentReg - beforeReg;
-    const totalBonus = practiceBig + practiceReg;
+    const totalBonus = currentBig + currentReg;
     const settingExpectationValues = settings.map((setting) => {
       const payoutRate = getSelectedPayout(setting, payoutMode);
 
@@ -493,18 +491,18 @@ export default function HappyJugglerPage() {
     const probabilityDefinitions: ProbabilityDefinition[] = [
       {
         key: "bb",
-        count: practiceBig,
-        base: practiceGames
+        count: currentBig,
+        base: currentGames
       },
       {
         key: "rb",
-        count: practiceReg,
-        base: practiceGames
+        count: currentReg,
+        base: currentGames
       },
       {
         key: "sum",
         count: totalBonus,
-        base: practiceGames
+        base: currentGames
       },
       {
         key: "budo",

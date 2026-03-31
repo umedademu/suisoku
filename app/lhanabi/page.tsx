@@ -556,9 +556,7 @@ export default function LHanabiPage() {
         : 0;
 
     const practiceGames = currentGames - beforeGames;
-    const practiceBig = currentBig - beforeBig;
-    const practiceReg = currentReg - beforeReg;
-    const totalBonus = practiceBig + practiceReg;
+    const totalBonus = currentBig + currentReg;
     const settingExpectationValues = settings.map((setting) => {
       const payoutRate = calculateEffectivePayout(setting.payout, setting.payoutFull, strategyRate);
 
@@ -578,20 +576,20 @@ export default function LHanabiPage() {
       {
         key: "bb",
         title: "BIG",
-        count: practiceBig,
-        base: practiceGames
+        count: currentBig,
+        base: currentGames
       },
       {
         key: "rb",
         title: "REG",
-        count: practiceReg,
-        base: practiceGames
+        count: currentReg,
+        base: currentGames
       },
       {
         key: "sum",
         title: "合算",
         count: totalBonus,
-        base: practiceGames
+        base: currentGames
       },
       {
         key: "furinA",
