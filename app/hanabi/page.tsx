@@ -315,7 +315,11 @@ export default function HanabiPage() {
   const [probabilityGroups, setProbabilityGroups] = useState<
     Array<{
       title: string;
-      columns: Array<{ label: string; values: Array<{ label: string; value: string }> }>;
+      columns: Array<{
+        label: string;
+        summary: string;
+        values: Array<{ label: string; value: string }>;
+      }>;
     }> | null
   >(null);
 
@@ -477,6 +481,10 @@ export default function HanabiPage() {
 
           return {
             label: item.title,
+            summary:
+              definition.base > 0
+                ? `${definition.count}回 / ${formatProbability(definition.count, definition.base)}`
+                : `${definition.count}回 / -`,
             values: weights.map((row) => ({
               label: row.label,
               value: totalWeight > 0 ? formatPercent(row.weight / totalWeight) : "0%"
@@ -594,7 +602,10 @@ export default function HanabiPage() {
                             <tr>
                               <th>設定</th>
                               {group.columns.map((column) => (
-                                <th key={`${group.title}-${column.label}`}>{column.label}</th>
+                                <th key={`${group.title}-${column.label}`}>
+                                  <div className="table-head-main">{column.label}</div>
+                                  <div className="table-head-sub">{column.summary}</div>
+                                </th>
                               ))}
                             </tr>
                           </thead>

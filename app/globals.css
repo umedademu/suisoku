@@ -285,6 +285,18 @@ a {
   font-weight: 700;
 }
 
+.table-head-main {
+  font-size: 0.75rem;
+  line-height: 1.1;
+}
+
+.table-head-sub {
+  margin-top: 2px;
+  font-size: 0.62rem;
+  font-weight: 500;
+  line-height: 1.1;
+}
+
 .data-table tbody th {
   background: #f8efdf;
   font-weight: 700;
@@ -328,6 +340,14 @@ a {
 
   .data-table {
     font-size: 0.92rem;
+  }
+
+  .table-head-main {
+    font-size: 0.9rem;
+  }
+
+  .table-head-sub {
+    font-size: 0.74rem;
   }
 
   .data-table th,
