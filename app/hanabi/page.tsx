@@ -144,7 +144,8 @@ const probabilityDisplayGroups = [
     title: "基本スペック",
     items: [
       { title: "BIG", key: "bb" as const },
-      { title: "REG", key: "rb" as const }
+      { title: "REG", key: "rb" as const },
+      { title: "合算", key: "sum" as const }
     ]
   },
   {
@@ -174,6 +175,7 @@ const probabilityDisplayGroups = [
 type RateKey =
   | "bb"
   | "rb"
+  | "sum"
   | "furin"
   | "ice"
   | "nanameBell"
@@ -196,6 +198,7 @@ const settingRates = settings.map((setting) => ({
   label: setting.setting,
   bb: parseRate(setting.bb),
   rb: parseRate(setting.rb),
+  sum: parseRate(setting.bb) + parseRate(setting.rb),
   furin: parseRate(setting.furin),
   ice: parseRate(setting.ice),
   nanameBell: parseRate(setting.nanameBell),
@@ -354,46 +357,6 @@ export default function HanabiPage() {
       {
         label: "実践G数",
         value: `${practiceGames}G`
-      },
-      {
-        label: "BIG",
-        value: formatCountAndProbability(practiceBig, practiceGames)
-      },
-      {
-        label: "REG",
-        value: formatCountAndProbability(practiceReg, practiceGames)
-      },
-      {
-        label: "合算",
-        value: formatCountAndProbability(totalBonus, practiceGames)
-      },
-      {
-        label: "風鈴",
-        value: formatCountAndProbability(furin, practiceGames)
-      },
-      {
-        label: "氷",
-        value: formatCountAndProbability(totalIce, practiceGames)
-      },
-      {
-        label: "2役合算",
-        value: formatCountAndProbability(twoRoleTotal, practiceGames)
-      },
-      {
-        label: "BIG中斜め風鈴",
-        value: formatCountBaseAndProbability(bigInNanameFurin, bigInGames)
-      },
-      {
-        label: "BIG中ハズレ",
-        value: formatCountBaseAndProbability(bigInHazure, bigInGames)
-      },
-      {
-        label: "ハナビチャレンジ中ハズレ",
-        value: formatCountBaseAndProbability(challengeHazure, challengeGames)
-      },
-      {
-        label: "ハナビゲーム中ハズレ",
-        value: formatCountBaseAndProbability(gameHazure, gameGames)
       }
     ]);
 
@@ -413,6 +376,12 @@ export default function HanabiPage() {
         key: "rb",
         title: "REG",
         count: practiceReg,
+        base: practiceGames
+      },
+      {
+        key: "sum",
+        title: "合算",
+        count: totalBonus,
         base: practiceGames
       },
       {
