@@ -210,11 +210,6 @@ a {
   margin-top: 14px;
 }
 
-.result-metric-title {
-  margin: 0;
-  font-size: 0.86rem;
-}
-
 .result-item {
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr);
@@ -292,9 +287,16 @@ a {
 
 .table-head-sub {
   margin-top: 2px;
+  display: grid;
+  gap: 1px;
   font-size: 0.62rem;
   font-weight: 500;
   line-height: 1.1;
+}
+
+.table-head-count,
+.table-head-rate {
+  display: block;
 }
 
 .data-table tbody th {

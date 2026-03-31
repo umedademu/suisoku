@@ -142,7 +142,7 @@ const specGroups = [
 
 const probabilityDisplayGroups = [
   {
-    title: "基本スペック",
+    title: "ボーナス",
     items: [
       { title: "BIG", key: "bb" as const },
       { title: "REG", key: "rb" as const },
@@ -152,25 +152,25 @@ const probabilityDisplayGroups = [
   {
     title: "通常時小役",
     items: [
-      { title: "通常時風鈴", key: "furin" as const },
-      { title: "通常時平行氷", key: "ice" as const },
+      { title: "風鈴", key: "furin" as const },
+      { title: "平行氷", key: "ice" as const },
       { title: "2役合算", key: "pairTotal" as const }
     ]
   },
   {
     title: "BIG中",
     items: [
-      { title: "BIG中斜め風鈴", key: "nanameBell" as const },
-      { title: "BIG中ハズレ", key: "bHazure" as const }
+      { title: "斜め風鈴", key: "nanameBell" as const },
+      { title: "ハズレ", key: "bHazure" as const }
     ]
   },
   {
-    title: "花火チャレンジ中",
-    items: [{ title: "花火チャレンジ中ハズレ", key: "cHazure" as const }]
+    title: "花火チャレ中",
+    items: [{ title: "ハズレ", key: "cHazure" as const }]
   },
   {
     title: "花火ゲーム中",
-    items: [{ title: "花火ゲーム中ハズレ", key: "gHazure" as const }]
+    items: [{ title: "ハズレ", key: "gHazure" as const }]
   }
 ] as const;
 
@@ -244,18 +244,6 @@ function formatRateFromProbability(probability: number) {
   }
 
   return `1/${formatDenominator(1 / probability)}`;
-}
-
-function formatCountAndProbability(count: number, base: number) {
-  return `${count}回（${formatProbability(count, base)}）`;
-}
-
-function formatCountBaseAndProbability(count: number, base: number) {
-  if (base <= 0) {
-    return `${count}回 / ${base}G（-）`;
-  }
-
-  return `${count}回 / ${base}G（${formatProbability(count, base)}）`;
 }
 
 function calculateLogBinomialProbability(
@@ -337,7 +325,8 @@ export default function HanabiPage() {
       title: string;
       columns: Array<{
         label: string;
-        summary: string;
+        countText: string;
+        rateText: string;
         values: Array<{ label: string; value: string }>;
       }>;
     }> | null
@@ -472,10 +461,8 @@ export default function HanabiPage() {
 
           return {
             label: item.title,
-            summary:
-              definition.base > 0
-                ? `${definition.count}回 / ${formatProbability(definition.count, definition.base)}`
-                : `${definition.count}回 / -`,
+            countText: `${definition.count}回`,
+            rateText: formatProbability(definition.count, definition.base),
             values: weights.map((row) => ({
               label: row.label,
               value: totalWeight > 0 ? formatPercent(row.weight / totalWeight) : "0%"
@@ -586,16 +573,18 @@ export default function HanabiPage() {
                   <h3 className="result-subtitle">各項目ごとの設定別割合</h3>
                   {probabilityGroups.map((group) => (
                     <section className="result-metric-group" key={group.title}>
-                      <h4 className="result-metric-title">{group.title}</h4>
                       <div className="table-wrap table-wrap-tight">
                         <table className="data-table data-table-compact">
                           <thead>
                             <tr>
-                              <th>設定</th>
+                              <th>{group.title}</th>
                               {group.columns.map((column) => (
                                 <th key={`${group.title}-${column.label}`}>
                                   <div className="table-head-main">{column.label}</div>
-                                  <div className="table-head-sub">{column.summary}</div>
+                                  <div className="table-head-sub">
+                                    <span className="table-head-count">{column.countText}</span>
+                                    <span className="table-head-rate">{column.rateText}</span>
+                                  </div>
                                 </th>
                               ))}
                             </tr>
