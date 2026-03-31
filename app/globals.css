@@ -300,6 +300,16 @@ a {
   text-align: right;
 }
 
+.result-item-inline {
+  display: flex;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.result-item-inline .result-value {
+  text-align: left;
+}
+
 .table-wrap {
   margin-top: 8px;
   overflow-x: auto;

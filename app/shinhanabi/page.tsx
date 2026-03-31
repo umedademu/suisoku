@@ -5,67 +5,75 @@ import { useState } from "react";
 const settings = [
   {
     setting: "設定1",
-    bb: "1/297.9",
-    rb: "1/394.8",
-    furinA: "1/12.9",
-    furinB: "1/38.4",
+    bb: "1/277.7",
+    rb: "1/356.2",
+    furinA: "1/15.3",
+    furinB: "1/15.3",
+    iceA: "1/52.9",
     cherryA2: "1/21.0",
-    bigFurinB: "1/10.0",
+    cherryB: "1/282.5",
+    bigFurinB: "1/11.0",
     bigBarake: "1/16384.0",
     regOneRole: "1/8.0",
-    regBarake: "1/16384.0",
-    challengeHazure: "1/4.7",
-    gameHazure: "1/6.4",
-    payout: "98.6%",
-    payoutFull: "100.2%"
-  },
-  {
-    setting: "設定2",
-    bb: "1/292.6",
-    rb: "1/358.1",
-    furinA: "1/12.5",
-    furinB: "1/38.7",
-    cherryA2: "1/19.4",
-    bigFurinB: "1/7.0",
-    bigBarake: "1/16384.0",
-    regOneRole: "1/8.0",
-    regBarake: "1/16384.0",
-    challengeHazure: "1/4.5",
-    gameHazure: "1/6.0",
-    payout: "100.4%",
+    regHazure: "1/16384.0",
+    challengeHazure: "1/6.0",
+    gameHazure: "1/13.4",
+    payout: "98.1%",
     payoutFull: "102.0%"
   },
   {
+    setting: "設定2",
+    bb: "1/268.6",
+    rb: "1/331.0",
+    furinA: "1/14.9",
+    furinB: "1/15.6",
+    iceA: "1/53.5",
+    cherryA2: "1/19.3",
+    cherryB: "1/281.3",
+    bigFurinB: "1/9.0",
+    bigBarake: "1/16384.0",
+    regOneRole: "1/8.0",
+    regHazure: "1/16384.0",
+    challengeHazure: "1/5.8",
+    gameHazure: "1/12.4",
+    payout: "99.9%",
+    payoutFull: "104.0%"
+  },
+  {
     setting: "設定5",
-    bb: "1/284.9",
-    rb: "1/313.6",
-    furinA: "1/12.1",
-    furinB: "1/36.2",
-    cherryA2: "1/20.5",
-    bigFurinB: "1/10.0",
-    bigBarake: "1/819.0",
+    bb: "1/256.0",
+    rb: "1/306.2",
+    furinA: "1/14.5",
+    furinB: "1/15.3",
+    iceA: "1/49.6",
+    cherryA2: "1/20.6",
+    cherryB: "1/276.5",
+    bigFurinB: "1/11.0",
+    bigBarake: "1/16384.0",
     regOneRole: "1/7.0",
-    regBarake: "1/16384.0",
-    challengeHazure: "1/4.3",
-    gameHazure: "1/5.4",
-    payout: "103.0%",
-    payoutFull: "104.6%"
+    regHazure: "1/376.6",
+    challengeHazure: "1/5.3",
+    gameHazure: "1/10.1",
+    payout: "102.3%",
+    payoutFull: "106.5%"
   },
   {
     setting: "設定6",
-    bb: "1/273.1",
-    rb: "1/282.5",
-    furinA: "1/11.5",
-    furinB: "1/34.5",
-    cherryA2: "1/19.6",
-    bigFurinB: "1/7.0",
-    bigBarake: "1/819.0",
+    bb: "1/248.2",
+    rb: "1/280.1",
+    furinA: "1/14.1",
+    furinB: "1/15.1",
+    iceA: "1/50.8",
+    cherryA2: "1/19.9",
+    cherryB: "1/274.2",
+    bigFurinB: "1/9.0",
+    bigBarake: "1/655.4",
     regOneRole: "1/7.0",
-    regBarake: "1/1092.3",
-    challengeHazure: "1/4.2",
-    gameHazure: "1/5.4",
-    payout: "106.4%",
-    payoutFull: "108.0%"
+    regHazure: "1/376.6",
+    challengeHazure: "1/5.1",
+    gameHazure: "1/9.5",
+    payout: "104.6%",
+    payoutFull: "109.0%"
   }
 ];
 
@@ -91,7 +99,9 @@ const inputGroups = [
     fields: [
       { key: "furinA", label: "風鈴A" },
       { key: "furinB", label: "風鈴B" },
-      { key: "cherryA2", label: "チェリーA2" }
+      { key: "iceA", label: "氷A" },
+      { key: "cherryA2", label: "チェリーA2" },
+      { key: "cherryB", label: "チェリーB" }
     ]
   },
   {
@@ -107,7 +117,7 @@ const inputGroups = [
     fields: [
       { key: "regGames", label: "消化G数" },
       { key: "regOneRole", label: "1枚役" },
-      { key: "regBarake", label: "バラケ目" }
+      { key: "regHazure", label: "ハズレ" }
     ]
   },
   {
@@ -184,7 +194,9 @@ const specGroups = [
       { label: "風鈴A", key: "furinA" },
       { label: "風鈴B", key: "furinB" },
       { label: "風鈴合算", key: "furinTotal" },
-      { label: "チェリーA2", key: "cherryA2" }
+      { label: "氷A", key: "iceA" },
+      { label: "チェリーA2", key: "cherryA2" },
+      { label: "チェリーB", key: "cherryB" }
     ]
   },
   {
@@ -198,7 +210,7 @@ const specGroups = [
     title: "REG中",
     columns: [
       { label: "1枚役", key: "regOneRole" },
-      { label: "バラケ目", key: "regBarake" }
+      { label: "ハズレ", key: "regHazure" }
     ]
   },
   {
@@ -226,7 +238,9 @@ const probabilityDisplayGroups = [
       { title: "風鈴A", key: "furinA" as const },
       { title: "風鈴B", key: "furinB" as const },
       { title: "風鈴合算", key: "furinTotal" as const },
-      { title: "チェリーA2", key: "cherryA2" as const }
+      { title: "氷A", key: "iceA" as const },
+      { title: "チェリーA2", key: "cherryA2" as const },
+      { title: "チェリーB", key: "cherryB" as const }
     ]
   },
   {
@@ -240,7 +254,7 @@ const probabilityDisplayGroups = [
     title: "REG中",
     items: [
       { title: "1枚役", key: "regOneRole" as const },
-      { title: "バラケ目", key: "regBarake" as const }
+      { title: "ハズレ", key: "regHazure" as const }
     ]
   },
   {
@@ -260,11 +274,13 @@ type RateKey =
   | "furinA"
   | "furinB"
   | "furinTotal"
+  | "iceA"
   | "cherryA2"
+  | "cherryB"
   | "bigFurinB"
   | "bigBarake"
   | "regOneRole"
-  | "regBarake"
+  | "regHazure"
   | "challengeHazure"
   | "gameHazure";
 
@@ -298,11 +314,13 @@ const settingRates = settings.map((setting) => ({
   furinA: parseRate(setting.furinA),
   furinB: parseRate(setting.furinB),
   furinTotal: parseRate(setting.furinA) + parseRate(setting.furinB),
+  iceA: parseRate(setting.iceA),
   cherryA2: parseRate(setting.cherryA2),
+  cherryB: parseRate(setting.cherryB),
   bigFurinB: parseRate(setting.bigFurinB),
   bigBarake: parseRate(setting.bigBarake),
   regOneRole: parseRate(setting.regOneRole),
-  regBarake: parseRate(setting.regBarake),
+  regHazure: parseRate(setting.regHazure),
   challengeHazure: parseRate(setting.challengeHazure),
   gameHazure: parseRate(setting.gameHazure)
 }));
@@ -314,11 +332,13 @@ const settingsDisplay = settings.map((setting) => ({
   furinA: formatRateFromProbability(parseRate(setting.furinA)),
   furinB: formatRateFromProbability(parseRate(setting.furinB)),
   furinTotal: formatRateFromProbability(parseRate(setting.furinA) + parseRate(setting.furinB)),
+  iceA: formatRateFromProbability(parseRate(setting.iceA)),
   cherryA2: formatRateFromProbability(parseRate(setting.cherryA2)),
+  cherryB: formatRateFromProbability(parseRate(setting.cherryB)),
   bigFurinB: formatRateFromProbability(parseRate(setting.bigFurinB)),
   bigBarake: formatRateFromProbability(parseRate(setting.bigBarake)),
   regOneRole: formatRateFromProbability(parseRate(setting.regOneRole)),
-  regBarake: formatRateFromProbability(parseRate(setting.regBarake)),
+  regHazure: formatRateFromProbability(parseRate(setting.regHazure)),
   challengeHazure: formatRateFromProbability(parseRate(setting.challengeHazure)),
   gameHazure: formatRateFromProbability(parseRate(setting.gameHazure)),
   payout: setting.payout,
@@ -474,7 +494,7 @@ function formatPercent(probability: number) {
   return "0%";
 }
 
-export default function LHanabiPage() {
+export default function ShinHanabiPage() {
   const [inputValues, setInputValues] = useState<Record<string, string>>(initialValues);
   const [settingExpectationTable, setSettingExpectationTable] = useState<
     | {
@@ -534,13 +554,15 @@ export default function LHanabiPage() {
     const currentReg = toNumber(inputValues.currentReg);
     const furinA = toNumber(inputValues.furinA);
     const furinB = toNumber(inputValues.furinB);
+    const iceA = toNumber(inputValues.iceA);
     const cherryA2 = toNumber(inputValues.cherryA2);
+    const cherryB = toNumber(inputValues.cherryB);
     const bigGames = toNumber(inputValues.bigGames);
     const bigFurinB = toNumber(inputValues.bigFurinB);
     const bigBarake = toNumber(inputValues.bigBarake);
     const regGames = toNumber(inputValues.regGames);
     const regOneRole = toNumber(inputValues.regOneRole);
-    const regBarake = toNumber(inputValues.regBarake);
+    const regHazure = toNumber(inputValues.regHazure);
     const challengeGames = toNumber(inputValues.challengeGames);
     const challengeHazure = toNumber(inputValues.challengeHazure);
     const gameGames = toNumber(inputValues.gameGames);
@@ -612,9 +634,21 @@ export default function LHanabiPage() {
         base: practiceGames
       },
       {
+        key: "iceA",
+        title: "通常時氷A",
+        count: iceA,
+        base: practiceGames
+      },
+      {
         key: "cherryA2",
         title: "通常時チェリーA2",
         count: cherryA2,
+        base: practiceGames
+      },
+      {
+        key: "cherryB",
+        title: "通常時チェリーB",
+        count: cherryB,
         base: practiceGames
       },
       {
@@ -636,9 +670,9 @@ export default function LHanabiPage() {
         base: regGames
       },
       {
-        key: "regBarake",
-        title: "REG中バラケ目",
-        count: regBarake,
+        key: "regHazure",
+        title: "REG中ハズレ",
+        count: regHazure,
         base: regGames
       },
       {
@@ -774,7 +808,7 @@ export default function LHanabiPage() {
   return (
     <main className="page-shell">
       <div className="card card-wide">
-        <h1 className="title">スマスロ Lハナビ</h1>
+        <h1 className="title">新ハナビ</h1>
         <form className="input-form" onSubmit={handleEstimate}>
           {inputGroups.map((group, index) => (
             <section className="input-group" key={`${group.title ?? "group"}-${index}`}>

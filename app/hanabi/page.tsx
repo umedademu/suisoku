@@ -317,6 +317,16 @@ function formatYen(value: number) {
   return `${sign}${Math.abs(rounded).toLocaleString("ja-JP")}円`;
 }
 
+function formatHourlyYen(value: number) {
+  const rounded = Math.round(value * 10) / 10;
+  const sign = rounded > 0 ? "+" : rounded < 0 ? "-" : "";
+
+  return `${sign}${Math.abs(rounded).toLocaleString("ja-JP", {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1
+  })}円 / h`;
+}
+
 function formatTruncatedYen(value: number) {
   const truncated = Math.trunc(value * 100) / 100;
   return `${truncated.toFixed(2)}円`;
@@ -688,7 +698,7 @@ export default function HanabiPage() {
     setSettingExpectationTable({
       headerText: `${practiceGames}G`,
       payoutHeaderText: formatInputPercentage(strategyRate),
-      hourlyText: hourlyExpectedYen !== null ? formatYen(hourlyExpectedYen) : "-",
+      hourlyText: hourlyExpectedYen !== null ? formatHourlyYen(hourlyExpectedYen) : "-",
       rows: expectationRows,
       totalText: formatYen(totalExpectedYen)
     });
@@ -801,7 +811,7 @@ export default function HanabiPage() {
                   </table>
                 </div>
                 <div className="result-list">
-                  <div className="result-item">
+                  <div className="result-item result-item-inline">
                     <p className="result-label">期待時給</p>
                     <p className="result-value">{settingExpectationTable.hourlyText}</p>
                   </div>
