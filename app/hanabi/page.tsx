@@ -108,6 +108,16 @@ const inputGroups = [
     title: "期待値",
     fields: [
       {
+        key: "medalRent",
+        label: "メダル貸枚数",
+        unit: "枚"
+      },
+      {
+        key: "exchangeRate",
+        label: "交換率",
+        unit: "枚"
+      },
+      {
         key: "strategyRate",
         label: "攻略率",
         unit: "%",
@@ -119,6 +129,8 @@ const inputGroups = [
 
 const initialValues = {
   ...Object.fromEntries(inputGroups.flatMap((group) => group.fields.map((field) => [field.key, ""]))),
+  medalRent: "46",
+  exchangeRate: "5.2",
   strategyRate: "75"
 };
 
@@ -431,7 +443,9 @@ export default function HanabiPage() {
     const challengeHazure = toNumber(inputValues.challengeHazure);
     const gameGames = toNumber(inputValues.gameGames);
     const gameHazure = toNumber(inputValues.gameHazure);
+    const exchangeRate = toNumber(inputValues.exchangeRate);
     const strategyRate = clampPercentage(toNumber(inputValues.strategyRate));
+    const yenPerMedal = exchangeRate > 0 ? 100 / exchangeRate : 0;
 
     const practiceGames = currentGames - beforeGames;
     const practiceBig = currentBig - beforeBig;
@@ -443,7 +457,7 @@ export default function HanabiPage() {
       expectedYen:
         practiceGames *
         3 *
-        20 *
+        yenPerMedal *
         (calculateEffectivePayout(setting.payout, setting.payoutFull, strategyRate) - 1)
     }));
 
