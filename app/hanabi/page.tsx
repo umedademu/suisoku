@@ -341,11 +341,9 @@ function formatPercent(probability: number) {
 
 export default function HanabiPage() {
   const [inputValues, setInputValues] = useState<Record<string, string>>(initialValues);
-  const [resultRows, setResultRows] = useState<Array<{ label: string; value: string }> | null>(
-    null
-  );
   const [settingExpectationTable, setSettingExpectationTable] = useState<
     | {
+        headerText: string;
         rows: Array<{
           label: string;
           expectationText: string;
@@ -382,7 +380,6 @@ export default function HanabiPage() {
     const currentReg = toNumber(inputValues.currentReg);
     const furin = toNumber(inputValues.furin);
     const heikoIce = toNumber(inputValues.heikoIce);
-    const nanameIce = toNumber(inputValues.nanameIce);
     const bigInGames = toNumber(inputValues.bigInGames);
     const bigInNanameFurin = toNumber(inputValues.bigInNanameFurin);
     const bigInHazure = toNumber(inputValues.bigInHazure);
@@ -395,12 +392,6 @@ export default function HanabiPage() {
     const practiceBig = currentBig - beforeBig;
     const practiceReg = currentReg - beforeReg;
     const totalBonus = practiceBig + practiceReg;
-    setResultRows([
-      {
-        label: "実践G数",
-        value: `${practiceGames}G`
-      }
-    ]);
     const settingExpectationValues = settings.map((setting) => ({
       label: setting.setting,
       expectedYen: practiceGames * 3 * 20 * (parsePayoutRate(setting.payout) - 1)
@@ -518,6 +509,7 @@ export default function HanabiPage() {
     if (validProbabilityDefinitions.length === 0) {
       setOverallSettingRows(null);
       setSettingExpectationTable({
+        headerText: `${practiceGames}G`,
         rows: settingExpectationValues.map((row) => ({
           label: row.label,
           expectationText: formatYen(row.expectedYen),
@@ -575,6 +567,7 @@ export default function HanabiPage() {
     }, 0);
 
     setSettingExpectationTable({
+      headerText: `${practiceGames}G`,
       rows: expectationRows,
       totalText: formatYen(totalExpectedYen)
     });
@@ -619,65 +612,54 @@ export default function HanabiPage() {
         </form>
         <section className="result-group">
           <h2 className="result-title">推測結果</h2>
-          {resultRows ? (
+          {settingExpectationTable ? (
             <>
               {overallSettingRows ? (
-                <div className="result-subgroup">
-                  <h3 className="result-subtitle">総合推測</h3>
-                  <div className="result-list">
-                    {overallSettingRows.map((row) => (
-                      <div className="result-item" key={`overall-${row.label}`}>
-                        <p className="result-label">{row.label}</p>
-                        <p className="result-value">{row.value}</p>
-                      </div>
-                    ))}
-                  </div>
+                <div className="result-list">
+                  {overallSettingRows.map((row) => (
+                    <div className="result-item" key={`overall-${row.label}`}>
+                      <p className="result-label">{row.label}</p>
+                      <p className="result-value">{row.value}</p>
+                    </div>
+                  ))}
                 </div>
               ) : null}
-              <div className="result-list">
-                {resultRows.map((row) => (
-                  <div className="result-item" key={row.label}>
-                    <p className="result-label">{row.label}</p>
-                    <p className="result-value">{row.value}</p>
-                  </div>
-                ))}
+              <div className="result-subgroup">
+                <div className="table-wrap table-wrap-tight">
+                  <table className="data-table data-table-compact">
+                    <thead>
+                      <tr>
+                        <th>
+                          <div className="table-head-main">実践期待値</div>
+                          <div className="table-head-sub">{settingExpectationTable.headerText}</div>
+                        </th>
+                        <th>設定別期待値</th>
+                        <th>推測割合</th>
+                        <th>掛け算結果</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {settingExpectationTable.rows.map((row) => (
+                        <tr key={`expectation-${row.label}`}>
+                          <th scope="row">{row.label}</th>
+                          <td>{row.expectationText}</td>
+                          <td>{row.probabilityText}</td>
+                          <td>{row.weightedText}</td>
+                        </tr>
+                      ))}
+                      <tr>
+                        <th scope="row">合計</th>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>{settingExpectationTable.totalText}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
-              {settingExpectationTable ? (
-                <div className="result-subgroup">
-                  <h3 className="result-subtitle">設定別期待値</h3>
-                  <div className="table-wrap table-wrap-tight">
-                    <table className="data-table data-table-compact">
-                      <thead>
-                        <tr>
-                          <th>設定</th>
-                          <th>設定別期待値</th>
-                          <th>推測割合</th>
-                          <th>掛け算結果</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {settingExpectationTable.rows.map((row) => (
-                          <tr key={`expectation-${row.label}`}>
-                            <th scope="row">{row.label}</th>
-                            <td>{row.expectationText}</td>
-                            <td>{row.probabilityText}</td>
-                            <td>{row.weightedText}</td>
-                          </tr>
-                        ))}
-                        <tr>
-                          <th scope="row">合計</th>
-                          <td>-</td>
-                          <td>-</td>
-                          <td>{settingExpectationTable.totalText}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              ) : null}
               {probabilityGroups ? (
                 <div className="result-subgroup">
-                  <h3 className="result-subtitle">各項目ごとの設定別割合</h3>
+                  <h3 className="result-section-title">各項目ごとの設定別割合</h3>
                   {probabilityGroups.map((group) => (
                     <section className="result-metric-group" key={group.title}>
                       <div className="table-wrap table-wrap-tight">

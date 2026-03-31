@@ -186,6 +186,11 @@ a {
   font-size: 1.05rem;
 }
 
+.result-section-title {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
 .result-placeholder {
   margin: 12px 0 0;
   font-size: 0.9rem;
