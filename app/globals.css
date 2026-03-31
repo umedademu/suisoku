@@ -181,6 +181,16 @@ a {
   flex: 0 0 4.8em;
 }
 
+.number-input-short {
+  width: 3.6em;
+  flex: 0 0 3.6em;
+}
+
+.number-input-medium {
+  width: 6.4em;
+  flex: 0 0 6.4em;
+}
+
 .number-input:focus {
   outline: 2px solid rgba(197, 75, 44, 0.28);
   border-color: var(--accent);

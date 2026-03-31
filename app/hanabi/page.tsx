@@ -121,18 +121,21 @@ const inputGroups = [
     fields: [
       {
         key: "medalRent",
-        label: "メダル貸枚数",
-        unit: "枚"
+        label: "貸枚数",
+        unit: "枚",
+        widthClass: "number-input-short"
       },
       {
         key: "exchangeRate",
         label: "交換率",
-        unit: "枚"
+        unit: "枚",
+        widthClass: "number-input-short"
       },
       {
         key: "cashInvestment",
-        label: "現金投資額",
-        unit: "円"
+        label: "現金投資",
+        unit: "円",
+        widthClass: "number-input-medium"
       }
     ]
   }
@@ -703,7 +706,7 @@ export default function HanabiPage() {
                       <span className="input-label">{field.label}</span>
                       <span className="input-control">
                         <input
-                          className={`number-input${"compact" in field && field.compact ? " number-input-compact" : ""}`}
+                          className={`number-input${"compact" in field && field.compact ? " number-input-compact" : ""}${"widthClass" in field && field.widthClass ? ` ${field.widthClass}` : ""}`}
                           type="number"
                           inputMode="numeric"
                           value={inputValues[field.key]}
