@@ -196,7 +196,11 @@ function formatCountBaseAndProbability(count: number, base: number) {
   return `${count}回 / ${base}G（${formatProbability(count, base)}）`;
 }
 
-function calculateBinomialProbability(successCount: number, totalCount: number, probability: number) {
+function calculateLogBinomialProbability(
+  successCount: number,
+  totalCount: number,
+  probability: number
+) {
   if (
     totalCount < 0 ||
     successCount < 0 ||
@@ -204,11 +208,11 @@ function calculateBinomialProbability(successCount: number, totalCount: number, 
     probability <= 0 ||
     probability >= 1
   ) {
-    return 0;
+    return Number.NEGATIVE_INFINITY;
   }
 
   if (totalCount === 0) {
-    return successCount === 0 ? 1 : 0;
+    return successCount === 0 ? 0 : Number.NEGATIVE_INFINITY;
   }
 
   const smallerSide = Math.min(successCount, totalCount - successCount);
@@ -222,6 +226,20 @@ function calculateBinomialProbability(successCount: number, totalCount: number, 
     logCombination +
     successCount * Math.log(probability) +
     (totalCount - successCount) * Math.log(1 - probability);
+
+  return logProbability;
+}
+
+function calculateBinomialProbability(successCount: number, totalCount: number, probability: number) {
+  const logProbability = calculateLogBinomialProbability(
+    successCount,
+    totalCount,
+    probability
+  );
+
+  if (!Number.isFinite(logProbability)) {
+    return 0;
+  }
 
   return Math.exp(logProbability);
 }
@@ -249,6 +267,9 @@ export default function HanabiPage() {
   const [resultRows, setResultRows] = useState<Array<{ label: string; value: string }> | null>(
     null
   );
+  const [overallSettingRows, setOverallSettingRows] = useState<
+    Array<{ label: string; value: string }> | null
+  >(null);
   const [probabilityGroups, setProbabilityGroups] = useState<
     Array<{ title: string; rows: Array<{ label: string; value: string }> }> | null
   >(null);
@@ -378,6 +399,13 @@ export default function HanabiPage() {
       }
     ];
 
+    const validProbabilityDefinitions = probabilityDefinitions.filter(
+      (definition) =>
+        definition.base > 0 &&
+        definition.count >= 0 &&
+        definition.count <= definition.base
+    );
+
     setProbabilityGroups(
       probabilityDefinitions.map((definition) => ({
         title: definition.title,
@@ -391,6 +419,39 @@ export default function HanabiPage() {
             )
           )
         }))
+      }))
+    );
+
+    if (validProbabilityDefinitions.length === 0) {
+      setOverallSettingRows(null);
+      return;
+    }
+
+    const totalLogRows = settingRates.map((setting) => ({
+      label: setting.label,
+      logValue: validProbabilityDefinitions.reduce(
+        (sum, definition) =>
+          sum +
+          calculateLogBinomialProbability(
+            definition.count,
+            definition.base,
+            setting[definition.key]
+          ),
+        0
+      )
+    }));
+
+    const maxLogValue = Math.max(...totalLogRows.map((row) => row.logValue));
+    const scaledRows = totalLogRows.map((row) => ({
+      label: row.label,
+      weight: Math.exp(row.logValue - maxLogValue)
+    }));
+    const totalWeight = scaledRows.reduce((sum, row) => sum + row.weight, 0);
+
+    setOverallSettingRows(
+      scaledRows.map((row) => ({
+        label: row.label,
+        value: totalWeight > 0 ? formatPercent(row.weight / totalWeight) : "0%"
       }))
     );
   };
@@ -436,6 +497,19 @@ export default function HanabiPage() {
           <h2 className="result-title">推測結果</h2>
           {resultRows ? (
             <>
+              {overallSettingRows ? (
+                <div className="result-subgroup">
+                  <h3 className="result-subtitle">総合推測</h3>
+                  <div className="result-list">
+                    {overallSettingRows.map((row) => (
+                      <div className="result-item" key={`overall-${row.label}`}>
+                        <p className="result-label">{row.label}</p>
+                        <p className="result-value">{row.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
               <div className="result-list">
                 {resultRows.map((row) => (
                   <div className="result-item" key={row.label}>
