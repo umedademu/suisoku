@@ -255,11 +255,30 @@ a {
   overflow-x: auto;
 }
 
+.spec-group-wrap {
+  display: grid;
+  gap: 18px;
+  margin-top: 28px;
+}
+
+.spec-group {
+  text-align: left;
+}
+
+.spec-title {
+  margin: 0 0 10px;
+  font-size: 1rem;
+}
+
 .data-table {
   width: 100%;
   min-width: 860px;
   border-collapse: collapse;
   font-size: 0.98rem;
+}
+
+.data-table-compact {
+  min-width: 0;
 }
 
 .data-table th,

@@ -111,6 +111,39 @@ const bigProbabilitySettings = settings.map((setting) => ({
   probability: 1 / Number(setting.bb.replace("1/", ""))
 }));
 
+const specGroups = [
+  {
+    title: "基本スペック",
+    columns: [
+      { label: "BIG", key: "bb" },
+      { label: "REG", key: "rb" },
+      { label: "機械割", key: "payout" }
+    ]
+  },
+  {
+    title: "通常時小役",
+    columns: [
+      { label: "風鈴", key: "furin" },
+      { label: "平行氷", key: "ice" }
+    ]
+  },
+  {
+    title: "BIG中",
+    columns: [
+      { label: "斜め風鈴", key: "nanameBell" },
+      { label: "ハズレ", key: "bHazure" }
+    ]
+  },
+  {
+    title: "花火チャレンジ中",
+    columns: [{ label: "ハズレ", key: "cHazure" }]
+  },
+  {
+    title: "花火ゲーム中",
+    columns: [{ label: "ハズレ", key: "gHazure" }]
+  }
+] as const;
+
 function toNumber(value: string) {
   if (!value) {
     return 0;
@@ -353,40 +386,37 @@ export default function HanabiPage() {
             <p className="result-placeholder">推測ボタンを押すとここに結果が出ます。</p>
           )}
         </section>
-        <div className="table-wrap">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>ハナビ設定差</th>
-                <th>BB</th>
-                <th>RB</th>
-                <th>風鈴</th>
-                <th>氷</th>
-                <th>斜ベル</th>
-                <th>B外れ</th>
-                <th>C外れ</th>
-                <th>G外れ</th>
-                <th>機械割</th>
-              </tr>
-            </thead>
-            <tbody>
-              {settings.map((row) => (
-                <tr key={row.setting}>
-                  <th scope="row">{row.setting}</th>
-                  <td>{row.bb}</td>
-                  <td>{row.rb}</td>
-                  <td>{row.furin}</td>
-                  <td>{row.ice}</td>
-                  <td>{row.nanameBell}</td>
-                  <td>{row.bHazure}</td>
-                  <td>{row.cHazure}</td>
-                  <td>{row.gHazure}</td>
-                  <td>{row.payout}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <section className="spec-group-wrap">
+          {specGroups.map((group) => (
+            <section className="spec-group" key={group.title}>
+              <h2 className="spec-title">【{group.title}】</h2>
+              <div className="table-wrap">
+                <table className="data-table data-table-compact">
+                  <thead>
+                    <tr>
+                      <th>設定</th>
+                      {group.columns.map((column) => (
+                        <th key={`${group.title}-${column.key}`}>{column.label}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {settings.map((row) => (
+                      <tr key={`${group.title}-${row.setting}`}>
+                        <th scope="row">{row.setting}</th>
+                        {group.columns.map((column) => (
+                          <td key={`${row.setting}-${column.key}`}>
+                            {row[column.key]}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          ))}
+        </section>
       </div>
     </main>
   );
