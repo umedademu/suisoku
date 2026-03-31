@@ -407,19 +407,25 @@ export default function HanabiPage() {
     );
 
     setProbabilityGroups(
-      probabilityDefinitions.map((definition) => ({
-        title: definition.title,
-        rows: settingRates.map((setting) => ({
+      probabilityDefinitions.map((definition) => {
+        const weights = settingRates.map((setting) => ({
           label: setting.label,
-          value: formatPercent(
-            calculateBinomialProbability(
-              definition.count,
-              definition.base,
-              setting[definition.key]
-            )
+          weight: calculateBinomialProbability(
+            definition.count,
+            definition.base,
+            setting[definition.key]
           )
-        }))
-      }))
+        }));
+        const totalWeight = weights.reduce((sum, row) => sum + row.weight, 0);
+
+        return {
+          title: definition.title,
+          rows: weights.map((row) => ({
+            label: row.label,
+            value: totalWeight > 0 ? formatPercent(row.weight / totalWeight) : "0%"
+          }))
+        };
+      })
     );
 
     if (validProbabilityDefinitions.length === 0) {
@@ -520,7 +526,7 @@ export default function HanabiPage() {
               </div>
               {probabilityGroups ? (
                 <div className="result-subgroup">
-                  <h3 className="result-subtitle">設定別のその確率になる確率</h3>
+                  <h3 className="result-subtitle">各項目ごとの設定別割合</h3>
                   {probabilityGroups.map((group) => (
                     <section className="result-metric-group" key={group.title}>
                       <h4 className="result-metric-title">{group.title}</h4>
