@@ -98,6 +98,26 @@ a {
   gap: 7px;
 }
 
+.piece-input-group {
+  display: grid;
+  gap: 6px;
+}
+
+.piece-input-row {
+  display: grid;
+  grid-template-columns: max-content repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  align-items: center;
+}
+
+.piece-input-label {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
 .group-title-row {
   display: flex;
   align-items: baseline;
@@ -474,6 +494,15 @@ a {
   .input-row-2 .number-input,
   .input-row-3 .number-input {
     padding: 6px 4px;
+  }
+
+  .piece-input-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px;
+  }
+
+  .piece-input-label {
+    grid-column: 1 / -1;
   }
 
   .result-item {

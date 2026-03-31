@@ -16,6 +16,9 @@ const settings = [
     bigBarake: "1/16384.0",
     regOneRole: "1/8.0",
     regHazure: "1/16384.0",
+    regPieceLow: "0.0%",
+    regPieceMiddle: "0.0%",
+    regPieceHigh: "0.0%",
     challengeHazure: "1/6.0",
     gameHazure: "1/13.4",
     payout: "98.1%",
@@ -34,6 +37,9 @@ const settings = [
     bigBarake: "1/16384.0",
     regOneRole: "1/8.0",
     regHazure: "1/16384.0",
+    regPieceLow: "3.1%",
+    regPieceMiddle: "25.0%",
+    regPieceHigh: "25.0%",
     challengeHazure: "1/5.8",
     gameHazure: "1/12.4",
     payout: "99.9%",
@@ -52,6 +58,9 @@ const settings = [
     bigBarake: "1/16384.0",
     regOneRole: "1/7.0",
     regHazure: "1/376.6",
+    regPieceLow: "3.1%",
+    regPieceMiddle: "25.0%",
+    regPieceHigh: "50.0%",
     challengeHazure: "1/5.3",
     gameHazure: "1/10.1",
     payout: "102.3%",
@@ -70,6 +79,9 @@ const settings = [
     bigBarake: "1/655.4",
     regOneRole: "1/7.0",
     regHazure: "1/376.6",
+    regPieceLow: "3.1%",
+    regPieceMiddle: "25.0%",
+    regPieceHigh: "50.0%",
     challengeHazure: "1/5.1",
     gameHazure: "1/9.5",
     payout: "104.6%",
@@ -77,7 +89,32 @@ const settings = [
   }
 ];
 
-const inputGroups = [
+type InputField = {
+  key: string;
+  label: string;
+  unit?: string;
+  compact?: boolean;
+  widthClass?: string;
+};
+
+type StandardInputGroup = {
+  title: string;
+  note?: string;
+  fields: InputField[];
+};
+
+type PieceInputRow = {
+  label: string;
+  trialKey: string;
+  occurrenceKey: string;
+};
+
+type PieceInputGroup = {
+  title: string;
+  rows: PieceInputRow[];
+};
+
+const inputGroups: Array<StandardInputGroup | PieceInputGroup> = [
   {
     title: "開始前",
     fields: [
@@ -118,6 +155,26 @@ const inputGroups = [
       { key: "regGames", label: "消化G数" },
       { key: "regOneRole", label: "1枚役" },
       { key: "regHazure", label: "ハズレ" }
+    ]
+  },
+  {
+    title: "REGピース画面",
+    rows: [
+      {
+        label: "0~4回時",
+        trialKey: "regPieceLowTrials",
+        occurrenceKey: "regPieceLowHits"
+      },
+      {
+        label: "5~6回時",
+        trialKey: "regPieceMiddleTrials",
+        occurrenceKey: "regPieceMiddleHits"
+      },
+      {
+        label: "7回以上時",
+        trialKey: "regPieceHighTrials",
+        occurrenceKey: "regPieceHighHits"
+      }
     ]
   },
   {
@@ -172,7 +229,16 @@ const inputGroups = [
 ];
 
 const initialValues = {
-  ...Object.fromEntries(inputGroups.flatMap((group) => group.fields.map((field) => [field.key, ""]))),
+  ...Object.fromEntries(
+    inputGroups.flatMap((group) =>
+      "fields" in group
+        ? group.fields.map((field) => [field.key, ""] as const)
+        : group.rows.flatMap((row) => [
+            [row.trialKey, ""] as const,
+            [row.occurrenceKey, ""] as const
+          ])
+    )
+  ),
   medalRent: "46",
   exchangeRate: "5.0",
   strategyRate: "75"
@@ -211,6 +277,14 @@ const specGroups = [
     columns: [
       { label: "1枚役", key: "regOneRole" },
       { label: "ハズレ", key: "regHazure" }
+    ]
+  },
+  {
+    title: "REGピース画面",
+    columns: [
+      { label: "0~4回時", key: "regPieceLow" },
+      { label: "5~6回時", key: "regPieceMiddle" },
+      { label: "7回以上時", key: "regPieceHigh" }
     ]
   },
   {
@@ -258,6 +332,15 @@ const probabilityDisplayGroups = [
     ]
   },
   {
+    title: "REGピース画面",
+    headerText: "カテゴリ別",
+    items: [
+      { title: "0~4回時", key: "regPieceLow" as const },
+      { title: "5~6回時", key: "regPieceMiddle" as const },
+      { title: "7回以上時", key: "regPieceHigh" as const }
+    ]
+  },
+  {
     title: "花火チャレ中",
     items: [{ title: "ハズレ", key: "challengeHazure" as const }]
   },
@@ -281,8 +364,19 @@ type RateKey =
   | "bigBarake"
   | "regOneRole"
   | "regHazure"
+  | "regPieceLow"
+  | "regPieceMiddle"
+  | "regPieceHigh"
   | "challengeHazure"
   | "gameHazure";
+
+type ProbabilityDefinition = {
+  key: RateKey;
+  title: string;
+  count: number;
+  base: number;
+  summaryStyle?: "frequency" | "percent";
+};
 
 function parseRate(value: string) {
   const trimmed = value.replace("1/", "");
@@ -321,6 +415,9 @@ const settingRates = settings.map((setting) => ({
   bigBarake: parseRate(setting.bigBarake),
   regOneRole: parseRate(setting.regOneRole),
   regHazure: parseRate(setting.regHazure),
+  regPieceLow: parsePayoutRate(setting.regPieceLow),
+  regPieceMiddle: parsePayoutRate(setting.regPieceMiddle),
+  regPieceHigh: parsePayoutRate(setting.regPieceHigh),
   challengeHazure: parseRate(setting.challengeHazure),
   gameHazure: parseRate(setting.gameHazure)
 }));
@@ -339,6 +436,9 @@ const settingsDisplay = settings.map((setting) => ({
   bigBarake: formatRateFromProbability(parseRate(setting.bigBarake)),
   regOneRole: formatRateFromProbability(parseRate(setting.regOneRole)),
   regHazure: formatRateFromProbability(parseRate(setting.regHazure)),
+  regPieceLow: formatOccurrenceRate(parsePayoutRate(setting.regPieceLow)),
+  regPieceMiddle: formatOccurrenceRate(parsePayoutRate(setting.regPieceMiddle)),
+  regPieceHigh: formatOccurrenceRate(parsePayoutRate(setting.regPieceHigh)),
   challengeHazure: formatRateFromProbability(parseRate(setting.challengeHazure)),
   gameHazure: formatRateFromProbability(parseRate(setting.gameHazure)),
   payout: setting.payout,
@@ -373,6 +473,22 @@ function formatRateFromProbability(probability: number) {
   }
 
   return `1/${formatDenominator(1 / probability)}`;
+}
+
+function formatOccurrenceRate(probability: number) {
+  if (probability <= 0) {
+    return "-";
+  }
+
+  return `${(probability * 100).toFixed(1)}%`;
+}
+
+function formatOccurrencePercent(count: number, base: number) {
+  if (count < 0 || base <= 0 || count > base) {
+    return "-";
+  }
+
+  return `${((count / base) * 100).toFixed(1)}%`;
 }
 
 function formatYen(value: number) {
@@ -437,14 +553,22 @@ function calculateLogBinomialProbability(
     totalCount < 0 ||
     successCount < 0 ||
     successCount > totalCount ||
-    probability <= 0 ||
-    probability >= 1
+    probability < 0 ||
+    probability > 1
   ) {
     return Number.NEGATIVE_INFINITY;
   }
 
   if (totalCount === 0) {
     return successCount === 0 ? 0 : Number.NEGATIVE_INFINITY;
+  }
+
+  if (probability === 0) {
+    return successCount === 0 ? 0 : Number.NEGATIVE_INFINITY;
+  }
+
+  if (probability === 1) {
+    return successCount === totalCount ? 0 : Number.NEGATIVE_INFINITY;
   }
 
   const smallerSide = Math.min(successCount, totalCount - successCount);
@@ -563,6 +687,12 @@ export default function ShinHanabiPage() {
     const regGames = toNumber(inputValues.regGames);
     const regOneRole = toNumber(inputValues.regOneRole);
     const regHazure = toNumber(inputValues.regHazure);
+    const regPieceLowTrials = toNumber(inputValues.regPieceLowTrials);
+    const regPieceLowHits = toNumber(inputValues.regPieceLowHits);
+    const regPieceMiddleTrials = toNumber(inputValues.regPieceMiddleTrials);
+    const regPieceMiddleHits = toNumber(inputValues.regPieceMiddleHits);
+    const regPieceHighTrials = toNumber(inputValues.regPieceHighTrials);
+    const regPieceHighHits = toNumber(inputValues.regPieceHighHits);
     const challengeGames = toNumber(inputValues.challengeGames);
     const challengeHazure = toNumber(inputValues.challengeHazure);
     const gameGames = toNumber(inputValues.gameGames);
@@ -591,12 +721,7 @@ export default function ShinHanabiPage() {
       };
     });
 
-    const probabilityDefinitions: Array<{
-      key: RateKey;
-      title: string;
-      count: number;
-      base: number;
-    }> = [
+    const probabilityDefinitions: ProbabilityDefinition[] = [
       {
         key: "bb",
         title: "BIG",
@@ -676,6 +801,27 @@ export default function ShinHanabiPage() {
         base: regGames
       },
       {
+        key: "regPieceLow",
+        title: "REGピース画面0~4回時",
+        count: regPieceLowHits,
+        base: regPieceLowTrials,
+        summaryStyle: "percent"
+      },
+      {
+        key: "regPieceMiddle",
+        title: "REGピース画面5~6回時",
+        count: regPieceMiddleHits,
+        base: regPieceMiddleTrials,
+        summaryStyle: "percent"
+      },
+      {
+        key: "regPieceHigh",
+        title: "REGピース画面7回以上時",
+        count: regPieceHighHits,
+        base: regPieceHighTrials,
+        summaryStyle: "percent"
+      },
+      {
         key: "challengeHazure",
         title: "花火チャレ中ハズレ",
         count: challengeHazure,
@@ -705,7 +851,8 @@ export default function ShinHanabiPage() {
     setProbabilityGroups(
       probabilityDisplayGroups.map((group) => ({
         title: group.title,
-        headerText: `${probabilityDefinitionMap[group.items[0].key].base}G`,
+        headerText:
+          "headerText" in group ? group.headerText : `${probabilityDefinitionMap[group.items[0].key].base}G`,
         columns: group.items.map((item) => {
           const definition = probabilityDefinitionMap[item.key];
           const weights = settingRates.map((setting) => ({
@@ -720,7 +867,13 @@ export default function ShinHanabiPage() {
 
           return {
             label: item.title,
-            summaryText: `${definition.count} (${formatProbability(definition.count, definition.base)})`,
+            summaryText:
+              definition.summaryStyle === "percent"
+                ? `${definition.base}回中${definition.count}回 (${formatOccurrencePercent(
+                    definition.count,
+                    definition.base
+                  )})`
+                : `${definition.count} (${formatProbability(definition.count, definition.base)})`,
             values: weights.map((row) => ({
               label: row.label,
               value: totalWeight > 0 ? formatPercent(row.weight / totalWeight) : "0%"
@@ -820,35 +973,79 @@ export default function ShinHanabiPage() {
                   ) : null}
                 </div>
               ) : null}
-              <div className={`input-row input-row-${Math.min(group.fields.length, 3)}`}>
-                {group.fields.map((field) => (
-                  <div className="input-field-wrap" key={field.key}>
-                    <label className="input-field">
-                      <span className="input-label">{field.label}</span>
-                      <span className="input-control">
-                        <input
-                          className={`number-input${"compact" in field && field.compact ? " number-input-compact" : ""}${"widthClass" in field && field.widthClass ? ` ${field.widthClass}` : ""}`}
-                          type="number"
-                          inputMode="numeric"
-                          value={inputValues[field.key]}
-                          onChange={(event) =>
-                            setInputValues((current) => ({
-                              ...current,
-                              [field.key]: event.target.value
-                            }))
-                          }
-                        />
-                        {"unit" in field && field.unit ? (
-                          <span className="input-unit">{field.unit}</span>
-                        ) : null}
-                        {liveFieldTexts[field.key] ? (
-                          <span className="input-live-text">{liveFieldTexts[field.key]}</span>
-                        ) : null}
-                      </span>
-                    </label>
-                  </div>
-                ))}
-              </div>
+              {"fields" in group ? (
+                <div className={`input-row input-row-${Math.min(group.fields.length, 3)}`}>
+                  {group.fields.map((field) => (
+                    <div className="input-field-wrap" key={field.key}>
+                      <label className="input-field">
+                        <span className="input-label">{field.label}</span>
+                        <span className="input-control">
+                          <input
+                            className={`number-input${field.compact ? " number-input-compact" : ""}${field.widthClass ? ` ${field.widthClass}` : ""}`}
+                            type="number"
+                            inputMode="numeric"
+                            value={inputValues[field.key]}
+                            onChange={(event) =>
+                              setInputValues((current) => ({
+                                ...current,
+                                [field.key]: event.target.value
+                              }))
+                            }
+                          />
+                          {field.unit ? <span className="input-unit">{field.unit}</span> : null}
+                          {liveFieldTexts[field.key] ? (
+                            <span className="input-live-text">{liveFieldTexts[field.key]}</span>
+                          ) : null}
+                        </span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="piece-input-group">
+                  {group.rows.map((row) => (
+                    <div className="piece-input-row" key={row.label}>
+                      <p className="piece-input-label">{row.label}</p>
+                      <label className="input-field">
+                        <span className="input-label">試行</span>
+                        <span className="input-control">
+                          <input
+                            className="number-input"
+                            type="number"
+                            inputMode="numeric"
+                            value={inputValues[row.trialKey]}
+                            onChange={(event) =>
+                              setInputValues((current) => ({
+                                ...current,
+                                [row.trialKey]: event.target.value
+                              }))
+                            }
+                          />
+                          <span className="input-unit">回</span>
+                        </span>
+                      </label>
+                      <label className="input-field">
+                        <span className="input-label">発生</span>
+                        <span className="input-control">
+                          <input
+                            className="number-input"
+                            type="number"
+                            inputMode="numeric"
+                            value={inputValues[row.occurrenceKey]}
+                            onChange={(event) =>
+                              setInputValues((current) => ({
+                                ...current,
+                                [row.occurrenceKey]: event.target.value
+                              }))
+                            }
+                          />
+                          <span className="input-unit">回</span>
+                        </span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              )}
             </section>
           ))}
           <div className="action-row">
