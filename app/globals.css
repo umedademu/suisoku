@@ -297,11 +297,6 @@ a {
   white-space: nowrap;
 }
 
-.table-head-count,
-.table-head-rate {
-  display: inline;
-}
-
 .data-table tbody th {
   background: #f8efdf;
   font-weight: 700;

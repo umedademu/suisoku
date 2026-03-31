@@ -212,7 +212,16 @@ const settingRates = settings.map((setting) => ({
 }));
 
 const settingsDisplay = settings.map((setting) => ({
-  ...setting,
+  setting: setting.setting,
+  bb: formatRateFromProbability(parseRate(setting.bb)),
+  rb: formatRateFromProbability(parseRate(setting.rb)),
+  furin: formatRateFromProbability(parseRate(setting.furin)),
+  ice: formatRateFromProbability(parseRate(setting.ice)),
+  nanameBell: formatRateFromProbability(parseRate(setting.nanameBell)),
+  bHazure: formatRateFromProbability(parseRate(setting.bHazure)),
+  cHazure: formatRateFromProbability(parseRate(setting.cHazure)),
+  gHazure: formatRateFromProbability(parseRate(setting.gHazure)),
+  payout: setting.payout,
   pairTotal: formatRateFromProbability(parseRate(setting.furin) + parseRate(setting.ice))
 }));
 
@@ -227,7 +236,7 @@ function toNumber(value: string) {
 
 function formatDenominator(value: number) {
   const rounded = Math.round(value * 10) / 10;
-  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
+  return rounded.toFixed(1);
 }
 
 function formatProbability(count: number, base: number) {
@@ -323,10 +332,10 @@ export default function HanabiPage() {
   const [probabilityGroups, setProbabilityGroups] = useState<
     Array<{
       title: string;
+      headerText: string;
       columns: Array<{
         label: string;
-        countText: string;
-        rateText: string;
+        summaryText: string;
         values: Array<{ label: string; value: string }>;
       }>;
     }> | null
@@ -447,6 +456,7 @@ export default function HanabiPage() {
     setProbabilityGroups(
       probabilityDisplayGroups.map((group) => ({
         title: group.title,
+        headerText: `${probabilityDefinitionMap[group.items[0].key].base}G`,
         columns: group.items.map((item) => {
           const definition = probabilityDefinitionMap[item.key];
           const weights = settingRates.map((setting) => ({
@@ -461,8 +471,7 @@ export default function HanabiPage() {
 
           return {
             label: item.title,
-            countText: `${definition.count}回`,
-            rateText: formatProbability(definition.count, definition.base),
+            summaryText: `${definition.count} (${formatProbability(definition.count, definition.base)})`,
             values: weights.map((row) => ({
               label: row.label,
               value: totalWeight > 0 ? formatPercent(row.weight / totalWeight) : "0%"
@@ -577,14 +586,14 @@ export default function HanabiPage() {
                         <table className="data-table data-table-compact">
                           <thead>
                             <tr>
-                              <th>{group.title}</th>
+                              <th>
+                                <div className="table-head-main">{group.title}</div>
+                                <div className="table-head-sub">{group.headerText}</div>
+                              </th>
                               {group.columns.map((column) => (
                                 <th key={`${group.title}-${column.label}`}>
                                   <div className="table-head-main">{column.label}</div>
-                                  <div className="table-head-sub">
-                                    <span className="table-head-count">{column.countText}</span>
-                                    <span className="table-head-rate">{column.rateText}</span>
-                                  </div>
+                                  <div className="table-head-sub">{column.summaryText}</div>
                                 </th>
                               ))}
                             </tr>
