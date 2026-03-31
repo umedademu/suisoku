@@ -111,6 +111,7 @@ const inputGroups = [
         key: "strategyRate",
         label: "攻略率",
         unit: "%",
+        compact: true,
         note: "期待値の計算に使用"
       }
     ]
@@ -313,6 +314,18 @@ function formatYen(value: number) {
   return `${sign}${Math.abs(rounded).toLocaleString("ja-JP")}円`;
 }
 
+function formatTruncatedYen(value: number) {
+  const truncated = Math.trunc(value * 100) / 100;
+  return `${truncated.toFixed(2)}円`;
+}
+
+function formatLossYen(value: number) {
+  const truncated = Math.trunc(value);
+  const sign = truncated > 0 ? "-" : truncated < 0 ? "+" : "";
+
+  return `${sign}${Math.abs(truncated).toLocaleString("ja-JP")}円`;
+}
+
 function clampPercentage(value: number) {
   if (!Number.isFinite(value)) {
     return 0;
@@ -434,6 +447,22 @@ export default function HanabiPage() {
       }>;
     }> | null
   >(null);
+
+  const medalRentValue = toNumber(inputValues.medalRent);
+  const exchangeRateValue = toNumber(inputValues.exchangeRate);
+  const cashInvestmentValue = Math.max(0, toNumber(inputValues.cashInvestment));
+  const liveYenPerMedal = medalRentValue > 0 ? 1000 / medalRentValue : 0;
+  const liveExchangeYen = exchangeRateValue > 0 ? 100 / exchangeRateValue : 0;
+  const liveCashGapLoss =
+    medalRentValue > 0 && exchangeRateValue > 0
+      ? cashInvestmentValue * (1 - (medalRentValue * liveExchangeYen) / 1000)
+      : 0;
+  const liveFieldTexts: Record<string, string> = {
+    medalRent: medalRentValue > 0 ? formatTruncatedYen(liveYenPerMedal) : "",
+    exchangeRate: exchangeRateValue > 0 ? formatTruncatedYen(liveExchangeYen) : "",
+    cashInvestment:
+      cashInvestmentValue > 0 && liveCashGapLoss > 0 ? formatLossYen(liveCashGapLoss) : ""
+  };
 
   const handleEstimate = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -674,7 +703,7 @@ export default function HanabiPage() {
                       <span className="input-label">{field.label}</span>
                       <span className="input-control">
                         <input
-                          className="number-input"
+                          className={`number-input${"compact" in field && field.compact ? " number-input-compact" : ""}`}
                           type="number"
                           inputMode="numeric"
                           value={inputValues[field.key]}
@@ -687,6 +716,9 @@ export default function HanabiPage() {
                         />
                         {"unit" in field && field.unit ? (
                           <span className="input-unit">{field.unit}</span>
+                        ) : null}
+                        {liveFieldTexts[field.key] ? (
+                          <span className="input-live-text">{liveFieldTexts[field.key]}</span>
                         ) : null}
                       </span>
                     </label>

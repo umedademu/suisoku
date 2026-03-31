@@ -133,6 +133,7 @@ a {
   display: flex;
   align-items: center;
   gap: 4px;
+  flex-wrap: wrap;
   min-width: 0;
 }
 
@@ -145,6 +146,13 @@ a {
 
 .input-unit {
   font-size: 0.76rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.input-live-text {
+  color: rgba(29, 29, 27, 0.78);
+  font-size: 0.72rem;
   font-weight: 700;
   white-space: nowrap;
 }
@@ -166,6 +174,11 @@ a {
   font: inherit;
   padding: 6px 6px;
   min-width: 0;
+}
+
+.number-input-compact {
+  width: 4.8em;
+  flex: 0 0 4.8em;
 }
 
 .number-input:focus {
