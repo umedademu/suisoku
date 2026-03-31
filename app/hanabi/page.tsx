@@ -266,6 +266,13 @@ function formatRateFromProbability(probability: number) {
   return `1/${formatDenominator(1 / probability)}`;
 }
 
+function formatYen(value: number) {
+  const rounded = Math.round(value);
+  const sign = rounded > 0 ? "+" : rounded < 0 ? "-" : "";
+
+  return `${sign}${Math.abs(rounded).toLocaleString("ja-JP")}円`;
+}
+
 function calculateLogBinomialProbability(
   successCount: number,
   totalCount: number,
@@ -337,8 +344,17 @@ export default function HanabiPage() {
   const [resultRows, setResultRows] = useState<Array<{ label: string; value: string }> | null>(
     null
   );
-  const [settingExpectationRows, setSettingExpectationRows] = useState<
-    Array<{ label: string; value: string }> | null
+  const [settingExpectationTable, setSettingExpectationTable] = useState<
+    | {
+        rows: Array<{
+          label: string;
+          expectationText: string;
+          probabilityText: string;
+          weightedText: string;
+        }>;
+        totalText: string;
+      }
+    | null
   >(null);
   const [overallSettingRows, setOverallSettingRows] = useState<
     Array<{ label: string; value: string }> | null
@@ -385,18 +401,10 @@ export default function HanabiPage() {
         value: `${practiceGames}G`
       }
     ]);
-    setSettingExpectationRows(
-      settings.map((setting) => {
-        const expectedYen = practiceGames * 3 * 20 * (parsePayoutRate(setting.payout) - 1);
-        const roundedYen = Math.round(expectedYen);
-        const sign = roundedYen > 0 ? "+" : roundedYen < 0 ? "-" : "";
-
-        return {
-          label: setting.setting,
-          value: `${sign}${Math.abs(roundedYen).toLocaleString("ja-JP")}円`
-        };
-      })
-    );
+    const settingExpectationValues = settings.map((setting) => ({
+      label: setting.setting,
+      expectedYen: practiceGames * 3 * 20 * (parsePayoutRate(setting.payout) - 1)
+    }));
 
     const probabilityDefinitions: Array<{
       key: RateKey;
@@ -509,6 +517,15 @@ export default function HanabiPage() {
 
     if (validProbabilityDefinitions.length === 0) {
       setOverallSettingRows(null);
+      setSettingExpectationTable({
+        rows: settingExpectationValues.map((row) => ({
+          label: row.label,
+          expectationText: formatYen(row.expectedYen),
+          probabilityText: "-",
+          weightedText: "-"
+        })),
+        totalText: "-"
+      });
       return;
     }
 
@@ -539,6 +556,28 @@ export default function HanabiPage() {
         value: totalWeight > 0 ? formatPercent(row.weight / totalWeight) : "0%"
       }))
     );
+
+    const expectationRows = settingExpectationValues.map((row, index) => {
+      const probability = totalWeight > 0 ? scaledRows[index].weight / totalWeight : 0;
+      const weightedYen = row.expectedYen * probability;
+
+      return {
+        label: row.label,
+        expectationText: formatYen(row.expectedYen),
+        probabilityText: totalWeight > 0 ? formatPercent(probability) : "0%",
+        weightedText: formatYen(weightedYen)
+      };
+    });
+
+    const totalExpectedYen = expectationRows.reduce((sum, row, index) => {
+      const probability = totalWeight > 0 ? scaledRows[index].weight / totalWeight : 0;
+      return sum + settingExpectationValues[index].expectedYen * probability;
+    }, 0);
+
+    setSettingExpectationTable({
+      rows: expectationRows,
+      totalText: formatYen(totalExpectedYen)
+    });
   };
 
   return (
@@ -603,16 +642,36 @@ export default function HanabiPage() {
                   </div>
                 ))}
               </div>
-              {settingExpectationRows ? (
+              {settingExpectationTable ? (
                 <div className="result-subgroup">
                   <h3 className="result-subtitle">設定別期待値</h3>
-                  <div className="result-list">
-                    {settingExpectationRows.map((row) => (
-                      <div className="result-item" key={`expectation-${row.label}`}>
-                        <p className="result-label">{row.label}</p>
-                        <p className="result-value">{row.value}</p>
-                      </div>
-                    ))}
+                  <div className="table-wrap table-wrap-tight">
+                    <table className="data-table data-table-compact">
+                      <thead>
+                        <tr>
+                          <th>設定</th>
+                          <th>設定別期待値</th>
+                          <th>推測割合</th>
+                          <th>掛け算結果</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {settingExpectationTable.rows.map((row) => (
+                          <tr key={`expectation-${row.label}`}>
+                            <th scope="row">{row.label}</th>
+                            <td>{row.expectationText}</td>
+                            <td>{row.probabilityText}</td>
+                            <td>{row.weightedText}</td>
+                          </tr>
+                        ))}
+                        <tr>
+                          <th scope="row">合計</th>
+                          <td>-</td>
+                          <td>-</td>
+                          <td>{settingExpectationTable.totalText}</td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               ) : null}
