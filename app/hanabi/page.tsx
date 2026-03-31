@@ -105,7 +105,7 @@ const inputGroups = [
     ]
   },
   {
-    title: "期待値",
+    title: "店情報",
     fields: [
       {
         key: "medalRent",
@@ -117,6 +117,16 @@ const inputGroups = [
         label: "交換率",
         unit: "枚"
       },
+      {
+        key: "cashInvestment",
+        label: "現金投資額",
+        unit: "円"
+      }
+    ]
+  },
+  {
+    title: "攻略率",
+    fields: [
       {
         key: "strategyRate",
         label: "攻略率",
@@ -443,23 +453,29 @@ export default function HanabiPage() {
     const challengeHazure = toNumber(inputValues.challengeHazure);
     const gameGames = toNumber(inputValues.gameGames);
     const gameHazure = toNumber(inputValues.gameHazure);
+    const medalRent = toNumber(inputValues.medalRent);
     const exchangeRate = toNumber(inputValues.exchangeRate);
+    const cashInvestment = Math.max(0, toNumber(inputValues.cashInvestment));
     const strategyRate = clampPercentage(toNumber(inputValues.strategyRate));
     const yenPerMedal = exchangeRate > 0 ? 100 / exchangeRate : 0;
+    const cashGapLoss =
+      medalRent > 0 && exchangeRate > 0
+        ? cashInvestment * (1 - (medalRent * yenPerMedal) / 1000)
+        : 0;
 
     const practiceGames = currentGames - beforeGames;
     const practiceBig = currentBig - beforeBig;
     const practiceReg = currentReg - beforeReg;
     const totalBonus = practiceBig + practiceReg;
-    const settingExpectationValues = settings.map((setting) => ({
-      label: setting.setting,
-      payoutRate: calculateEffectivePayout(setting.payout, setting.payoutFull, strategyRate),
-      expectedYen:
-        practiceGames *
-        3 *
-        yenPerMedal *
-        (calculateEffectivePayout(setting.payout, setting.payoutFull, strategyRate) - 1)
-    }));
+    const settingExpectationValues = settings.map((setting) => {
+      const payoutRate = calculateEffectivePayout(setting.payout, setting.payoutFull, strategyRate);
+
+      return {
+        label: setting.setting,
+        payoutRate,
+        expectedYen: practiceGames * 3 * yenPerMedal * (payoutRate - 1) - cashGapLoss
+      };
+    });
 
     const probabilityDefinitions: Array<{
       key: RateKey;
