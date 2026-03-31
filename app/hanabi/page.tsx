@@ -105,6 +105,17 @@ const inputGroups = [
     ]
   },
   {
+    title: "攻略率",
+    fields: [
+      {
+        key: "strategyRate",
+        label: "攻略率",
+        unit: "%",
+        note: "期待値の計算に使用"
+      }
+    ]
+  },
+  {
     title: "店情報",
     fields: [
       {
@@ -123,24 +134,13 @@ const inputGroups = [
         unit: "円"
       }
     ]
-  },
-  {
-    title: "攻略率",
-    fields: [
-      {
-        key: "strategyRate",
-        label: "攻略率",
-        unit: "%",
-        note: "期待値の計算に使用"
-      }
-    ]
   }
 ];
 
 const initialValues = {
   ...Object.fromEntries(inputGroups.flatMap((group) => group.fields.map((field) => [field.key, ""]))),
   medalRent: "46",
-  exchangeRate: "5.2",
+  exchangeRate: "5.0",
   strategyRate: "75"
 };
 
