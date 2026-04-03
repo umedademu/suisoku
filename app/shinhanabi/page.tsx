@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const settings = [
   {
@@ -243,6 +243,8 @@ const initialValues = {
   exchangeRate: "5.0",
   strategyRate: "75"
 };
+
+const STORAGE_KEY = "suisoku-shinhanabi-inputs";
 
 const specGroups = [
   {
@@ -650,6 +652,38 @@ export default function ShinHanabiPage() {
       }>;
     }> | null
   >(null);
+  const [hasLoadedSavedValues, setHasLoadedSavedValues] = useState(false);
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(STORAGE_KEY);
+
+      if (raw) {
+        const parsed = JSON.parse(raw) as Record<string, unknown>;
+        const nextValues: Record<string, string> = { ...initialValues };
+
+        Object.entries(parsed).forEach(([key, value]) => {
+          if (typeof value === "string" && key in nextValues) {
+            nextValues[key] = value;
+          }
+        });
+
+        setInputValues(nextValues);
+      }
+    } catch {
+      // 端末内保存の読込に失敗した場合は初期値を使う
+    }
+
+    setHasLoadedSavedValues(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hasLoadedSavedValues) {
+      return;
+    }
+
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(inputValues));
+  }, [hasLoadedSavedValues, inputValues]);
 
   const medalRentValue = toNumber(inputValues.medalRent);
   const exchangeRateValue = toNumber(inputValues.exchangeRate);
@@ -665,6 +699,13 @@ export default function ShinHanabiPage() {
     exchangeRate: exchangeRateValue > 0 ? formatTruncatedYen(liveExchangeYen) : "",
     cashInvestment:
       cashInvestmentValue > 0 && liveCashGapLoss > 0 ? formatLossYen(liveCashGapLoss) : ""
+  };
+
+  const handleClear = () => {
+    setInputValues({ ...initialValues });
+    setSettingExpectationTable(null);
+    setOverallSettingRows(null);
+    setProbabilityGroups(null);
   };
 
   const handleEstimate = (event: React.FormEvent<HTMLFormElement>) => {
@@ -1047,6 +1088,9 @@ export default function ShinHanabiPage() {
             </section>
           ))}
           <div className="action-row">
+            <button className="clear-button" type="button" onClick={handleClear}>
+              クリア
+            </button>
             <button className="estimate-button" type="submit">
               推測
             </button>

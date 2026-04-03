@@ -262,7 +262,30 @@ a {
 .action-row {
   display: flex;
   justify-content: center;
+  align-items: center;
+  gap: 10px;
   margin-top: 2px;
+}
+
+.clear-button {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  padding: 10px 20px;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.clear-button:hover {
+  background: #fff;
+  border-color: rgba(143, 47, 24, 0.35);
+  transform: translateY(-1px);
 }
 
 .estimate-button {

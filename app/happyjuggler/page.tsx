@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const settings = [
   {
@@ -161,6 +161,8 @@ const initialValues = {
   exchangeRate: "5.0",
   payoutMode: "public" as PayoutMode
 };
+
+const STORAGE_KEY = "suisoku-happyjuggler-inputs";
 
 const specGroups = [
   {
@@ -437,6 +439,46 @@ export default function HappyJugglerPage() {
       }>;
     }> | null
   >(null);
+  const [hasLoadedSavedValues, setHasLoadedSavedValues] = useState(false);
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(STORAGE_KEY);
+
+      if (raw) {
+        const parsed = JSON.parse(raw) as Record<string, unknown>;
+        const nextValues: Record<string, string | PayoutMode> = { ...initialValues };
+
+        Object.entries(parsed).forEach(([key, value]) => {
+          if (key === "payoutMode") {
+            if (value === "public" || value === "cherry" || value === "full") {
+              nextValues[key] = value;
+            }
+
+            return;
+          }
+
+          if (typeof value === "string" && key in nextValues) {
+            nextValues[key] = value;
+          }
+        });
+
+        setInputValues(nextValues);
+      }
+    } catch {
+      // 端末内保存の読込に失敗した場合は初期値を使う
+    }
+
+    setHasLoadedSavedValues(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hasLoadedSavedValues) {
+      return;
+    }
+
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(inputValues));
+  }, [hasLoadedSavedValues, inputValues]);
 
   const medalRentValue = toNumber(String(inputValues.medalRent ?? ""));
   const exchangeRateValue = toNumber(String(inputValues.exchangeRate ?? ""));
@@ -452,6 +494,13 @@ export default function HappyJugglerPage() {
     exchangeRate: exchangeRateValue > 0 ? formatTruncatedYen(liveExchangeYen) : "",
     cashInvestment:
       cashInvestmentValue > 0 && liveCashGapLoss > 0 ? formatLossYen(liveCashGapLoss) : ""
+  };
+
+  const handleClear = () => {
+    setInputValues({ ...initialValues });
+    setSettingExpectationTable(null);
+    setOverallSettingRows(null);
+    setProbabilityGroups(null);
   };
 
   const handleEstimate = (event: React.FormEvent<HTMLFormElement>) => {
@@ -704,6 +753,9 @@ export default function HappyJugglerPage() {
             </section>
           ))}
           <div className="action-row">
+            <button className="clear-button" type="button" onClick={handleClear}>
+              クリア
+            </button>
             <button className="estimate-button" type="submit">
               推測
             </button>
