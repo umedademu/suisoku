@@ -150,6 +150,47 @@ a {
   line-height: 1.2;
 }
 
+.mode-switch {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  margin-top: 16px;
+  text-align: left;
+}
+
+.mode-switch-label {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.mode-switch-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mode-switch-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.82);
+  padding: 7px 12px;
+}
+
+.mode-switch-radio {
+  margin: 0;
+}
+
+.mode-switch-text {
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
 .group-title-row {
   display: flex;
   align-items: baseline;
@@ -225,6 +266,12 @@ a {
   white-space: nowrap;
 }
 
+.input-prefix {
+  font-size: 0.76rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .input-live-text {
   color: rgba(29, 29, 27, 0.78);
   font-size: 0.72rem;
@@ -256,6 +303,11 @@ a {
 .number-input-medium {
   width: 6.4em;
   flex: 0 0 6.4em;
+}
+
+.number-input-rate {
+  width: 5em;
+  flex: 0 0 5em;
 }
 
 .number-input-piece {
@@ -603,6 +655,22 @@ a {
 
   .choice-text {
     font-size: 0.8rem;
+  }
+
+  .mode-switch {
+    gap: 6px;
+  }
+
+  .mode-switch-options {
+    gap: 6px;
+  }
+
+  .mode-switch-option {
+    padding: 6px 10px;
+  }
+
+  .mode-switch-text {
+    font-size: 0.78rem;
   }
 
   .action-row {

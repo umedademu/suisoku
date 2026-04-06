@@ -2,6 +2,24 @@
 
 import { useEffect, useState } from "react";
 
+type InputMode = "unimemo" | "normal";
+
+type InputField = {
+  key: string;
+  label: string;
+  unit?: string;
+  compact?: boolean;
+  widthClass?: string;
+  prefix?: string;
+  keyboard?: "numeric" | "decimal";
+};
+
+type InputGroup = {
+  title: string;
+  note?: string;
+  fields: InputField[];
+};
+
 const settings = [
   {
     setting: "設定1",
@@ -69,7 +87,12 @@ const settings = [
   }
 ];
 
-const inputGroups = [
+const modeOptions: Array<{ value: InputMode; label: string }> = [
+  { value: "unimemo", label: "ユニメモ" },
+  { value: "normal", label: "通常" }
+];
+
+const inputGroups: InputGroup[] = [
   {
     title: "開始前",
     fields: [
@@ -161,14 +184,76 @@ const inputGroups = [
   }
 ];
 
+const unimemoInputGroups: Record<string, InputGroup> = {
+  花火チャレ: {
+    title: "花火チャレ",
+    fields: [
+      { key: "challengeHazure", label: "回数", unit: "回" },
+      {
+        key: "challengeHazureRate",
+        label: "確率",
+        prefix: "1/",
+        widthClass: "number-input-rate",
+        keyboard: "decimal"
+      }
+    ]
+  },
+  花火ゲーム: {
+    title: "花火ゲーム",
+    fields: [
+      { key: "gameHazure", label: "回数", unit: "回" },
+      {
+        key: "gameHazureRate",
+        label: "確率",
+        prefix: "1/",
+        widthClass: "number-input-rate",
+        keyboard: "decimal"
+      }
+    ]
+  },
+  BIG中: {
+    title: "BIG中",
+    fields: [
+      { key: "bigFurinB", label: "風鈴B回数", unit: "回" },
+      {
+        key: "bigFurinBRate",
+        label: "確率",
+        prefix: "1/",
+        widthClass: "number-input-rate",
+        keyboard: "decimal"
+      },
+      { key: "bigBarake", label: "バラケ目回数", unit: "回" }
+    ]
+  },
+  REG中: {
+    title: "REG中",
+    fields: [
+      { key: "regOneRole", label: "1枚役回数", unit: "回" },
+      {
+        key: "regOneRoleRate",
+        label: "確率",
+        prefix: "1/",
+        widthClass: "number-input-rate",
+        keyboard: "decimal"
+      },
+      { key: "regBarake", label: "バラケ目回数", unit: "回" }
+    ]
+  }
+};
+
 const initialValues = {
   ...Object.fromEntries(inputGroups.flatMap((group) => group.fields.map((field) => [field.key, ""]))),
+  challengeHazureRate: "",
+  gameHazureRate: "",
+  bigFurinBRate: "",
+  regOneRoleRate: "",
   medalRent: "46",
   exchangeRate: "5.0",
   strategyRate: "75"
 };
 
 const STORAGE_KEY = "suisoku-lhanabi-inputs";
+const MODE_STORAGE_KEY = "suisoku-lhanabi-mode";
 
 const specGroups = [
   {
@@ -336,6 +421,14 @@ function toNumber(value: string) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function calculateUnimemoBase(count: number, denominator: number) {
+  if (count <= 0 || denominator <= 0) {
+    return 0;
+  }
+
+  return Math.max(count, Math.round(count * denominator));
+}
+
 function formatDenominator(value: number) {
   const rounded = Math.round(value * 10) / 10;
   return rounded.toFixed(1);
@@ -478,6 +571,7 @@ function formatPercent(probability: number) {
 
 export default function LHanabiPage() {
   const [inputValues, setInputValues] = useState<Record<string, string>>(initialValues);
+  const [inputMode, setInputMode] = useState<InputMode>("unimemo");
   const [settingExpectationTable, setSettingExpectationTable] = useState<
     | {
         headerText: string;
@@ -526,6 +620,12 @@ export default function LHanabiPage() {
 
         setInputValues(nextValues);
       }
+
+      const savedMode = window.localStorage.getItem(MODE_STORAGE_KEY);
+
+      if (savedMode === "unimemo" || savedMode === "normal") {
+        setInputMode(savedMode);
+      }
     } catch {
       // 端末内保存の読込に失敗した場合は初期値を使う
     }
@@ -539,7 +639,8 @@ export default function LHanabiPage() {
     }
 
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(inputValues));
-  }, [hasLoadedSavedValues, inputValues]);
+    window.localStorage.setItem(MODE_STORAGE_KEY, inputMode);
+  }, [hasLoadedSavedValues, inputMode, inputValues]);
 
   const medalRentValue = toNumber(inputValues.medalRent);
   const exchangeRateValue = toNumber(inputValues.exchangeRate);
@@ -564,6 +665,13 @@ export default function LHanabiPage() {
     setProbabilityGroups(null);
   };
 
+  const handleModeChange = (nextMode: InputMode) => {
+    setInputMode(nextMode);
+    setSettingExpectationTable(null);
+    setOverallSettingRows(null);
+    setProbabilityGroups(null);
+  };
+
   const handleEstimate = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -578,14 +686,18 @@ export default function LHanabiPage() {
     const cherryA2 = toNumber(inputValues.cherryA2);
     const bigGames = toNumber(inputValues.bigGames);
     const bigFurinB = toNumber(inputValues.bigFurinB);
+    const bigFurinBRate = toNumber(inputValues.bigFurinBRate);
     const bigBarake = toNumber(inputValues.bigBarake);
     const regGames = toNumber(inputValues.regGames);
     const regOneRole = toNumber(inputValues.regOneRole);
+    const regOneRoleRate = toNumber(inputValues.regOneRoleRate);
     const regBarake = toNumber(inputValues.regBarake);
     const challengeGames = toNumber(inputValues.challengeGames);
     const challengeHazure = toNumber(inputValues.challengeHazure);
+    const challengeHazureRate = toNumber(inputValues.challengeHazureRate);
     const gameGames = toNumber(inputValues.gameGames);
     const gameHazure = toNumber(inputValues.gameHazure);
+    const gameHazureRate = toNumber(inputValues.gameHazureRate);
     const medalRent = toNumber(inputValues.medalRent);
     const exchangeRate = toNumber(inputValues.exchangeRate);
     const cashInvestment = Math.max(0, toNumber(inputValues.cashInvestment));
@@ -598,6 +710,16 @@ export default function LHanabiPage() {
 
     const practiceGames = currentGames - beforeGames;
     const totalBonus = currentBig + currentReg;
+    const bigBase =
+      inputMode === "unimemo" ? calculateUnimemoBase(bigFurinB, bigFurinBRate) : bigGames;
+    const regBase =
+      inputMode === "unimemo" ? calculateUnimemoBase(regOneRole, regOneRoleRate) : regGames;
+    const challengeBase =
+      inputMode === "unimemo"
+        ? calculateUnimemoBase(challengeHazure, challengeHazureRate)
+        : challengeGames;
+    const gameBase =
+      inputMode === "unimemo" ? calculateUnimemoBase(gameHazure, gameHazureRate) : gameGames;
     const settingExpectationValues = settings.map((setting) => {
       const payoutRate = calculateEffectivePayout(setting.payout, setting.payoutFull, strategyRate);
 
@@ -660,37 +782,37 @@ export default function LHanabiPage() {
         key: "bigFurinB",
         title: "BIG中風鈴B",
         count: bigFurinB,
-        base: bigGames
+        base: bigBase
       },
       {
         key: "bigBarake",
         title: "BIG中バラケ目",
         count: bigBarake,
-        base: bigGames
+        base: bigBase
       },
       {
         key: "regOneRole",
         title: "REG中1枚役",
         count: regOneRole,
-        base: regGames
+        base: regBase
       },
       {
         key: "regBarake",
         title: "REG中バラケ目",
         count: regBarake,
-        base: regGames
+        base: regBase
       },
       {
         key: "challengeHazure",
         title: "花火チャレ中ハズレ",
         count: challengeHazure,
-        base: challengeGames
+        base: challengeBase
       },
       {
         key: "gameHazure",
         title: "花火ゲーム中ハズレ",
         count: gameHazure,
-        base: gameGames
+        base: gameBase
       }
     ];
 
@@ -810,10 +932,59 @@ export default function LHanabiPage() {
     });
   };
 
+  const renderFields = (fields: InputField[]) => (
+    <div className={`input-row input-row-${Math.min(fields.length, 3)}`}>
+      {fields.map((field) => (
+        <div className="input-field-wrap" key={field.key}>
+          <label className="input-field">
+            <span className="input-label">{field.label}</span>
+            <span className="input-control">
+              {field.prefix ? <span className="input-prefix">{field.prefix}</span> : null}
+              <input
+                className={`number-input${field.compact ? " number-input-compact" : ""}${field.widthClass ? ` ${field.widthClass}` : ""}`}
+                type="number"
+                inputMode={field.keyboard ?? "numeric"}
+                value={inputValues[field.key]}
+                onChange={(event) =>
+                  setInputValues((current) => ({
+                    ...current,
+                    [field.key]: event.target.value
+                  }))
+                }
+              />
+              {field.unit ? <span className="input-unit">{field.unit}</span> : null}
+              {liveFieldTexts[field.key] ? (
+                <span className="input-live-text">{liveFieldTexts[field.key]}</span>
+              ) : null}
+            </span>
+          </label>
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <main className="page-shell">
       <div className="card card-wide">
         <h1 className="title">スマスロ Lハナビ</h1>
+        <section className="mode-switch">
+          <p className="mode-switch-label">入力モード</p>
+          <div className="mode-switch-options">
+            {modeOptions.map((option) => (
+              <label className="mode-switch-option" key={option.value}>
+                <input
+                  checked={inputMode === option.value}
+                  className="mode-switch-radio"
+                  name="lhanabi-input-mode"
+                  type="radio"
+                  value={option.value}
+                  onChange={() => handleModeChange(option.value)}
+                />
+                <span className="mode-switch-text">{option.label}</span>
+              </label>
+            ))}
+          </div>
+        </section>
         <form className="input-form" onSubmit={handleEstimate}>
           {inputGroups.map((group, index) => (
             <section className="input-group" key={`${group.title ?? "group"}-${index}`}>
@@ -825,35 +996,11 @@ export default function LHanabiPage() {
                   ) : null}
                 </div>
               ) : null}
-              <div className={`input-row input-row-${Math.min(group.fields.length, 3)}`}>
-                {group.fields.map((field) => (
-                  <div className="input-field-wrap" key={field.key}>
-                    <label className="input-field">
-                      <span className="input-label">{field.label}</span>
-                      <span className="input-control">
-                        <input
-                          className={`number-input${"compact" in field && field.compact ? " number-input-compact" : ""}${"widthClass" in field && field.widthClass ? ` ${field.widthClass}` : ""}`}
-                          type="number"
-                          inputMode="numeric"
-                          value={inputValues[field.key]}
-                          onChange={(event) =>
-                            setInputValues((current) => ({
-                              ...current,
-                              [field.key]: event.target.value
-                            }))
-                          }
-                        />
-                        {"unit" in field && field.unit ? (
-                          <span className="input-unit">{field.unit}</span>
-                        ) : null}
-                        {liveFieldTexts[field.key] ? (
-                          <span className="input-live-text">{liveFieldTexts[field.key]}</span>
-                        ) : null}
-                      </span>
-                    </label>
-                  </div>
-                ))}
-              </div>
+              {renderFields(
+                inputMode === "unimemo" && group.title in unimemoInputGroups
+                  ? unimemoInputGroups[group.title].fields
+                  : group.fields
+              )}
             </section>
           ))}
           <div className="action-row">
