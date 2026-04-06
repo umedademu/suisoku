@@ -95,6 +95,20 @@ const inputGroups = [
     ]
   },
   {
+    title: "花火チャレ",
+    fields: [
+      { key: "challengeGames", label: "消化G数" },
+      { key: "challengeHazure", label: "ハズレ" }
+    ]
+  },
+  {
+    title: "花火ゲーム",
+    fields: [
+      { key: "gameGames", label: "消化G数" },
+      { key: "gameHazure", label: "ハズレ" }
+    ]
+  },
+  {
     title: "BIG中",
     fields: [
       { key: "bigGames", label: "消化G数" },
@@ -108,20 +122,6 @@ const inputGroups = [
       { key: "regGames", label: "消化G数" },
       { key: "regOneRole", label: "1枚役" },
       { key: "regBarake", label: "バラケ目" }
-    ]
-  },
-  {
-    title: "花火チャレ",
-    fields: [
-      { key: "challengeGames", label: "消化G数" },
-      { key: "challengeHazure", label: "ハズレ" }
-    ]
-  },
-  {
-    title: "花火ゲーム",
-    fields: [
-      { key: "gameGames", label: "消化G数" },
-      { key: "gameHazure", label: "ハズレ" }
     ]
   },
   {
@@ -190,6 +190,14 @@ const specGroups = [
     ]
   },
   {
+    title: "花火チャレ",
+    columns: [{ label: "ハズレ", key: "challengeHazure" }]
+  },
+  {
+    title: "花火ゲーム",
+    columns: [{ label: "ハズレ", key: "gameHazure" }]
+  },
+  {
     title: "BIG中",
     columns: [
       { label: "風鈴B", key: "bigFurinB" },
@@ -202,14 +210,6 @@ const specGroups = [
       { label: "1枚役", key: "regOneRole" },
       { label: "バラケ目", key: "regBarake" }
     ]
-  },
-  {
-    title: "花火チャレ",
-    columns: [{ label: "ハズレ", key: "challengeHazure" }]
-  },
-  {
-    title: "花火ゲーム",
-    columns: [{ label: "ハズレ", key: "gameHazure" }]
   }
 ] as const;
 
@@ -232,6 +232,14 @@ const probabilityDisplayGroups = [
     ]
   },
   {
+    title: "花火チャレ中",
+    items: [{ title: "ハズレ", key: "challengeHazure" as const }]
+  },
+  {
+    title: "花火ゲーム中",
+    items: [{ title: "ハズレ", key: "gameHazure" as const }]
+  },
+  {
     title: "BIG中",
     items: [
       { title: "風鈴B", key: "bigFurinB" as const },
@@ -244,14 +252,6 @@ const probabilityDisplayGroups = [
       { title: "1枚役", key: "regOneRole" as const },
       { title: "バラケ目", key: "regBarake" as const }
     ]
-  },
-  {
-    title: "花火チャレ中",
-    items: [{ title: "ハズレ", key: "challengeHazure" as const }]
-  },
-  {
-    title: "花火ゲーム中",
-    items: [{ title: "ハズレ", key: "gameHazure" as const }]
   }
 ] as const;
 

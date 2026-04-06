@@ -16,6 +16,8 @@ html,
 body {
   margin: 0;
   min-height: 100%;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 body {
@@ -36,10 +38,13 @@ a {
   min-height: 100vh;
   place-items: start center;
   padding: 10px;
+  width: 100%;
 }
 
 .card {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   border: 1px solid var(--border);
   border-radius: 18px;
   background: rgba(255, 250, 242, 0.92);
@@ -89,6 +94,8 @@ a {
   display: grid;
   gap: 12px;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   margin: 18px auto 0;
   text-align: left;
 }
@@ -148,6 +155,7 @@ a {
   align-items: baseline;
   justify-content: space-between;
   gap: 8px;
+  min-width: 0;
 }
 
 .group-title {
@@ -162,6 +170,7 @@ a {
   font-size: 0.64rem;
   line-height: 1.2;
   white-space: nowrap;
+  min-width: 0;
 }
 
 .input-row {
@@ -309,6 +318,8 @@ a {
 
 .result-group {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   margin: 16px auto 0;
   border: 1px solid var(--border);
   border-radius: 16px;
@@ -385,6 +396,9 @@ a {
 
 .table-wrap {
   margin-top: 8px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   overflow-x: auto;
 }
 
@@ -395,10 +409,12 @@ a {
 .spec-group-wrap {
   display: grid;
   gap: 10px;
+  min-width: 0;
   margin-top: 16px;
 }
 
 .spec-group {
+  min-width: 0;
   text-align: left;
 }
 
@@ -509,11 +525,15 @@ a {
 
 @media (max-width: 720px) {
   .page-shell {
-    padding: 8px;
+    padding: 6px;
   }
 
   .card {
-    padding: 16px 10px 14px;
+    padding: 14px 8px 12px;
+  }
+
+  .title {
+    font-size: clamp(1.5rem, 7.5vw, 1.95rem);
   }
 
   .input-row-2 {
@@ -549,6 +569,21 @@ a {
     padding: 6px 4px;
   }
 
+  .group-title-row {
+    align-items: flex-start;
+  }
+
+  .group-note {
+    white-space: normal;
+    text-align: right;
+  }
+
+  .input-unit,
+  .input-live-text {
+    font-size: 0.66rem;
+    white-space: normal;
+  }
+
   .piece-input-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 4px;
@@ -560,6 +595,53 @@ a {
 
   .choice-group {
     gap: 6px;
+  }
+
+  .choice-option {
+    padding: 7px 8px;
+  }
+
+  .choice-text {
+    font-size: 0.8rem;
+  }
+
+  .action-row {
+    gap: 6px;
+  }
+
+  .clear-button,
+  .estimate-button {
+    padding: 9px 14px;
+    font-size: 0.92rem;
+  }
+
+  .result-group {
+    padding: 12px 8px;
+  }
+
+  .data-table {
+    font-size: 0.68rem;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 5px 3px;
+  }
+
+  .data-table thead th {
+    white-space: normal;
+  }
+
+  .table-head-main {
+    font-size: 0.68rem;
+  }
+
+  .table-head-sub {
+    gap: 2px;
+    font-size: 0.56rem;
+    line-height: 1.15;
+    white-space: normal;
+    flex-wrap: wrap;
   }
 
   .result-item {

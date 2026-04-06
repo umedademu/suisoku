@@ -83,14 +83,6 @@ const inputGroups = [
     ]
   },
   {
-    title: "BIG中",
-    fields: [
-      { key: "bigInGames", label: "消化G数" },
-      { key: "bigInNanameFurin", label: "斜め風鈴" },
-      { key: "bigInHazure", label: "ハズレ" }
-    ]
-  },
-  {
     title: "ハナビチャレンジ中",
     fields: [
       { key: "challengeGames", label: "消化G数" },
@@ -102,6 +94,14 @@ const inputGroups = [
     fields: [
       { key: "gameGames", label: "消化G数" },
       { key: "gameHazure", label: "ハズレ" }
+    ]
+  },
+  {
+    title: "BIG中",
+    fields: [
+      { key: "bigInGames", label: "消化G数" },
+      { key: "bigInNanameFurin", label: "斜め風鈴" },
+      { key: "bigInHazure", label: "ハズレ" }
     ]
   },
   {
@@ -169,19 +169,19 @@ const specGroups = [
     ]
   },
   {
-    title: "BIG中",
-    columns: [
-      { label: "斜め風鈴", key: "nanameBell" },
-      { label: "ハズレ", key: "bHazure" }
-    ]
-  },
-  {
     title: "花火チャレンジ中",
     columns: [{ label: "ハズレ", key: "cHazure" }]
   },
   {
     title: "花火ゲーム中",
     columns: [{ label: "ハズレ", key: "gHazure" }]
+  },
+  {
+    title: "BIG中",
+    columns: [
+      { label: "斜め風鈴", key: "nanameBell" },
+      { label: "ハズレ", key: "bHazure" }
+    ]
   }
 ] as const;
 
@@ -203,19 +203,19 @@ const probabilityDisplayGroups = [
     ]
   },
   {
-    title: "BIG中",
-    items: [
-      { title: "斜め風鈴", key: "nanameBell" as const },
-      { title: "ハズレ", key: "bHazure" as const }
-    ]
-  },
-  {
     title: "花火チャレ中",
     items: [{ title: "ハズレ", key: "cHazure" as const }]
   },
   {
     title: "花火ゲーム中",
     items: [{ title: "ハズレ", key: "gHazure" as const }]
+  },
+  {
+    title: "BIG中",
+    items: [
+      { title: "斜め風鈴", key: "nanameBell" as const },
+      { title: "ハズレ", key: "bHazure" as const }
+    ]
   }
 ] as const;
 
