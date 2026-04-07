@@ -231,6 +231,19 @@ a {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.input-row-lamp {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 3px;
+}
+
+.input-row-lamp .input-field {
+  gap: 2px;
+}
+
+.input-row-lamp .input-label {
+  font-size: 0.68rem;
+}
+
 .input-field {
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr);
@@ -305,6 +318,21 @@ a {
   flex: 0 0 6.4em;
 }
 
+.number-input-bell-wide {
+  width: 4.8em;
+  flex: 0 0 4.8em;
+}
+
+.number-input-big-role {
+  width: 4.2em;
+  flex: 0 0 4.2em;
+}
+
+.number-input-lamp {
+  width: 2.8em;
+  flex: 0 0 2.8em;
+}
+
 .number-input-rate {
   width: 5em;
   flex: 0 0 5em;
@@ -313,6 +341,27 @@ a {
 .number-input-piece {
   width: 4.2em;
   flex: 0 0 4.2em;
+}
+
+.number-input-piece-tight {
+  width: 3.8em;
+  flex: 0 0 3.8em;
+}
+
+.piece-input-row-tight {
+  grid-template-columns: max-content max-content max-content;
+  justify-content: start;
+  gap: 4px;
+}
+
+.piece-input-row-tight .input-field {
+  grid-template-columns: max-content max-content;
+  gap: 3px;
+}
+
+.piece-input-row-tight .input-control {
+  gap: 2px;
+  flex-wrap: nowrap;
 }
 
 .number-input:focus {
@@ -596,6 +645,19 @@ a {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
+  .input-row-lamp {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 2px;
+  }
+
+  .input-row-lamp .input-field {
+    gap: 2px;
+  }
+
+  .input-row-lamp .input-label {
+    font-size: 0.62rem;
+  }
+
   .input-row-3 .input-field {
     grid-template-columns: max-content minmax(0, 1fr);
     gap: 3px;
@@ -643,6 +705,24 @@ a {
 
   .piece-input-label {
     grid-column: 1 / -1;
+  }
+
+  .piece-input-row-tight {
+    grid-template-columns: max-content max-content max-content;
+    gap: 4px;
+  }
+
+  .piece-input-row-tight .piece-input-label {
+    grid-column: auto;
+  }
+
+  .piece-input-row-tight .input-field {
+    grid-template-columns: max-content max-content;
+    gap: 2px;
+  }
+
+  .piece-input-row-tight .input-label {
+    font-size: 0.66rem;
   }
 
   .choice-group {

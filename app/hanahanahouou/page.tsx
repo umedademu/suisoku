@@ -141,6 +141,7 @@ type InputField = {
 type StandardInputGroup = {
   title: string;
   note?: string;
+  rowClass?: string;
   fields: InputField[];
 };
 
@@ -152,6 +153,8 @@ type PieceInputRow = {
 
 type PieceInputGroup = {
   title: string;
+  rowClass?: string;
+  inputWidthClass?: string;
   rows: PieceInputRow[];
 };
 
@@ -176,44 +179,48 @@ const inputGroups: InputGroup[] = [
   },
   {
     title: "通常時小役",
-    fields: [{ key: "bell", label: "ベル" }]
+    fields: [{ key: "bell", label: "ベル", widthClass: "number-input-bell-wide" }]
+  },
+  {
+    title: "BIG中小役",
+    note: "分母はBIG回数×24Gで自動計算",
+    fields: [
+      { key: "bigSuika", label: "スイカ", widthClass: "number-input-big-role" },
+      { key: "bigHazure", label: "ハズレ", widthClass: "number-input-big-role" }
+    ]
   },
   {
     title: "BIG後トップランプ",
+    rowClass: "input-row-lamp",
     fields: [
-      { key: "topBlue", label: "青" },
-      { key: "topYellow", label: "黄" },
-      { key: "topGreen", label: "緑" },
-      { key: "topRed", label: "赤" },
-      { key: "topRainbow", label: "虹" }
+      { key: "topBlue", label: "青", widthClass: "number-input-lamp" },
+      { key: "topYellow", label: "黄", widthClass: "number-input-lamp" },
+      { key: "topGreen", label: "緑", widthClass: "number-input-lamp" },
+      { key: "topRed", label: "赤", widthClass: "number-input-lamp" },
+      { key: "topRainbow", label: "虹", widthClass: "number-input-lamp" }
     ]
   },
   {
     title: "REG中サイドランプ",
+    rowClass: "input-row-lamp",
     fields: [
-      { key: "sideBlue", label: "青" },
-      { key: "sideYellow", label: "黄" },
-      { key: "sideGreen", label: "緑" },
-      { key: "sideRed", label: "赤" },
-      { key: "sideRainbow", label: "虹" }
+      { key: "sideBlue", label: "青", widthClass: "number-input-lamp" },
+      { key: "sideYellow", label: "黄", widthClass: "number-input-lamp" },
+      { key: "sideGreen", label: "緑", widthClass: "number-input-lamp" },
+      { key: "sideRed", label: "赤", widthClass: "number-input-lamp" },
+      { key: "sideRainbow", label: "虹", widthClass: "number-input-lamp" }
     ]
   },
   {
     title: "連チャンサウンド選択率",
+    rowClass: "piece-input-row-tight",
+    inputWidthClass: "number-input-piece-tight",
     rows: [
       {
         label: "レトロ",
         trialKey: "soundRetroTrials",
         occurrenceKey: "soundRetroHits"
       }
-    ]
-  },
-  {
-    title: "BIG中小役",
-    note: "分母はBIG回数×24Gで自動計算",
-    fields: [
-      { key: "bigSuika", label: "スイカ" },
-      { key: "bigHazure", label: "ハズレ" }
     ]
   },
   {
@@ -273,6 +280,13 @@ const specGroups = [
     columns: [{ label: "ベル", key: "bell" }]
   },
   {
+    title: "BIG中小役",
+    columns: [
+      { label: "スイカ", key: "bigSuika" },
+      { label: "ハズレ", key: "bigHazure" }
+    ]
+  },
+  {
     title: "BIG後トップランプ",
     columns: [
       { label: "青", key: "topBlue" },
@@ -296,13 +310,6 @@ const specGroups = [
   {
     title: "連チャンサウンド選択率",
     columns: [{ label: "レトロ", key: "soundRetro" }]
-  },
-  {
-    title: "BIG中小役",
-    columns: [
-      { label: "スイカ", key: "bigSuika" },
-      { label: "ハズレ", key: "bigHazure" }
-    ]
   }
 ] as const;
 
@@ -320,6 +327,14 @@ const probabilityDisplayGroups = [
     title: "通常時小役",
     headerSuffix: "G",
     items: [{ title: "ベル", key: "bell" as const }]
+  },
+  {
+    title: "BIG中小役",
+    headerSuffix: "G",
+    items: [
+      { title: "スイカ", key: "bigSuika" as const },
+      { title: "ハズレ", key: "bigHazure" as const }
+    ]
   },
   {
     title: "BIG後トップランプ",
@@ -348,14 +363,6 @@ const probabilityDisplayGroups = [
     title: "連チャンサウンド",
     headerSuffix: "回",
     items: [{ title: "レトロ", key: "soundRetro" as const }]
-  },
-  {
-    title: "BIG中小役",
-    headerSuffix: "G",
-    items: [
-      { title: "スイカ", key: "bigSuika" as const },
-      { title: "ハズレ", key: "bigHazure" as const }
-    ]
   }
 ] as const;
 
@@ -996,7 +1003,11 @@ export default function HanaHanaHououPage() {
                 ) : null}
               </div>
               {"fields" in group ? (
-                <div className={`input-row input-row-${Math.min(group.fields.length, 3)}`}>
+                <div
+                  className={`input-row input-row-${Math.min(group.fields.length, 3)}${
+                    group.rowClass ? ` ${group.rowClass}` : ""
+                  }`}
+                >
                   {group.fields.map((field) => (
                     <div className="input-field-wrap" key={field.key}>
                       <label className="input-field">
@@ -1026,13 +1037,18 @@ export default function HanaHanaHououPage() {
               ) : (
                 <div className="piece-input-group">
                   {group.rows.map((row) => (
-                    <div className="piece-input-row" key={row.label}>
+                    <div
+                      className={`piece-input-row${group.rowClass ? ` ${group.rowClass}` : ""}`}
+                      key={row.label}
+                    >
                       <p className="piece-input-label">{row.label}</p>
                       <label className="input-field">
                         <span className="input-label">試行</span>
                         <span className="input-control">
                           <input
-                            className="number-input number-input-piece"
+                            className={`number-input number-input-piece${
+                              group.inputWidthClass ? ` ${group.inputWidthClass}` : ""
+                            }`}
                             type="number"
                             inputMode="numeric"
                             value={inputValues[row.trialKey]}
@@ -1050,7 +1066,9 @@ export default function HanaHanaHououPage() {
                         <span className="input-label">発生</span>
                         <span className="input-control">
                           <input
-                            className="number-input number-input-piece"
+                            className={`number-input number-input-piece${
+                              group.inputWidthClass ? ` ${group.inputWidthClass}` : ""
+                            }`}
                             type="number"
                             inputMode="numeric"
                             value={inputValues[row.occurrenceKey]}
