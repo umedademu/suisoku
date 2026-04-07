@@ -4,7 +4,7 @@ export default function Home() {
   return (
     <main className="page-shell">
       <div className="card">
-        <h1 className="title">推測ツールv0.34</h1>
+        <h1 className="title">推測ツールv0.35</h1>
         <div className="link-list">
           <Link className="link-button" href="/hanabi">
             ハナビBH
@@ -20,6 +20,9 @@ export default function Home() {
           </Link>
           <Link className="link-button" href="/thunderv">
             スマスロ サンダーV
+          </Link>
+          <Link className="link-button" href="/versusrevis">
+            バーサス リヴァイズ
           </Link>
         </div>
       </div>
