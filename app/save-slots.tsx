@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 const SAVE_SLOT_NUMBERS = [1, 2, 3, 4, 5];
+const NON_ADDITIVE_INPUT_KEYS = new Set(["medalRent", "exchangeRate", "strategyRate", "payoutMode"]);
 
 type SaveSlotPayload = {
   inputValues?: unknown;
@@ -23,12 +24,19 @@ type UseSaveSlotsOptions<TValues extends Record<string, unknown>, TMode extends 
 };
 
 type SaveSlotControlsProps = {
-  selectedSlot: number;
+  selectedSlots: number[];
   savedSlots: number[];
   message: string;
   onSelectSlot: (slot: number) => void;
   onSaveSlot: () => void;
   onDeleteSlot: () => void;
+};
+
+type NormalizedSaveSlot<TValues extends Record<string, unknown>> = {
+  slot: number;
+  values: TValues;
+  payload: SaveSlotPayload | null;
+  hasSavedValues: boolean;
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -41,6 +49,24 @@ function getSaveSlotStorageKey(storageKey: string, slot: number) {
 
 function getSavedSlotNumbers(storageKey: string) {
   return SAVE_SLOT_NUMBERS.filter((slot) => window.localStorage.getItem(getSaveSlotStorageKey(storageKey, slot)));
+}
+
+function formatMergedNumber(value: number) {
+  const rounded = Math.round(value * 1000000) / 1000000;
+  return Number.isInteger(rounded) ? String(rounded) : String(rounded);
+}
+
+function toFiniteNumber(value: unknown) {
+  if (typeof value !== "string" || value.trim() === "") {
+    return null;
+  }
+
+  const numberValue = Number(value);
+  return Number.isFinite(numberValue) ? numberValue : null;
+}
+
+function isMergedRateKey(key: string) {
+  return key.endsWith("Rate") && !NON_ADDITIVE_INPUT_KEYS.has(key);
 }
 
 function readSaveSlotPayload(storageKey: string, slot: number): SaveSlotPayload | null {
@@ -80,6 +106,70 @@ function normalizeInputValues<TValues extends Record<string, unknown>>(
   return nextValues;
 }
 
+function readNormalizedSaveSlot<TValues extends Record<string, unknown>>(
+  storageKey: string,
+  slot: number,
+  initialValues: TValues,
+  isValidInputValue: (key: string, value: unknown) => boolean
+): NormalizedSaveSlot<TValues> {
+  const payload = readSaveSlotPayload(storageKey, slot);
+  const hasSavedValues = Boolean(payload && isRecord(payload.inputValues));
+
+  return {
+    slot,
+    payload,
+    hasSavedValues,
+    values: hasSavedValues
+      ? normalizeInputValues(initialValues, payload?.inputValues, isValidInputValue)
+      : { ...initialValues }
+  };
+}
+
+function mergeInputValues<TValues extends Record<string, unknown>>(
+  initialValues: TValues,
+  slots: Array<NormalizedSaveSlot<TValues>>
+) {
+  const nextValues = { ...initialValues };
+  const writableValues = nextValues as Record<string, unknown>;
+
+  Object.keys(initialValues).forEach((key) => {
+    if (NON_ADDITIVE_INPUT_KEYS.has(key)) {
+      const firstSavedValue = slots
+        .filter((slot) => slot.hasSavedValues)
+        .map((slot) => slot.values[key])
+        .find((value) => typeof value === "string" && value.trim() !== "");
+
+      if (firstSavedValue !== undefined) {
+        writableValues[key] = firstSavedValue;
+      }
+
+      return;
+    }
+
+    if (isMergedRateKey(key)) {
+      const countKey = key.slice(0, -"Rate".length);
+      const totalCount = slots.reduce((sum, slot) => sum + (toFiniteNumber(slot.values[countKey]) ?? 0), 0);
+      const totalBase = slots.reduce((sum, slot) => {
+        const count = toFiniteNumber(slot.values[countKey]);
+        const rate = toFiniteNumber(slot.values[key]);
+        return count !== null && rate !== null ? sum + count * rate : sum;
+      }, 0);
+
+      writableValues[key] = totalCount > 0 && totalBase > 0 ? formatMergedNumber(totalBase / totalCount) : "";
+      return;
+    }
+
+    const total = slots.reduce((sum, slot) => sum + (toFiniteNumber(slot.values[key]) ?? 0), 0);
+    const hasNumberValue = slots.some((slot) => toFiniteNumber(slot.values[key]) !== null);
+
+    if (hasNumberValue) {
+      writableValues[key] = formatMergedNumber(total);
+    }
+  });
+
+  return nextValues;
+}
+
 export function useSaveSlots<TValues extends Record<string, unknown>, TMode extends string = string>({
   storageKey,
   inputValues,
@@ -91,7 +181,7 @@ export function useSaveSlots<TValues extends Record<string, unknown>, TMode exte
   onLoad,
   onLoadMode
 }: UseSaveSlotsOptions<TValues, TMode>) {
-  const [selectedSlot, setSelectedSlot] = useState(1);
+  const [selectedSlots, setSelectedSlots] = useState<number[]>([]);
   const [savedSlots, setSavedSlots] = useState<number[]>([]);
   const [message, setMessage] = useState("");
 
@@ -104,9 +194,16 @@ export function useSaveSlots<TValues extends Record<string, unknown>, TMode exte
   };
 
   const handleSaveSlot = () => {
+    if (selectedSlots.length !== 1) {
+      setMessage("保存先を1つだけ選んでください。");
+      return;
+    }
+
+    const targetSlot = selectedSlots[0];
+
     try {
       window.localStorage.setItem(
-        getSaveSlotStorageKey(storageKey, selectedSlot),
+        getSaveSlotStorageKey(storageKey, targetSlot),
         JSON.stringify({
           inputValues,
           ...(inputMode !== undefined ? { inputMode } : {}),
@@ -114,52 +211,87 @@ export function useSaveSlots<TValues extends Record<string, unknown>, TMode exte
         })
       );
       refreshSavedSlots();
-      setMessage(`保存${selectedSlot}に保存しました。`);
+      setMessage(`保存${targetSlot}に保存しました。`);
     } catch {
       setMessage("保存できませんでした。");
     }
   };
 
-  const loadSlot = (slot: number) => {
-    const payload = readSaveSlotPayload(storageKey, slot);
-
-    if (!payload || !isRecord(payload.inputValues)) {
-      onLoad({ ...initialValues });
-
-      if (onLoadMode && initialInputMode !== undefined) {
-        onLoadMode(initialInputMode);
-      }
-
-      setMessage(`保存${slot}を表示しました。`);
+  const applyInputMode = (slots: Array<NormalizedSaveSlot<TValues>>) => {
+    if (!onLoadMode) {
       return;
     }
 
-    onLoad(normalizeInputValues(initialValues, payload.inputValues, isValidInputValue));
+    const nextMode = slots
+      .map((slot) => slot.payload?.inputMode)
+      .find((value): value is TMode => Boolean(isValidMode?.(value)));
 
-    if (onLoadMode && isValidMode && isValidMode(payload.inputMode)) {
-      onLoadMode(payload.inputMode);
+    if (nextMode) {
+      onLoadMode(nextMode);
+      return;
     }
 
-    setMessage(`保存${slot}を読み込みました。`);
+    if (initialInputMode !== undefined) {
+      onLoadMode(initialInputMode);
+    }
+  };
+
+  const loadSlots = (slots: number[]) => {
+    if (slots.length === 0) {
+      onLoad({ ...initialValues });
+      applyInputMode([]);
+      setMessage("");
+      return;
+    }
+
+    const normalizedSlots = slots.map((slot) =>
+      readNormalizedSaveSlot(storageKey, slot, initialValues, isValidInputValue)
+    );
+
+    if (normalizedSlots.length === 1) {
+      onLoad(normalizedSlots[0].values);
+      applyInputMode(normalizedSlots);
+      setMessage(
+        normalizedSlots[0].hasSavedValues
+          ? `保存${normalizedSlots[0].slot}を読み込みました。`
+          : `保存${normalizedSlots[0].slot}を表示しました。`
+      );
+      return;
+    }
+
+    onLoad(mergeInputValues(initialValues, normalizedSlots));
+    applyInputMode(normalizedSlots);
+    setMessage(`${normalizedSlots.map((slot) => `保存${slot.slot}`).join("、")}を合算しました。`);
   };
 
   const handleSelectSlot = (slot: number) => {
-    setSelectedSlot(slot);
-    loadSlot(slot);
+    const nextSlots = selectedSlots.includes(slot)
+      ? selectedSlots.filter((selectedSlot) => selectedSlot !== slot)
+      : [...selectedSlots, slot].sort((first, second) => first - second);
+
+    setSelectedSlots(nextSlots);
+    loadSlots(nextSlots);
   };
 
   const handleDeleteSlot = () => {
+    if (selectedSlots.length !== 1) {
+      setMessage("削除する保存データを1つだけ選んでください。");
+      return;
+    }
+
+    const targetSlot = selectedSlots[0];
+
     try {
-      window.localStorage.removeItem(getSaveSlotStorageKey(storageKey, selectedSlot));
+      window.localStorage.removeItem(getSaveSlotStorageKey(storageKey, targetSlot));
       refreshSavedSlots();
-      setMessage(`保存${selectedSlot}を削除しました。`);
+      setMessage(`保存${targetSlot}を削除しました。`);
     } catch {
       setMessage("削除できませんでした。");
     }
   };
 
   return {
-    selectedSlot,
+    selectedSlots,
     savedSlots,
     message,
     onSelectSlot: handleSelectSlot,
@@ -169,7 +301,7 @@ export function useSaveSlots<TValues extends Record<string, unknown>, TMode exte
 }
 
 export function SaveSlotControls({
-  selectedSlot,
+  selectedSlots,
   savedSlots,
   message,
   onSelectSlot,
@@ -183,7 +315,7 @@ export function SaveSlotControls({
       <p className="save-slot-title">保存データ</p>
       <div className="save-slot-list">
         {SAVE_SLOT_NUMBERS.map((slot) => {
-          const isSelected = slot === selectedSlot;
+          const isSelected = selectedSlots.includes(slot);
           const isSaved = savedSlotSet.has(slot);
 
           return (
