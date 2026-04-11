@@ -191,6 +191,70 @@ a {
   line-height: 1.1;
 }
 
+.unimemo-image-group {
+  display: grid;
+  gap: 7px;
+  text-align: left;
+}
+
+.unimemo-image-title {
+  margin: 0;
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.unimemo-image-upload {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: max-content;
+  max-width: 100%;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fffaf4;
+  cursor: pointer;
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.1;
+  overflow: hidden;
+  padding: 9px 14px;
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.unimemo-image-upload:hover {
+  background: var(--accent-strong);
+  transform: translateY(-1px);
+}
+
+.unimemo-image-upload.is-loading {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.unimemo-image-input {
+  position: absolute;
+  inset: 0;
+  cursor: pointer;
+  opacity: 0;
+}
+
+.unimemo-image-input:disabled {
+  cursor: wait;
+}
+
+.unimemo-image-message {
+  margin: 0;
+  color: rgba(29, 29, 27, 0.78);
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
 .group-title-row {
   display: flex;
   align-items: baseline;
