@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { JugglerBudoCounterButton } from "../juggler-budo-counter-button";
 import { SaveSlotControls, useSaveSlots } from "../save-slots";
 
 const settings = [
@@ -441,6 +442,13 @@ export default function GoGoJuggler3Page() {
     saveSlots.onClearCurrentData();
   };
 
+  const handleBudoIncrement = () => {
+    setInputValues((current) => ({
+      ...current,
+      budo: String(toNumber(String(current.budo ?? "")) + 1)
+    }));
+  };
+
   const handleEstimate = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -665,6 +673,11 @@ export default function GoGoJuggler3Page() {
                   </div>
                 ))}
               </div>
+              {group.fields.some((field) => field.key === "budo") ? (
+                <div className="budo-counter-wrap">
+                  <JugglerBudoCounterButton onIncrement={handleBudoIncrement} />
+                </div>
+              ) : null}
             </section>
           ))}
           <SaveSlotControls {...saveSlots} />

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { JugglerBudoCounterButton } from "../juggler-budo-counter-button";
 import { SaveSlotControls, useSaveSlots } from "../save-slots";
 
 const settings = [
@@ -518,6 +519,13 @@ export default function HappyJugglerPage() {
     saveSlots.onClearCurrentData();
   };
 
+  const handleBudoIncrement = () => {
+    setInputValues((current) => ({
+      ...current,
+      budo: String(toNumber(String(current.budo ?? "")) + 1)
+    }));
+  };
+
   const handleEstimate = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -716,33 +724,40 @@ export default function HappyJugglerPage() {
                 {group.note ? <p className="group-note">{group.note}</p> : null}
               </div>
               {"fields" in group ? (
-                <div className={`input-row input-row-${Math.min(group.fields.length, 3)}`}>
-                  {group.fields.map((field) => (
-                    <div className="input-field-wrap" key={field.key}>
-                      <label className="input-field">
-                        <span className="input-label">{field.label}</span>
-                        <span className="input-control">
-                          <input
-                            className={`number-input${field.compact ? " number-input-compact" : ""}${field.widthClass ? ` ${field.widthClass}` : ""}`}
-                            type="number"
-                            inputMode="numeric"
-                            value={String(inputValues[field.key] ?? "")}
-                            onChange={(event) =>
-                              setInputValues((current) => ({
-                                ...current,
-                                [field.key]: event.target.value
-                              }))
-                            }
-                          />
-                          {field.unit ? <span className="input-unit">{field.unit}</span> : null}
-                          {liveFieldTexts[field.key] ? (
-                            <span className="input-live-text">{liveFieldTexts[field.key]}</span>
-                          ) : null}
-                        </span>
-                      </label>
+                <>
+                  <div className={`input-row input-row-${Math.min(group.fields.length, 3)}`}>
+                    {group.fields.map((field) => (
+                      <div className="input-field-wrap" key={field.key}>
+                        <label className="input-field">
+                          <span className="input-label">{field.label}</span>
+                          <span className="input-control">
+                            <input
+                              className={`number-input${field.compact ? " number-input-compact" : ""}${field.widthClass ? ` ${field.widthClass}` : ""}`}
+                              type="number"
+                              inputMode="numeric"
+                              value={String(inputValues[field.key] ?? "")}
+                              onChange={(event) =>
+                                setInputValues((current) => ({
+                                  ...current,
+                                  [field.key]: event.target.value
+                                }))
+                              }
+                            />
+                            {field.unit ? <span className="input-unit">{field.unit}</span> : null}
+                            {liveFieldTexts[field.key] ? (
+                              <span className="input-live-text">{liveFieldTexts[field.key]}</span>
+                            ) : null}
+                          </span>
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                  {group.fields.some((field) => field.key === "budo") ? (
+                    <div className="budo-counter-wrap">
+                      <JugglerBudoCounterButton onIncrement={handleBudoIncrement} />
                     </div>
-                  ))}
-                </div>
+                  ) : null}
+                </>
               ) : (
                 <div className="choice-group">
                   {group.options.map((option) => (
