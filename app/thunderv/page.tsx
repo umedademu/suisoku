@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { SaveSlotControls, useSaveSlots } from "../save-slots";
 
 type InputMode = "unimemo" | "normal";
 
@@ -517,6 +518,25 @@ export default function ThunderVPage() {
   >(null);
   const [hasLoadedSavedValues, setHasLoadedSavedValues] = useState(false);
 
+  const resetResults = () => {
+    setSettingExpectationTable(null);
+    setOverallSettingRows(null);
+    setProbabilityGroups(null);
+  };
+
+  const saveSlots = useSaveSlots({
+    storageKey: STORAGE_KEY,
+    inputValues,
+    initialValues,
+    inputMode,
+    isValidMode: (value): value is InputMode => value === "unimemo" || value === "normal",
+    onLoad: (nextValues) => {
+      setInputValues(nextValues);
+      resetResults();
+    },
+    onLoadMode: setInputMode
+  });
+
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
@@ -900,6 +920,7 @@ export default function ThunderVPage() {
               )}
             </section>
           ))}
+          <SaveSlotControls {...saveSlots} />
           <div className="action-row">
             <button className="clear-button" type="button" onClick={handleClear}>
               クリア

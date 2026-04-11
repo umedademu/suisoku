@@ -377,6 +377,84 @@ a {
   margin-top: 2px;
 }
 
+.save-slot-group {
+  display: grid;
+  gap: 7px;
+  margin-top: 2px;
+  text-align: left;
+}
+
+.save-slot-title {
+  margin: 0;
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.save-slot-list {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.save-slot-button {
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.1;
+  padding: 7px 4px;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.save-slot-button:hover {
+  background: #fff;
+  border-color: rgba(143, 47, 24, 0.35);
+  transform: translateY(-1px);
+}
+
+.save-slot-button.is-saved {
+  border-color: rgba(197, 75, 44, 0.52);
+  background: #fff3ec;
+}
+
+.save-slot-button.is-active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fffaf4;
+}
+
+.save-slot-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+}
+
+.save-slot-action-button {
+  padding: 7px 14px;
+  font-size: 0.86rem;
+}
+
+.save-slot-message {
+  margin: 0;
+  color: rgba(29, 29, 27, 0.78);
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+}
+
 .clear-button {
   border: 1px solid var(--border);
   border-radius: 999px;
@@ -755,6 +833,20 @@ a {
 
   .action-row {
     gap: 6px;
+  }
+
+  .save-slot-list {
+    gap: 4px;
+  }
+
+  .save-slot-button {
+    font-size: 0.68rem;
+    padding: 7px 2px;
+  }
+
+  .save-slot-action-button {
+    padding: 7px 12px;
+    font-size: 0.82rem;
   }
 
   .clear-button,

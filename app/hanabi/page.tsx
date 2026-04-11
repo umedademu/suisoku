@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { SaveSlotControls, useSaveSlots } from "../save-slots";
 
 const settings = [
   {
@@ -465,6 +466,22 @@ export default function HanabiPage() {
   >(null);
   const [hasLoadedSavedValues, setHasLoadedSavedValues] = useState(false);
 
+  const resetResults = () => {
+    setSettingExpectationTable(null);
+    setOverallSettingRows(null);
+    setProbabilityGroups(null);
+  };
+
+  const saveSlots = useSaveSlots({
+    storageKey: STORAGE_KEY,
+    inputValues,
+    initialValues,
+    onLoad: (nextValues) => {
+      setInputValues(nextValues);
+      resetResults();
+    }
+  });
+
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
@@ -791,6 +808,7 @@ export default function HanabiPage() {
               </div>
             </section>
           ))}
+          <SaveSlotControls {...saveSlots} />
           <div className="action-row">
             <button className="clear-button" type="button" onClick={handleClear}>
               クリア
