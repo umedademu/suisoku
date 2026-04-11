@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { SaveSlotControls, useSaveSlots } from "../save-slots";
+import { UnimemoImageUpload } from "../unimemo-image-upload";
 
 type InputMode = "unimemo" | "normal";
 
@@ -19,12 +20,6 @@ type InputGroup = {
   title: string;
   note?: string;
   fields: InputField[];
-};
-
-type UnimemoImageResponse = {
-  values?: unknown;
-  message?: unknown;
-  error?: unknown;
 };
 
 const settings = [
@@ -428,15 +423,6 @@ function toNumber(value: string) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
-function isStringRecord(value: unknown): value is Record<string, string> {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    !Array.isArray(value) &&
-    Object.values(value).every((item) => typeof item === "string")
-  );
-}
-
 function calculateUnimemoBase(count: number, denominator: number) {
   if (count <= 0 || denominator <= 0) {
     return 0;
@@ -619,8 +605,6 @@ export default function LHanabiPage() {
     }> | null
   >(null);
   const [hasLoadedSavedValues, setHasLoadedSavedValues] = useState(false);
-  const [isUnimemoImageLoading, setIsUnimemoImageLoading] = useState(false);
-  const [unimemoImageMessage, setUnimemoImageMessage] = useState("");
 
   const resetResults = () => {
     setSettingExpectationTable(null);
@@ -708,57 +692,6 @@ export default function LHanabiPage() {
     setSettingExpectationTable(null);
     setOverallSettingRows(null);
     setProbabilityGroups(null);
-  };
-
-  const handleUnimemoImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-
-    if (!file) {
-      return;
-    }
-
-    setIsUnimemoImageLoading(true);
-    setUnimemoImageMessage("画像を読み取っています。");
-
-    const formData = new FormData();
-    formData.append("image", file);
-
-    try {
-      const response = await fetch("/api/lhanabi/unimemo", {
-        method: "POST",
-        body: formData
-      });
-      const payload = (await response.json()) as UnimemoImageResponse;
-
-      if (!response.ok) {
-        throw new Error(
-          typeof payload.error === "string" ? payload.error : "画像から入力できませんでした。"
-        );
-      }
-
-      const extractedValues = payload.values;
-
-      if (!isStringRecord(extractedValues)) {
-        throw new Error("画像から入力できる数値を読み取れませんでした。");
-      }
-
-      setInputMode("unimemo");
-      setInputValues((current) => ({
-        ...current,
-        ...extractedValues
-      }));
-      resetResults();
-      setUnimemoImageMessage(
-        typeof payload.message === "string" ? payload.message : "ユニメモ画像から入力しました。"
-      );
-    } catch (error) {
-      setUnimemoImageMessage(
-        error instanceof Error ? error.message : "画像から入力できませんでした。"
-      );
-    } finally {
-      setIsUnimemoImageLoading(false);
-      event.target.value = "";
-    }
   };
 
   const handleEstimate = (event: React.FormEvent<HTMLFormElement>) => {
@@ -1075,24 +1008,14 @@ export default function LHanabiPage() {
           </div>
         </section>
         <form className="input-form" onSubmit={handleEstimate}>
-          <section className="unimemo-image-group">
-            <p className="unimemo-image-title">ユニメモ画像</p>
-            <label className={`unimemo-image-upload${isUnimemoImageLoading ? " is-loading" : ""}`}>
-              <span>{isUnimemoImageLoading ? "読み取り中" : "画像を選択"}</span>
-              <input
-                accept="image/png,image/jpeg,image/webp"
-                className="unimemo-image-input"
-                disabled={isUnimemoImageLoading}
-                type="file"
-                onChange={handleUnimemoImageChange}
-              />
-            </label>
-            {unimemoImageMessage ? (
-              <p className="unimemo-image-message" role="status">
-                {unimemoImageMessage}
-              </p>
-            ) : null}
-          </section>
+          <UnimemoImageUpload
+            machine="lhanabi"
+            onApply={(values) => {
+              setInputMode("unimemo");
+              setInputValues((current) => ({ ...current, ...values }));
+              resetResults();
+            }}
+          />
           {inputGroups.map((group, index) => (
             <section className="input-group" key={`${group.title ?? "group"}-${index}`}>
               {group.title ? (

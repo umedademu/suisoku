@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { SaveSlotControls, useSaveSlots } from "../save-slots";
+import { UnimemoImageUpload } from "../unimemo-image-upload";
 
 type InputMode = "unimemo" | "normal";
 
@@ -1510,6 +1511,14 @@ export default function VersusRevisPage() {
           </div>
         </section>
         <form className="input-form" onSubmit={handleEstimate}>
+          <UnimemoImageUpload
+            machine="versusrevis"
+            onApply={(values) => {
+              setInputMode("unimemo");
+              setInputValues((current) => ({ ...current, ...values }));
+              resetResults();
+            }}
+          />
           {inputGroups.map((group, index) => (
             <section className="input-group" key={`${group.title ?? "group"}-${index}`}>
               {group.title ? (
