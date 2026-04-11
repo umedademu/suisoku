@@ -469,6 +469,7 @@ export default function NeoImJugglerExPage() {
     storageKey: STORAGE_KEY,
     inputValues,
     initialValues,
+    isReady: hasLoadedSavedValues,
     onLoad: (nextValues) => {
       setInputValues(nextValues);
       resetResults();
@@ -531,10 +532,7 @@ export default function NeoImJugglerExPage() {
   };
 
   const handleClear = () => {
-    setInputValues({ ...initialValues });
-    setSettingExpectationTable(null);
-    setOverallSettingRows(null);
-    setProbabilityGroups(null);
+    saveSlots.onClearCurrentData();
   };
 
   const handleEstimate = (event: React.FormEvent<HTMLFormElement>) => {
@@ -799,6 +797,9 @@ export default function NeoImJugglerExPage() {
           <div className="action-row">
             <button className="clear-button" type="button" onClick={handleClear}>
               クリア
+            </button>
+            <button className="clear-button" type="button" onClick={saveSlots.onClearAllData}>
+              全てクリア
             </button>
             <button className="estimate-button" type="submit">
               推測

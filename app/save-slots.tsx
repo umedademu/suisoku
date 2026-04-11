@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const SAVE_SLOT_NUMBERS = [1, 2, 3, 4, 5];
 const NON_ADDITIVE_INPUT_KEYS = new Set(["medalRent", "exchangeRate", "strategyRate", "payoutMode"]);
@@ -15,6 +15,7 @@ type UseSaveSlotsOptions<TValues extends Record<string, unknown>, TMode extends 
   storageKey: string;
   inputValues: TValues;
   initialValues: TValues;
+  isReady?: boolean;
   inputMode?: TMode;
   initialInputMode?: TMode;
   isValidInputValue?: (key: string, value: unknown) => boolean;
@@ -28,8 +29,6 @@ type SaveSlotControlsProps = {
   savedSlots: number[];
   message: string;
   onSelectSlot: (slot: number) => void;
-  onSaveSlot: () => void;
-  onDeleteSlot: () => void;
 };
 
 type NormalizedSaveSlot<TValues extends Record<string, unknown>> = {
@@ -82,6 +81,22 @@ function readSaveSlotPayload(storageKey: string, slot: number): SaveSlotPayload 
   } catch {
     return null;
   }
+}
+
+function writeSaveSlotPayload<TValues extends Record<string, unknown>, TMode extends string>(
+  storageKey: string,
+  slot: number,
+  inputValues: TValues,
+  inputMode?: TMode
+) {
+  window.localStorage.setItem(
+    getSaveSlotStorageKey(storageKey, slot),
+    JSON.stringify({
+      inputValues,
+      ...(inputMode !== undefined ? { inputMode } : {}),
+      savedAt: new Date().toISOString()
+    })
+  );
 }
 
 function normalizeInputValues<TValues extends Record<string, unknown>>(
@@ -174,6 +189,7 @@ export function useSaveSlots<TValues extends Record<string, unknown>, TMode exte
   storageKey,
   inputValues,
   initialValues,
+  isReady = true,
   inputMode,
   initialInputMode,
   isValidInputValue = (_key, value) => typeof value === "string",
@@ -182,39 +198,37 @@ export function useSaveSlots<TValues extends Record<string, unknown>, TMode exte
   onLoadMode
 }: UseSaveSlotsOptions<TValues, TMode>) {
   const [selectedSlots, setSelectedSlots] = useState<number[]>([]);
+  const [activeSlot, setActiveSlot] = useState<number | null>(null);
   const [savedSlots, setSavedSlots] = useState<number[]>([]);
   const [message, setMessage] = useState("");
+  const skipNextAutoSaveRef = useRef(false);
 
   useEffect(() => {
     setSavedSlots(getSavedSlotNumbers(storageKey));
   }, [storageKey]);
 
-  const refreshSavedSlots = () => {
-    setSavedSlots(getSavedSlotNumbers(storageKey));
-  };
-
-  const handleSaveSlot = () => {
-    if (selectedSlots.length !== 1) {
-      setMessage("保存先を1つだけ選んでください。");
+  useEffect(() => {
+    if (!isReady || activeSlot === null || selectedSlots.length !== 1 || selectedSlots[0] !== activeSlot) {
       return;
     }
 
-    const targetSlot = selectedSlots[0];
+    if (skipNextAutoSaveRef.current) {
+      skipNextAutoSaveRef.current = false;
+      return;
+    }
 
     try {
-      window.localStorage.setItem(
-        getSaveSlotStorageKey(storageKey, targetSlot),
-        JSON.stringify({
-          inputValues,
-          ...(inputMode !== undefined ? { inputMode } : {}),
-          savedAt: new Date().toISOString()
-        })
+      writeSaveSlotPayload(storageKey, activeSlot, inputValues, inputMode);
+      setSavedSlots((current) =>
+        current.includes(activeSlot) ? current : [...current, activeSlot].sort((first, second) => first - second)
       );
-      refreshSavedSlots();
-      setMessage(`保存${targetSlot}に保存しました。`);
     } catch {
-      setMessage("保存できませんでした。");
+      setMessage("自動保存できませんでした。");
     }
+  }, [activeSlot, inputMode, inputValues, isReady, selectedSlots, storageKey]);
+
+  const refreshSavedSlots = () => {
+    setSavedSlots(getSavedSlotNumbers(storageKey));
   };
 
   const applyInputMode = (slots: Array<NormalizedSaveSlot<TValues>>) => {
@@ -237,6 +251,8 @@ export function useSaveSlots<TValues extends Record<string, unknown>, TMode exte
   };
 
   const loadSlots = (slots: number[]) => {
+    skipNextAutoSaveRef.current = true;
+
     if (slots.length === 0) {
       onLoad({ ...initialValues });
       applyInputMode([]);
@@ -268,25 +284,49 @@ export function useSaveSlots<TValues extends Record<string, unknown>, TMode exte
     const nextSlots = selectedSlots.includes(slot)
       ? selectedSlots.filter((selectedSlot) => selectedSlot !== slot)
       : [...selectedSlots, slot].sort((first, second) => first - second);
+    const nextActiveSlot = nextSlots.includes(slot) ? slot : nextSlots.length === 1 ? nextSlots[0] : null;
 
+    setActiveSlot(nextActiveSlot);
     setSelectedSlots(nextSlots);
     loadSlots(nextSlots);
   };
 
-  const handleDeleteSlot = () => {
-    if (selectedSlots.length !== 1) {
-      setMessage("削除する保存データを1つだけ選んでください。");
-      return;
-    }
-
-    const targetSlot = selectedSlots[0];
+  const handleClearCurrentData = () => {
+    skipNextAutoSaveRef.current = true;
 
     try {
-      window.localStorage.removeItem(getSaveSlotStorageKey(storageKey, targetSlot));
-      refreshSavedSlots();
-      setMessage(`保存${targetSlot}を削除しました。`);
+      if (activeSlot !== null && selectedSlots.length === 1 && selectedSlots[0] === activeSlot) {
+        window.localStorage.removeItem(getSaveSlotStorageKey(storageKey, activeSlot));
+        refreshSavedSlots();
+        setMessage(`保存${activeSlot}をクリアしました。`);
+      } else {
+        setSelectedSlots([]);
+        setActiveSlot(null);
+        setMessage("編集中の内容をクリアしました。");
+      }
+
+      onLoad({ ...initialValues });
+      applyInputMode([]);
     } catch {
-      setMessage("削除できませんでした。");
+      setMessage("クリアできませんでした。");
+    }
+  };
+
+  const handleClearAllData = () => {
+    skipNextAutoSaveRef.current = true;
+
+    try {
+      SAVE_SLOT_NUMBERS.forEach((slot) => {
+        window.localStorage.removeItem(getSaveSlotStorageKey(storageKey, slot));
+      });
+      setSelectedSlots([]);
+      setActiveSlot(null);
+      refreshSavedSlots();
+      onLoad({ ...initialValues });
+      applyInputMode([]);
+      setMessage("全てクリアしました。");
+    } catch {
+      setMessage("全てクリアできませんでした。");
     }
   };
 
@@ -295,8 +335,8 @@ export function useSaveSlots<TValues extends Record<string, unknown>, TMode exte
     savedSlots,
     message,
     onSelectSlot: handleSelectSlot,
-    onSaveSlot: handleSaveSlot,
-    onDeleteSlot: handleDeleteSlot
+    onClearCurrentData: handleClearCurrentData,
+    onClearAllData: handleClearAllData
   };
 }
 
@@ -304,9 +344,7 @@ export function SaveSlotControls({
   selectedSlots,
   savedSlots,
   message,
-  onSelectSlot,
-  onSaveSlot,
-  onDeleteSlot
+  onSelectSlot
 }: SaveSlotControlsProps) {
   const savedSlotSet = new Set(savedSlots);
 
@@ -330,14 +368,6 @@ export function SaveSlotControls({
             </button>
           );
         })}
-      </div>
-      <div className="save-slot-action-row">
-        <button className="clear-button save-slot-action-button" type="button" onClick={onSaveSlot}>
-          保存
-        </button>
-        <button className="clear-button save-slot-action-button" type="button" onClick={onDeleteSlot}>
-          削除
-        </button>
       </div>
       {message ? (
         <p className="save-slot-message" role="status">

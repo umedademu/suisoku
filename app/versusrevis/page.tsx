@@ -963,6 +963,7 @@ export default function VersusRevisPage() {
     storageKey: STORAGE_KEY,
     inputValues,
     initialValues,
+    isReady: hasLoadedSavedValues,
     inputMode,
     initialInputMode: "unimemo",
     isValidMode: (value): value is InputMode => value === "unimemo" || value === "normal",
@@ -1028,10 +1029,7 @@ export default function VersusRevisPage() {
   };
 
   const handleClear = () => {
-    setInputValues({ ...initialValues });
-    setSettingExpectationTable(null);
-    setOverallSettingRows(null);
-    setProbabilityGroups(null);
+    saveSlots.onClearCurrentData();
   };
 
   const handleModeChange = (nextMode: InputMode) => {
@@ -1586,6 +1584,9 @@ export default function VersusRevisPage() {
           <div className="action-row">
             <button className="clear-button" type="button" onClick={handleClear}>
               クリア
+            </button>
+            <button className="clear-button" type="button" onClick={saveSlots.onClearAllData}>
+              全てクリア
             </button>
             <button className="estimate-button" type="submit">
               推測
