@@ -963,6 +963,7 @@ export default function VersusRevisPage() {
     inputValues,
     initialValues,
     inputMode,
+    initialInputMode: "unimemo",
     isValidMode: (value): value is InputMode => value === "unimemo" || value === "normal",
     onLoad: (nextValues) => {
       setInputValues(nextValues);

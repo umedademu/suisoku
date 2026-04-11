@@ -15,6 +15,7 @@ type UseSaveSlotsOptions<TValues extends Record<string, unknown>, TMode extends 
   inputValues: TValues;
   initialValues: TValues;
   inputMode?: TMode;
+  initialInputMode?: TMode;
   isValidInputValue?: (key: string, value: unknown) => boolean;
   isValidMode?: (value: unknown) => value is TMode;
   onLoad: (nextValues: TValues) => void;
@@ -27,7 +28,6 @@ type SaveSlotControlsProps = {
   message: string;
   onSelectSlot: (slot: number) => void;
   onSaveSlot: () => void;
-  onLoadSlot: () => void;
   onDeleteSlot: () => void;
 };
 
@@ -85,6 +85,7 @@ export function useSaveSlots<TValues extends Record<string, unknown>, TMode exte
   inputValues,
   initialValues,
   inputMode,
+  initialInputMode,
   isValidInputValue = (_key, value) => typeof value === "string",
   isValidMode,
   onLoad,
@@ -100,11 +101,6 @@ export function useSaveSlots<TValues extends Record<string, unknown>, TMode exte
 
   const refreshSavedSlots = () => {
     setSavedSlots(getSavedSlotNumbers(storageKey));
-  };
-
-  const handleSelectSlot = (slot: number) => {
-    setSelectedSlot(slot);
-    setMessage("");
   };
 
   const handleSaveSlot = () => {
@@ -124,11 +120,17 @@ export function useSaveSlots<TValues extends Record<string, unknown>, TMode exte
     }
   };
 
-  const handleLoadSlot = () => {
-    const payload = readSaveSlotPayload(storageKey, selectedSlot);
+  const loadSlot = (slot: number) => {
+    const payload = readSaveSlotPayload(storageKey, slot);
 
     if (!payload || !isRecord(payload.inputValues)) {
-      setMessage(`保存${selectedSlot}は未保存です。`);
+      onLoad({ ...initialValues });
+
+      if (onLoadMode && initialInputMode !== undefined) {
+        onLoadMode(initialInputMode);
+      }
+
+      setMessage(`保存${slot}を表示しました。`);
       return;
     }
 
@@ -138,7 +140,12 @@ export function useSaveSlots<TValues extends Record<string, unknown>, TMode exte
       onLoadMode(payload.inputMode);
     }
 
-    setMessage(`保存${selectedSlot}を読み込みました。`);
+    setMessage(`保存${slot}を読み込みました。`);
+  };
+
+  const handleSelectSlot = (slot: number) => {
+    setSelectedSlot(slot);
+    loadSlot(slot);
   };
 
   const handleDeleteSlot = () => {
@@ -157,7 +164,6 @@ export function useSaveSlots<TValues extends Record<string, unknown>, TMode exte
     message,
     onSelectSlot: handleSelectSlot,
     onSaveSlot: handleSaveSlot,
-    onLoadSlot: handleLoadSlot,
     onDeleteSlot: handleDeleteSlot
   };
 }
@@ -168,7 +174,6 @@ export function SaveSlotControls({
   message,
   onSelectSlot,
   onSaveSlot,
-  onLoadSlot,
   onDeleteSlot
 }: SaveSlotControlsProps) {
   const savedSlotSet = new Set(savedSlots);
@@ -197,9 +202,6 @@ export function SaveSlotControls({
       <div className="save-slot-action-row">
         <button className="clear-button save-slot-action-button" type="button" onClick={onSaveSlot}>
           保存
-        </button>
-        <button className="clear-button save-slot-action-button" type="button" onClick={onLoadSlot}>
-          読込
         </button>
         <button className="clear-button save-slot-action-button" type="button" onClick={onDeleteSlot}>
           削除
