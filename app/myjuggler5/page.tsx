@@ -467,6 +467,13 @@ export default function MyJuggler5Page() {
     }));
   };
 
+  const handleBudoDecrement = () => {
+    setInputValues((current) => ({
+      ...current,
+      budo: String(Math.max(0, toNumber(String(current.budo ?? "")) - 1))
+    }));
+  };
+
   const handleEstimate = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -703,7 +710,10 @@ export default function MyJuggler5Page() {
               </div>
               {group.fields.some((field) => field.key === "budo") ? (
                 <div className="budo-counter-wrap">
-                  <JugglerBudoCounterButton onIncrement={handleBudoIncrement} />
+                  <JugglerBudoCounterButton
+                    onIncrement={handleBudoIncrement}
+                    onDecrement={handleBudoDecrement}
+                  />
                 </div>
               ) : null}
             </section>
