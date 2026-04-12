@@ -1150,8 +1150,14 @@ export default function LHanabiPage() {
           <UnimemoImageUpload
             machine="lhanabi"
             onApply={(values) => {
+              const nextValues = { ...values };
+
+              if (nextValues.regPieceLowHits !== undefined) {
+                nextValues.regPieceLowTrials = nextValues.regPieceLowHits;
+              }
+
               setInputMode("unimemo");
-              setInputValues((current) => ({ ...current, ...values }));
+              setInputValues((current) => ({ ...current, ...nextValues }));
               resetResults();
             }}
           />
