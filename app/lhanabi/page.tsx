@@ -16,11 +16,24 @@ type InputField = {
   keyboard?: "numeric" | "decimal";
 };
 
-type InputGroup = {
+type StandardInputGroup = {
   title: string;
   note?: string;
   fields: InputField[];
 };
+
+type PieceInputRow = {
+  label: string;
+  trialKey: string;
+  occurrenceKey: string;
+};
+
+type PieceInputGroup = {
+  title: string;
+  rows: PieceInputRow[];
+};
+
+type InputGroup = StandardInputGroup | PieceInputGroup;
 
 const settings = [
   {
@@ -34,6 +47,9 @@ const settings = [
     bigBarake: "1/16384.0",
     regOneRole: "1/8.0",
     regBarake: "1/16384.0",
+    regPieceLow: "0.0%",
+    regPieceMiddle: "0.0%",
+    regPieceHigh: "0.0%",
     challengeHazure: "1/4.7",
     gameHazure: "1/6.4",
     payout: "98.6%",
@@ -50,6 +66,9 @@ const settings = [
     bigBarake: "1/16384.0",
     regOneRole: "1/8.0",
     regBarake: "1/16384.0",
+    regPieceLow: "3.1%",
+    regPieceMiddle: "10.0%",
+    regPieceHigh: "25.0%",
     challengeHazure: "1/4.5",
     gameHazure: "1/6.0",
     payout: "100.4%",
@@ -66,6 +85,9 @@ const settings = [
     bigBarake: "1/819.0",
     regOneRole: "1/7.0",
     regBarake: "1/16384.0",
+    regPieceLow: "3.1%",
+    regPieceMiddle: "10.0%",
+    regPieceHigh: "25.0%",
     challengeHazure: "1/4.3",
     gameHazure: "1/5.4",
     payout: "103.0%",
@@ -82,6 +104,9 @@ const settings = [
     bigBarake: "1/819.0",
     regOneRole: "1/7.0",
     regBarake: "1/1092.3",
+    regPieceLow: "3.1%",
+    regPieceMiddle: "10.0%",
+    regPieceHigh: "25.0%",
     challengeHazure: "1/4.2",
     gameHazure: "1/5.4",
     payout: "106.4%",
@@ -150,6 +175,26 @@ const inputGroups: InputGroup[] = [
     ]
   },
   {
+    title: "REGピース画面",
+    rows: [
+      {
+        label: "2回以下",
+        trialKey: "regPieceLowTrials",
+        occurrenceKey: "regPieceLowHits"
+      },
+      {
+        label: "3～4回",
+        trialKey: "regPieceMiddleTrials",
+        occurrenceKey: "regPieceMiddleHits"
+      },
+      {
+        label: "5回以上",
+        trialKey: "regPieceHighTrials",
+        occurrenceKey: "regPieceHighHits"
+      }
+    ]
+  },
+  {
     title: "攻略率",
     note: "期待値の計算に使用",
     fields: [
@@ -186,7 +231,7 @@ const inputGroups: InputGroup[] = [
   }
 ];
 
-const unimemoInputGroups: Record<string, InputGroup> = {
+const unimemoInputGroups: Record<string, StandardInputGroup> = {
   花火チャレ: {
     title: "花火チャレ",
     fields: [
@@ -244,7 +289,16 @@ const unimemoInputGroups: Record<string, InputGroup> = {
 };
 
 const initialValues = {
-  ...Object.fromEntries(inputGroups.flatMap((group) => group.fields.map((field) => [field.key, ""]))),
+  ...Object.fromEntries(
+    inputGroups.flatMap((group) =>
+      "fields" in group
+        ? group.fields.map((field) => [field.key, ""] as const)
+        : group.rows.flatMap((row) => [
+            [row.trialKey, ""] as const,
+            [row.occurrenceKey, ""] as const
+          ])
+    )
+  ),
   challengeHazureRate: "",
   gameHazureRate: "",
   bigFurinBRate: "",
@@ -297,6 +351,14 @@ const specGroups = [
       { label: "1枚役", key: "regOneRole" },
       { label: "バラケ目", key: "regBarake" }
     ]
+  },
+  {
+    title: "REGピース画面",
+    columns: [
+      { label: "2回以下", key: "regPieceLow" },
+      { label: "3～4回", key: "regPieceMiddle" },
+      { label: "5回以上", key: "regPieceHigh" }
+    ]
   }
 ] as const;
 
@@ -339,6 +401,15 @@ const probabilityDisplayGroups = [
       { title: "1枚役", key: "regOneRole" as const },
       { title: "バラケ目", key: "regBarake" as const }
     ]
+  },
+  {
+    title: "REGピース画面",
+    headerText: "カテゴリ別",
+    items: [
+      { title: "2回以下", key: "regPieceLow" as const },
+      { title: "3～4回", key: "regPieceMiddle" as const },
+      { title: "5回以上", key: "regPieceHigh" as const }
+    ]
   }
 ] as const;
 
@@ -354,8 +425,19 @@ type RateKey =
   | "bigBarake"
   | "regOneRole"
   | "regBarake"
+  | "regPieceLow"
+  | "regPieceMiddle"
+  | "regPieceHigh"
   | "challengeHazure"
   | "gameHazure";
+
+type ProbabilityDefinition = {
+  key: RateKey;
+  title: string;
+  count: number;
+  base: number;
+  summaryStyle?: "frequency" | "percent";
+};
 
 function parseRate(value: string) {
   const trimmed = value.replace("1/", "");
@@ -392,6 +474,9 @@ const settingRates = settings.map((setting) => ({
   bigBarake: parseRate(setting.bigBarake),
   regOneRole: parseRate(setting.regOneRole),
   regBarake: parseRate(setting.regBarake),
+  regPieceLow: parsePayoutRate(setting.regPieceLow),
+  regPieceMiddle: parsePayoutRate(setting.regPieceMiddle),
+  regPieceHigh: parsePayoutRate(setting.regPieceHigh),
   challengeHazure: parseRate(setting.challengeHazure),
   gameHazure: parseRate(setting.gameHazure)
 }));
@@ -408,6 +493,9 @@ const settingsDisplay = settings.map((setting) => ({
   bigBarake: formatRateFromProbability(parseRate(setting.bigBarake)),
   regOneRole: formatRateFromProbability(parseRate(setting.regOneRole)),
   regBarake: formatRateFromProbability(parseRate(setting.regBarake)),
+  regPieceLow: formatOccurrenceRate(parsePayoutRate(setting.regPieceLow)),
+  regPieceMiddle: formatOccurrenceRate(parsePayoutRate(setting.regPieceMiddle)),
+  regPieceHigh: formatOccurrenceRate(parsePayoutRate(setting.regPieceHigh)),
   challengeHazure: formatRateFromProbability(parseRate(setting.challengeHazure)),
   gameHazure: formatRateFromProbability(parseRate(setting.gameHazure)),
   payout: setting.payout,
@@ -450,6 +538,22 @@ function formatRateFromProbability(probability: number) {
   }
 
   return `1/${formatDenominator(1 / probability)}`;
+}
+
+function formatOccurrenceRate(probability: number) {
+  if (probability <= 0) {
+    return "-";
+  }
+
+  return `${(probability * 100).toFixed(1)}%`;
+}
+
+function formatOccurrencePercent(count: number, base: number) {
+  if (count < 0 || base <= 0 || count > base) {
+    return "-";
+  }
+
+  return `${((count / base) * 100).toFixed(1)}%`;
 }
 
 function formatYen(value: number) {
@@ -514,14 +618,22 @@ function calculateLogBinomialProbability(
     totalCount < 0 ||
     successCount < 0 ||
     successCount > totalCount ||
-    probability <= 0 ||
-    probability >= 1
+    probability < 0 ||
+    probability > 1
   ) {
     return Number.NEGATIVE_INFINITY;
   }
 
   if (totalCount === 0) {
     return successCount === 0 ? 0 : Number.NEGATIVE_INFINITY;
+  }
+
+  if (probability === 0) {
+    return successCount === 0 ? 0 : Number.NEGATIVE_INFINITY;
+  }
+
+  if (probability === 1) {
+    return successCount === totalCount ? 0 : Number.NEGATIVE_INFINITY;
   }
 
   const smallerSide = Math.min(successCount, totalCount - successCount);
@@ -712,6 +824,12 @@ export default function LHanabiPage() {
     const regOneRole = toNumber(inputValues.regOneRole);
     const regOneRoleRate = toNumber(inputValues.regOneRoleRate);
     const regBarake = toNumber(inputValues.regBarake);
+    const regPieceLowTrials = toNumber(inputValues.regPieceLowTrials);
+    const regPieceLowHits = toNumber(inputValues.regPieceLowHits);
+    const regPieceMiddleTrials = toNumber(inputValues.regPieceMiddleTrials);
+    const regPieceMiddleHits = toNumber(inputValues.regPieceMiddleHits);
+    const regPieceHighTrials = toNumber(inputValues.regPieceHighTrials);
+    const regPieceHighHits = toNumber(inputValues.regPieceHighHits);
     const challengeGames = toNumber(inputValues.challengeGames);
     const challengeHazure = toNumber(inputValues.challengeHazure);
     const challengeHazureRate = toNumber(inputValues.challengeHazureRate);
@@ -750,12 +868,7 @@ export default function LHanabiPage() {
       };
     });
 
-    const probabilityDefinitions: Array<{
-      key: RateKey;
-      title: string;
-      count: number;
-      base: number;
-    }> = [
+    const probabilityDefinitions: ProbabilityDefinition[] = [
       {
         key: "bb",
         title: "BIG",
@@ -823,6 +936,27 @@ export default function LHanabiPage() {
         base: regBase
       },
       {
+        key: "regPieceLow",
+        title: "REGピース画面2回以下",
+        count: regPieceLowHits,
+        base: regPieceLowTrials,
+        summaryStyle: "percent"
+      },
+      {
+        key: "regPieceMiddle",
+        title: "REGピース画面3～4回",
+        count: regPieceMiddleHits,
+        base: regPieceMiddleTrials,
+        summaryStyle: "percent"
+      },
+      {
+        key: "regPieceHigh",
+        title: "REGピース画面5回以上",
+        count: regPieceHighHits,
+        base: regPieceHighTrials,
+        summaryStyle: "percent"
+      },
+      {
         key: "challengeHazure",
         title: "花火チャレ中ハズレ",
         count: challengeHazure,
@@ -852,7 +986,8 @@ export default function LHanabiPage() {
     setProbabilityGroups(
       probabilityDisplayGroups.map((group) => ({
         title: group.title,
-        headerText: `${probabilityDefinitionMap[group.items[0].key].base}G`,
+        headerText:
+          "headerText" in group ? group.headerText : `${probabilityDefinitionMap[group.items[0].key].base}G`,
         columns: group.items.map((item) => {
           const definition = probabilityDefinitionMap[item.key];
           const weights = settingRates.map((setting) => ({
@@ -867,7 +1002,13 @@ export default function LHanabiPage() {
 
           return {
             label: item.title,
-            summaryText: `${definition.count} (${formatProbability(definition.count, definition.base)})`,
+            summaryText:
+              definition.summaryStyle === "percent"
+                ? `${definition.base}回中${definition.count}回 (${formatOccurrencePercent(
+                    definition.count,
+                    definition.base
+                  )})`
+                : `${definition.count} (${formatProbability(definition.count, definition.base)})`,
             values: weights.map((row) => ({
               label: row.label,
               value: totalWeight > 0 ? formatPercent(row.weight / totalWeight) : "0%"
@@ -1024,10 +1165,56 @@ export default function LHanabiPage() {
                   ) : null}
                 </div>
               ) : null}
-              {renderFields(
-                inputMode === "unimemo" && group.title in unimemoInputGroups
-                  ? unimemoInputGroups[group.title].fields
-                  : group.fields
+              {"fields" in group ? (
+                renderFields(
+                  inputMode === "unimemo" && group.title in unimemoInputGroups
+                    ? unimemoInputGroups[group.title].fields
+                    : group.fields
+                )
+              ) : (
+                <div className="piece-input-group">
+                  {group.rows.map((row) => (
+                    <div className="piece-input-row" key={row.label}>
+                      <p className="piece-input-label">{row.label}</p>
+                      <label className="input-field">
+                        <span className="input-label">試行</span>
+                        <span className="input-control">
+                          <input
+                            className="number-input number-input-piece"
+                            type="number"
+                            inputMode="numeric"
+                            value={inputValues[row.trialKey]}
+                            onChange={(event) =>
+                              setInputValues((current) => ({
+                                ...current,
+                                [row.trialKey]: event.target.value
+                              }))
+                            }
+                          />
+                          <span className="input-unit">回</span>
+                        </span>
+                      </label>
+                      <label className="input-field">
+                        <span className="input-label">発生</span>
+                        <span className="input-control">
+                          <input
+                            className="number-input number-input-piece"
+                            type="number"
+                            inputMode="numeric"
+                            value={inputValues[row.occurrenceKey]}
+                            onChange={(event) =>
+                              setInputValues((current) => ({
+                                ...current,
+                                [row.occurrenceKey]: event.target.value
+                              }))
+                            }
+                          />
+                          <span className="input-unit">回</span>
+                        </span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
               )}
             </section>
           ))}
