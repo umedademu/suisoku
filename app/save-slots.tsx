@@ -50,6 +50,16 @@ function getSavedSlotNumbers(storageKey: string) {
   return SAVE_SLOT_NUMBERS.filter((slot) => window.localStorage.getItem(getSaveSlotStorageKey(storageKey, slot)));
 }
 
+function getFallbackSaveSlot(savedSlots: number[]) {
+  return savedSlots[0] ?? SAVE_SLOT_NUMBERS[0];
+}
+
+function areInputValuesEqual<TValues extends Record<string, unknown>>(firstValues: TValues, secondValues: TValues) {
+  const keys = new Set([...Object.keys(firstValues), ...Object.keys(secondValues)]);
+
+  return Array.from(keys).every((key) => firstValues[key] === secondValues[key]);
+}
+
 function formatMergedNumber(value: number) {
   const rounded = Math.round(value * 1000000) / 1000000;
   return Number.isInteger(rounded) ? String(rounded) : String(rounded);
@@ -280,7 +290,49 @@ export function useSaveSlots<TValues extends Record<string, unknown>, TMode exte
     setMessage(`${normalizedSlots.map((slot) => `保存${slot.slot}`).join("、")}を合算しました。`);
   };
 
+  useEffect(() => {
+    if (!isReady || selectedSlots.length > 0) {
+      return;
+    }
+
+    const nextSavedSlots = getSavedSlotNumbers(storageKey);
+    const nextSlot = getFallbackSaveSlot(nextSavedSlots);
+
+    setSavedSlots(nextSavedSlots);
+    setSelectedSlots([nextSlot]);
+    setActiveSlot(nextSlot);
+
+    if (nextSavedSlots.includes(nextSlot)) {
+      loadSlots([nextSlot]);
+      return;
+    }
+
+    skipNextAutoSaveRef.current = true;
+    setMessage(`保存${nextSlot}を表示しました。`);
+
+    const hasChangedInputValues = !areInputValuesEqual(inputValues, initialValues);
+    const hasChangedInputMode =
+      inputMode !== undefined && initialInputMode !== undefined && inputMode !== initialInputMode;
+
+    if (!hasChangedInputValues && !hasChangedInputMode) {
+      return;
+    }
+
+    try {
+      writeSaveSlotPayload(storageKey, nextSlot, inputValues, inputMode);
+      setSavedSlots([nextSlot]);
+      setMessage(`保存${nextSlot}を選択しました。`);
+    } catch {
+      setMessage("自動保存できませんでした。");
+    }
+  }, [initialInputMode, initialValues, inputMode, inputValues, isReady, selectedSlots.length, storageKey]);
+
   const handleSelectSlot = (slot: number) => {
+    if (selectedSlots.length === 1 && selectedSlots[0] === slot) {
+      setActiveSlot(slot);
+      return;
+    }
+
     const nextSlots = selectedSlots.includes(slot)
       ? selectedSlots.filter((selectedSlot) => selectedSlot !== slot)
       : [...selectedSlots, slot].sort((first, second) => first - second);
@@ -298,15 +350,25 @@ export function useSaveSlots<TValues extends Record<string, unknown>, TMode exte
       if (activeSlot !== null && selectedSlots.length === 1 && selectedSlots[0] === activeSlot) {
         window.localStorage.removeItem(getSaveSlotStorageKey(storageKey, activeSlot));
         refreshSavedSlots();
+        onLoad({ ...initialValues });
+        applyInputMode([]);
         setMessage(`保存${activeSlot}をクリアしました。`);
-      } else {
-        setSelectedSlots([]);
-        setActiveSlot(null);
-        setMessage("編集中の内容をクリアしました。");
+        return;
       }
 
-      onLoad({ ...initialValues });
-      applyInputMode([]);
+      const fallbackSlot = activeSlot ?? selectedSlots[0] ?? getFallbackSaveSlot(savedSlots);
+      const fallbackPayload = readSaveSlotPayload(storageKey, fallbackSlot);
+
+      setSelectedSlots([fallbackSlot]);
+      setActiveSlot(fallbackSlot);
+
+      if (fallbackPayload && isRecord(fallbackPayload.inputValues)) {
+        loadSlots([fallbackSlot]);
+      } else {
+        onLoad({ ...initialValues });
+        applyInputMode([]);
+        setMessage(`保存${fallbackSlot}を表示しました。`);
+      }
     } catch {
       setMessage("クリアできませんでした。");
     }
@@ -319,12 +381,12 @@ export function useSaveSlots<TValues extends Record<string, unknown>, TMode exte
       SAVE_SLOT_NUMBERS.forEach((slot) => {
         window.localStorage.removeItem(getSaveSlotStorageKey(storageKey, slot));
       });
-      setSelectedSlots([]);
-      setActiveSlot(null);
+      setSelectedSlots([SAVE_SLOT_NUMBERS[0]]);
+      setActiveSlot(SAVE_SLOT_NUMBERS[0]);
       refreshSavedSlots();
       onLoad({ ...initialValues });
       applyInputMode([]);
-      setMessage("全てクリアしました。");
+      setMessage("全てクリアし、保存1を表示しました。");
     } catch {
       setMessage("全てクリアできませんでした。");
     }
