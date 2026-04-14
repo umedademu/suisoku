@@ -204,6 +204,15 @@ a {
   line-height: 1.1;
 }
 
+.unimemo-image-note {
+  margin: 0;
+  max-width: 28rem;
+  color: rgba(29, 29, 27, 0.68);
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
 .unimemo-image-upload {
   position: relative;
   display: inline-flex;

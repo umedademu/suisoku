@@ -8,6 +8,18 @@ export const versusrevisUnimemoConfig: UnimemoMachineConfig = {
     beforeBig: "0",
     beforeReg: "0"
   },
+  layoutGuide: `
+- 基本情報: 総プレイ数 -> 総ボーナス -> 総BB -> XBB -> 赤7BB -> RB
+- 小役: ベル合算 -> ベルA -> ベルB -> スイカ合算 -> スイカA -> スイカB -> チェリー合算 -> チェリーA -> チェリーB
+- RT詳細: VSチャンス中はずれ -> VSGAME中はずれ
+- BB中詳細: ベル -> チェリー+ベル揃い -> チェリー+ベルはずれ -> 中段チェリー
+- RB中詳細（小役）: 1枚役 -> Xベル
+- RB中詳細（小役）が続けて出る場合: 中1st_スイカ揃い -> 中1st_失敗 -> 右1st_15枚役取得
+- RB中詳細（その他）: 最大成功 -> 最大連成功 -> 最大Critical -> 最大連Critical -> Critical×画面 -> 最大獲得枚数 -> 獲得枚数100枚超え
+- 連チャンBGM: 蛙珠連GM1 -> 蛙珠連GM2
+- その他: 最大RT連チャン -> 100G以内最大連チャン -> 100G以内最大獲得枚数 -> フリーベル
+- リーチ目コレクション: 新規
+`,
   fields: [
     { key: "currentGames", kind: "integer", description: "総プレイ数。例: 310" },
     { key: "currentBig", kind: "integer", description: "総BB回数。XBBや赤7BBを含めたBB合計。例: 0" },
@@ -42,8 +54,9 @@ export const versusrevisUnimemoConfig: UnimemoMachineConfig = {
 総ボーナスではなく、BBは総BB、REGはRBを使ってください。
 ベル合算、スイカ合算、チェリー合算、チェリーAは使わないでください。
 RB中詳細のXベルはregHazureに入れず、ハズレが見当たらない場合はnullにしてください。
+RB中詳細に「中1st_失敗」がある場合はregHazureに入れてください。
 確率は「1/3.0」のように表示されている場合、分母だけを数値にしてください。
-「リーチ目スコア」「連チャンBGM」「リーチ目コレクション」「最大獲得枚数」は使わないでください。
+「リーチ目スコア」「連チャンBGM」「リーチ目コレクション」「最大成功」「最大連成功」「最大Critical」「最大連Critical」「Critical×画面」「最大獲得枚数」は使わないでください。
 見当たらない項目や「1/-」の確率はnullにしてください。
 `
 };

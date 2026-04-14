@@ -13,7 +13,20 @@ type GeminiResponse = {
   };
 };
 
+type GeminiRequestPart =
+  | {
+      text: string;
+    }
+  | {
+      inline_data: {
+        mime_type: string;
+        data: string;
+      };
+    };
+
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
+const MAX_IMAGE_COUNT = 8;
+const MAX_TOTAL_IMAGE_SIZE = 20 * 1024 * 1024;
 const ACCEPTED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
 export class UnimemoImageError extends Error {
@@ -44,6 +57,23 @@ function buildSchema(config: UnimemoMachineConfig) {
     ),
     required: config.fields.map((field) => field.key)
   };
+}
+
+function buildPrompt(config: UnimemoMachineConfig, imageCount: number) {
+  const layoutGuide = config.layoutGuide?.trim();
+  const sharedGuide = `
+画像の扱い:
+- ユニメモ公式アプリが生成した縦長1枚画像と、ユーザーが画面を分けて撮った複数画像のどちらもあり得ます。
+- 入力画像は${imageCount}枚です。複数画像の場合は画像1、画像2の順に、上から下へ続く画面である可能性が高いです。
+- 複数画像で同じ部分が重なって写っている場合は、同じ項目として扱い、回数を足さないでください。
+- 同じ項目名が複数の区分に出る場合は、直近の黄色い見出し、前後の項目、下の表示順を使って区分を判別してください。
+- 見出しも前後の項目もなく、どの区分か判別できない項目はnullにしてください。推測で別区分へ入れないでください。
+- 右側にある「回」「G」「枚」「P」の数値を回数や値として読み取り、その下にある「1/12.3」のような表示は確率として読み取ってください。
+`.trim();
+
+  return [config.prompt.trim(), layoutGuide ? `ユニメモ画面の表示順:\n${layoutGuide}` : "", sharedGuide]
+    .filter(Boolean)
+    .join("\n\n");
 }
 
 function readTextFromGeminiResponse(data: GeminiResponse) {
@@ -126,6 +156,54 @@ async function readGeminiResponse(response: Response) {
   }
 }
 
+function readImagesFromFormData(formData: FormData) {
+  return formData.getAll("image").filter((item): item is File => item instanceof File);
+}
+
+function validateImages(images: File[]) {
+  if (images.length === 0) {
+    throw new UnimemoImageError("画像を選択してください。", 400);
+  }
+
+  if (images.length > MAX_IMAGE_COUNT) {
+    throw new UnimemoImageError(`画像は${MAX_IMAGE_COUNT}枚以内にしてください。`, 400);
+  }
+
+  const totalSize = images.reduce((sum, image) => sum + image.size, 0);
+
+  if (totalSize > MAX_TOTAL_IMAGE_SIZE) {
+    throw new UnimemoImageError("画像サイズの合計は20MB以内にしてください。", 400);
+  }
+
+  images.forEach((image) => {
+    if (!ACCEPTED_IMAGE_TYPES.has(image.type)) {
+      throw new UnimemoImageError("JPEG、PNG、WebPの画像を選択してください。", 400);
+    }
+
+    if (image.size > MAX_IMAGE_SIZE) {
+      throw new UnimemoImageError("画像サイズは1枚10MB以内にしてください。", 400);
+    }
+  });
+}
+
+async function buildImageParts(images: File[]) {
+  const parts: GeminiRequestPart[] = [];
+
+  for (const [index, image] of images.entries()) {
+    const imageBase64 = Buffer.from(await image.arrayBuffer()).toString("base64");
+
+    parts.push({ text: `画像${index + 1}` });
+    parts.push({
+      inline_data: {
+        mime_type: image.type,
+        data: imageBase64
+      }
+    });
+  }
+
+  return parts;
+}
+
 export async function analyzeUnimemoImage(request: Request, config: UnimemoMachineConfig) {
   const apiKey = process.env.GEMINI_API_KEY?.trim();
 
@@ -134,22 +212,11 @@ export async function analyzeUnimemoImage(request: Request, config: UnimemoMachi
   }
 
   const formData = await request.formData();
-  const image = formData.get("image");
+  const images = readImagesFromFormData(formData);
+  validateImages(images);
 
-  if (!(image instanceof File)) {
-    throw new UnimemoImageError("画像を選択してください。", 400);
-  }
-
-  if (!ACCEPTED_IMAGE_TYPES.has(image.type)) {
-    throw new UnimemoImageError("JPEG、PNG、WebPの画像を選択してください。", 400);
-  }
-
-  if (image.size > MAX_IMAGE_SIZE) {
-    throw new UnimemoImageError("画像サイズは10MB以内にしてください。", 400);
-  }
-
-  const imageBase64 = Buffer.from(await image.arrayBuffer()).toString("base64");
   const model = getGeminiModel();
+  const imageParts = await buildImageParts(images);
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
     {
@@ -162,13 +229,8 @@ export async function analyzeUnimemoImage(request: Request, config: UnimemoMachi
         contents: [
           {
             parts: [
-              { text: config.prompt },
-              {
-                inline_data: {
-                  mime_type: image.type,
-                  data: imageBase64
-                }
-              }
+              { text: buildPrompt(config, images.length) },
+              ...imageParts
             ]
           }
         ],

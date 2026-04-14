@@ -8,6 +8,14 @@ export const thundervUnimemoConfig: UnimemoMachineConfig = {
     beforeBig: "0",
     beforeReg: "0"
   },
+  layoutGuide: `
+- 基本情報: 総プレイ数 -> 総ボーナス回数 -> 最大獲得枚数
+- 小役: ベルA -> ベルB -> スイカ -> チェリーA -> チェリーB
+- ボーナス関連: 総ボーナス回数 -> 総BB回数 -> VB回数 -> 赤7B回数 -> RB回数 -> 最大連荘回数 -> 特殊7BB回数 -> 最大特殊7BB連荘回数
+- BB中小役: BB中ベルB回数 -> BB中ベルC回数
+- リーチ目スコア: 獲得スコア
+- リーチ目コレクション: 新規
+`,
   fields: [
     { key: "currentGames", kind: "integer", description: "総プレイ数。例: 84" },
     { key: "currentBig", kind: "integer", description: "総BB回数。赤7BBなどを含めたBB合計。例: 2" },

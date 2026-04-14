@@ -9,6 +9,7 @@ export type UnimemoFieldConfig = {
 export type UnimemoMachineConfig = {
   id: string;
   prompt: string;
+  layoutGuide?: string;
   fields: UnimemoFieldConfig[];
   defaults?: Record<string, string>;
   successMessage: string;

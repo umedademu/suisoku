@@ -27,17 +27,19 @@ export function UnimemoImageUpload({ machine, onApply }: UnimemoImageUploadProps
   const [message, setMessage] = useState("");
 
   const handleChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+    const files = Array.from(event.target.files ?? []);
 
-    if (!file) {
+    if (files.length === 0) {
       return;
     }
 
     setIsLoading(true);
-    setMessage("画像を読み取っています。");
+    setMessage(files.length === 1 ? "画像を読み取っています。" : `${files.length}枚の画像を読み取っています。`);
 
     const formData = new FormData();
-    formData.append("image", file);
+    files.forEach((file) => {
+      formData.append("image", file);
+    });
 
     try {
       const response = await fetch(`/api/unimemo/${machine}`, {
@@ -71,12 +73,16 @@ export function UnimemoImageUpload({ machine, onApply }: UnimemoImageUploadProps
   return (
     <section className="unimemo-image-group">
       <p className="unimemo-image-title">ユニメモ画像</p>
+      <p className="unimemo-image-note">
+        公式アプリの画像1枚、または見出しが入るように少し重ねて撮った複数画像を選べます。
+      </p>
       <label className={`unimemo-image-upload${isLoading ? " is-loading" : ""}`}>
         <span>{isLoading ? "読み取り中" : "画像を選択"}</span>
         <input
           accept="image/png,image/jpeg,image/webp"
           className="unimemo-image-input"
           disabled={isLoading}
+          multiple
           type="file"
           onChange={handleChange}
         />

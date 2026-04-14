@@ -8,6 +8,17 @@ export const shinhanabiUnimemoConfig: UnimemoMachineConfig = {
     beforeBig: "0",
     beforeReg: "0"
   },
+  layoutGuide: `
+- 基本情報: 総プレイ数 -> 総ボーナス -> 総BB -> ドンBB -> 赤七BB -> RB
+- 小役: 風鈴合算 -> 風鈴A -> 風鈴B -> 氷合算 -> 氷A -> 氷B -> チェリー合算 -> チェリーA1 -> チェリーA2 -> チェリーB
+- RT詳細: 花火チャレンジ中はずれ -> 花火GAME中はずれ
+- BB中詳細: 風鈴中段揃い -> 風鈴斜め揃い -> バラケ目
+- RB中詳細（小役）: 1枚役
+- RB中詳細（その他）: ハズレ -> 最大成功 -> 最大神技 -> 最大獲得枚数
+- 連チャンBGM: 大花火 -> ドンちゃん2
+- その他: 最大RT連チャン -> 100G以内最大連チャン -> 100G以内最大獲得枚数
+- リーチ目コレクション: 新規
+`,
   fields: [
     { key: "currentGames", kind: "integer", description: "総プレイ数。例: 171" },
     { key: "currentBig", kind: "integer", description: "総BB回数。ドンBBや赤七BBを含めたBB合計。例: 0" },
@@ -43,7 +54,7 @@ export const shinhanabiUnimemoConfig: UnimemoMachineConfig = {
 風鈴合算、氷合算、氷B、チェリー合算、チェリーA1は使わないでください。
 BB中詳細で「風鈴斜め揃い」がある場合はbigFurinBに入れてください。「風鈴中段揃い」はbigFurinBに入れないでください。
 確率は「1/9.5」のように表示されている場合、分母だけを数値にしてください。
-「連チャンBGM」「リーチ目コレクション」「最大獲得枚数」は使わないでください。
+「連チャンBGM」「リーチ目コレクション」「最大成功」「最大神技」「最大獲得枚数」は使わないでください。
 見当たらない項目や「1/-」の確率はnullにしてください。
 `
 };
