@@ -11,6 +11,8 @@ type SaveSlotPayload = {
   savedAt?: unknown;
 };
 
+type SaveSlotNameMap = Record<number, string>;
+
 type UseSaveSlotsOptions<TValues extends Record<string, unknown>, TMode extends string> = {
   storageKey: string;
   inputValues: TValues;
@@ -27,8 +29,10 @@ type UseSaveSlotsOptions<TValues extends Record<string, unknown>, TMode extends 
 type SaveSlotControlsProps = {
   selectedSlots: number[];
   savedSlots: number[];
+  slotNames: SaveSlotNameMap;
   message: string;
   onSelectSlot: (slot: number) => void;
+  onChangeSlotName: (slot: number, name: string) => void;
 };
 
 type NormalizedSaveSlot<TValues extends Record<string, unknown>> = {
@@ -44,6 +48,18 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function getSaveSlotStorageKey(storageKey: string, slot: number) {
   return `${storageKey}-slot-${slot}`;
+}
+
+function getSaveSlotNamesStorageKey(storageKey: string) {
+  return `${storageKey}-slot-names`;
+}
+
+function getDefaultSaveSlotName(slot: number) {
+  return `保存${slot}`;
+}
+
+function getSaveSlotDisplayName(slotNames: SaveSlotNameMap, slot: number) {
+  return slotNames[slot]?.trim() || getDefaultSaveSlotName(slot);
 }
 
 function getSavedSlotNumbers(storageKey: string) {
@@ -91,6 +107,53 @@ function readSaveSlotPayload(storageKey: string, slot: number): SaveSlotPayload 
   } catch {
     return null;
   }
+}
+
+function readSaveSlotNames(storageKey: string): SaveSlotNameMap {
+  const raw = window.localStorage.getItem(getSaveSlotNamesStorageKey(storageKey));
+
+  if (!raw) {
+    return {};
+  }
+
+  try {
+    const parsed = JSON.parse(raw);
+
+    if (!isRecord(parsed)) {
+      return {};
+    }
+
+    return SAVE_SLOT_NUMBERS.reduce<SaveSlotNameMap>((slotNames, slot) => {
+      const name = parsed[String(slot)];
+
+      if (typeof name === "string" && name.trim() !== "") {
+        slotNames[slot] = name;
+      }
+
+      return slotNames;
+    }, {});
+  } catch {
+    return {};
+  }
+}
+
+function writeSaveSlotNames(storageKey: string, slotNames: SaveSlotNameMap) {
+  const writableSlotNames = SAVE_SLOT_NUMBERS.reduce<Record<string, string>>((nextSlotNames, slot) => {
+    const name = slotNames[slot];
+
+    if (typeof name === "string" && name.trim() !== "") {
+      nextSlotNames[String(slot)] = name;
+    }
+
+    return nextSlotNames;
+  }, {});
+
+  if (Object.keys(writableSlotNames).length === 0) {
+    window.localStorage.removeItem(getSaveSlotNamesStorageKey(storageKey));
+    return;
+  }
+
+  window.localStorage.setItem(getSaveSlotNamesStorageKey(storageKey), JSON.stringify(writableSlotNames));
 }
 
 function writeSaveSlotPayload<TValues extends Record<string, unknown>, TMode extends string>(
@@ -210,11 +273,17 @@ export function useSaveSlots<TValues extends Record<string, unknown>, TMode exte
   const [selectedSlots, setSelectedSlots] = useState<number[]>([]);
   const [activeSlot, setActiveSlot] = useState<number | null>(null);
   const [savedSlots, setSavedSlots] = useState<number[]>([]);
+  const [slotNames, setSlotNames] = useState<SaveSlotNameMap>({});
   const [message, setMessage] = useState("");
   const skipNextAutoSaveRef = useRef(false);
+  const slotNamesRef = useRef<SaveSlotNameMap>({});
 
   useEffect(() => {
+    const nextSlotNames = readSaveSlotNames(storageKey);
+
     setSavedSlots(getSavedSlotNumbers(storageKey));
+    setSlotNames(nextSlotNames);
+    slotNamesRef.current = nextSlotNames;
   }, [storageKey]);
 
   useEffect(() => {
@@ -239,6 +308,20 @@ export function useSaveSlots<TValues extends Record<string, unknown>, TMode exte
 
   const refreshSavedSlots = () => {
     setSavedSlots(getSavedSlotNumbers(storageKey));
+  };
+
+  const handleChangeSlotName = (slot: number, name: string) => {
+    const nextSlotNames = { ...slotNamesRef.current };
+
+    if (name.trim() === "") {
+      delete nextSlotNames[slot];
+    } else {
+      nextSlotNames[slot] = name;
+    }
+
+    writeSaveSlotNames(storageKey, nextSlotNames);
+    slotNamesRef.current = nextSlotNames;
+    setSlotNames(nextSlotNames);
   };
 
   const applyInputMode = (slots: Array<NormalizedSaveSlot<TValues>>) => {
@@ -349,6 +432,7 @@ export function useSaveSlots<TValues extends Record<string, unknown>, TMode exte
     try {
       if (activeSlot !== null && selectedSlots.length === 1 && selectedSlots[0] === activeSlot) {
         window.localStorage.removeItem(getSaveSlotStorageKey(storageKey, activeSlot));
+        handleChangeSlotName(activeSlot, "");
         refreshSavedSlots();
         onLoad({ ...initialValues });
         applyInputMode([]);
@@ -381,8 +465,11 @@ export function useSaveSlots<TValues extends Record<string, unknown>, TMode exte
       SAVE_SLOT_NUMBERS.forEach((slot) => {
         window.localStorage.removeItem(getSaveSlotStorageKey(storageKey, slot));
       });
+      window.localStorage.removeItem(getSaveSlotNamesStorageKey(storageKey));
       setSelectedSlots([SAVE_SLOT_NUMBERS[0]]);
       setActiveSlot(SAVE_SLOT_NUMBERS[0]);
+      slotNamesRef.current = {};
+      setSlotNames({});
       refreshSavedSlots();
       onLoad({ ...initialValues });
       applyInputMode([]);
@@ -395,8 +482,10 @@ export function useSaveSlots<TValues extends Record<string, unknown>, TMode exte
   return {
     selectedSlots,
     savedSlots,
+    slotNames,
     message,
     onSelectSlot: handleSelectSlot,
+    onChangeSlotName: handleChangeSlotName,
     onClearCurrentData: handleClearCurrentData,
     onClearAllData: handleClearAllData
   };
@@ -405,8 +494,10 @@ export function useSaveSlots<TValues extends Record<string, unknown>, TMode exte
 export function SaveSlotControls({
   selectedSlots,
   savedSlots,
+  slotNames,
   message,
-  onSelectSlot
+  onSelectSlot,
+  onChangeSlotName
 }: SaveSlotControlsProps) {
   const savedSlotSet = new Set(savedSlots);
 
@@ -417,17 +508,30 @@ export function SaveSlotControls({
         {SAVE_SLOT_NUMBERS.map((slot) => {
           const isSelected = selectedSlots.includes(slot);
           const isSaved = savedSlotSet.has(slot);
+          const defaultName = getDefaultSaveSlotName(slot);
+          const displayName = getSaveSlotDisplayName(slotNames, slot);
 
           return (
-            <button
-              aria-pressed={isSelected}
-              className={`save-slot-button${isSelected ? " is-active" : ""}${isSaved ? " is-saved" : ""}`}
-              key={slot}
-              type="button"
-              onClick={() => onSelectSlot(slot)}
-            >
-              保存{slot}
-            </button>
+            <div className="save-slot-item" key={slot}>
+              <button
+                aria-pressed={isSelected}
+                className={`save-slot-button${isSelected ? " is-active" : ""}${isSaved ? " is-saved" : ""}`}
+                title={displayName}
+                type="button"
+                onClick={() => onSelectSlot(slot)}
+              >
+                {displayName}
+              </button>
+              <input
+                aria-label={`${defaultName}の名前`}
+                className="save-slot-name-input"
+                maxLength={30}
+                placeholder={defaultName}
+                type="text"
+                value={slotNames[slot] ?? ""}
+                onChange={(event) => onChangeSlotName(slot, event.currentTarget.value)}
+              />
+            </div>
           );
         })}
       </div>

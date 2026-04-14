@@ -470,6 +470,12 @@ a {
   gap: 5px;
 }
 
+.save-slot-item {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
 .save-slot-button {
   min-width: 0;
   border: 1px solid var(--border);
@@ -481,12 +487,15 @@ a {
   font-size: 0.78rem;
   font-weight: 700;
   line-height: 1.1;
+  overflow: hidden;
   padding: 7px 4px;
+  text-overflow: ellipsis;
   transition:
     transform 0.2s ease,
     border-color 0.2s ease,
     background-color 0.2s ease,
     color 0.2s ease;
+  white-space: nowrap;
 }
 
 .save-slot-button:hover {
@@ -504,6 +513,25 @@ a {
   border-color: var(--accent);
   background: var(--accent);
   color: #fffaf4;
+}
+
+.save-slot-name-input {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.72rem;
+  line-height: 1.1;
+  padding: 6px 4px;
+  text-align: center;
+}
+
+.save-slot-name-input:focus {
+  outline: 2px solid rgba(197, 75, 44, 0.24);
+  border-color: var(--accent);
 }
 
 .save-slot-action-row {
@@ -1002,6 +1030,11 @@ a {
   .save-slot-button {
     font-size: 0.68rem;
     padding: 7px 2px;
+  }
+
+  .save-slot-name-input {
+    font-size: 0.62rem;
+    padding: 6px 2px;
   }
 
   .save-slot-action-button {
