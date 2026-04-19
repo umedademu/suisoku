@@ -17,7 +17,7 @@ const settings = [
     setting: "設定2",
     bb: "1/270.8",
     rb: "1/385.5",
-    budo: "1/5.86",
+    budo: "1/5.85",
     singleReg: "1/595.78",
     payout: "98.85%"
   },
@@ -25,7 +25,7 @@ const settings = [
     setting: "設定3",
     bb: "1/266.4",
     rb: "1/336.1",
-    budo: "1/5.83",
+    budo: "1/5.80",
     singleReg: "1/496.48",
     payout: "100.63%"
   },
@@ -33,7 +33,7 @@ const settings = [
     setting: "設定4",
     bb: "1/254.0",
     rb: "1/290.0",
-    budo: "1/5.83",
+    budo: "1/5.78",
     singleReg: "1/404.54",
     payout: "103.66%"
   },
@@ -41,7 +41,7 @@ const settings = [
     setting: "設定5",
     bb: "1/240.1",
     rb: "1/268.6",
-    budo: "1/5.83",
+    budo: "1/5.76",
     singleReg: "1/390.10",
     payout: "106.37%"
   },
@@ -49,7 +49,7 @@ const settings = [
     setting: "設定6",
     bb: "1/229.1",
     rb: "1/229.1",
-    budo: "1/5.79",
+    budo: "1/5.66",
     singleReg: "1/327.68",
     payout: "110.50%"
   }
