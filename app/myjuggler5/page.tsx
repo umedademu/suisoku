@@ -474,6 +474,20 @@ export default function MyJuggler5Page() {
     }));
   };
 
+  const handleSingleRegIncrement = () => {
+    setInputValues((current) => ({
+      ...current,
+      singleReg: String(toNumber(String(current.singleReg ?? "")) + 1)
+    }));
+  };
+
+  const handleSingleRegDecrement = () => {
+    setInputValues((current) => ({
+      ...current,
+      singleReg: String(Math.max(0, toNumber(String(current.singleReg ?? "")) - 1))
+    }));
+  };
+
   const handleEstimate = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -713,6 +727,8 @@ export default function MyJuggler5Page() {
                   <JugglerBudoCounterButton
                     onIncrement={handleBudoIncrement}
                     onDecrement={handleBudoDecrement}
+                    onSingleRegIncrement={handleSingleRegIncrement}
+                    onSingleRegDecrement={handleSingleRegDecrement}
                   />
                 </div>
               ) : null}

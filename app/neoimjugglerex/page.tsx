@@ -550,6 +550,20 @@ export default function NeoImJugglerExPage() {
     }));
   };
 
+  const handleSingleRegIncrement = () => {
+    setInputValues((current) => ({
+      ...current,
+      singleReg: String(toNumber(String(current.singleReg ?? "")) + 1)
+    }));
+  };
+
+  const handleSingleRegDecrement = () => {
+    setInputValues((current) => ({
+      ...current,
+      singleReg: String(Math.max(0, toNumber(String(current.singleReg ?? "")) - 1))
+    }));
+  };
+
   const handleEstimate = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -790,6 +804,8 @@ export default function NeoImJugglerExPage() {
                       <JugglerBudoCounterButton
                         onIncrement={handleBudoIncrement}
                         onDecrement={handleBudoDecrement}
+                        onSingleRegIncrement={handleSingleRegIncrement}
+                        onSingleRegDecrement={handleSingleRegDecrement}
                       />
                     </div>
                   ) : null}
