@@ -597,20 +597,26 @@ a {
 }
 
 .budo-counter-wrap {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-  align-items: stretch;
+  width: 100%;
   margin-top: 8px;
+}
+
+.budo-counter-panel {
+  display: grid;
+  gap: 8px;
+  width: min(100%, 400px);
+  margin: 0 auto;
+}
+
+.budo-counter-status-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 108px;
+  gap: 8px;
+  align-items: stretch;
 }
 
 .budo-counter-meter {
   position: relative;
-  display: inline-flex;
-  align-items: stretch;
-  flex: 0 0 84px;
-  width: 84px;
-  max-width: 84px;
   min-height: 54px;
   border: 1px solid #73510f;
   border-radius: 8px;
@@ -618,6 +624,7 @@ a {
   box-shadow:
     inset 0 2px 10px rgba(0, 0, 0, 0.42),
     0 10px 18px rgba(115, 81, 15, 0.18);
+  padding: 6px;
   overflow: hidden;
 }
 
@@ -626,16 +633,41 @@ a {
   position: absolute;
   inset: 6px;
   border-radius: 4px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, transparent 48%, rgba(0, 0, 0, 0.18) 100%),
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.12) 0 1px, transparent 1px 12px);
+  background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.11) 0 1px, transparent 1px 14px);
   pointer-events: none;
 }
 
-.budo-counter-meter-fill {
+.budo-counter-meter::after {
+  content: "";
   position: absolute;
   inset: 6px;
   border-radius: 4px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, transparent 52%, rgba(0, 0, 0, 0.16) 100%);
+  pointer-events: none;
+}
+
+.budo-counter-meter-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  height: 100%;
+}
+
+.budo-counter-meter-track,
+.budo-counter-meter-fill {
+  grid-column: 1;
+  border-radius: 4px;
+  min-height: 0;
+}
+
+.budo-counter-meter-track {
+  background: linear-gradient(180deg, rgba(255, 245, 191, 0.12) 0%, rgba(90, 60, 12, 0.22) 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 221, 123, 0.08);
+}
+
+.budo-counter-meter-fill {
   background: linear-gradient(90deg, #fff08b 0%, #ffba52 48%, #ff7048 100%);
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.14),
@@ -660,9 +692,6 @@ a {
   display: inline-flex;
   align-items: center;
   justify-content: flex-end;
-  flex: 0 0 102px;
-  width: 102px;
-  max-width: 102px;
   min-height: 54px;
   border: 1px solid #4b1113;
   border-radius: 8px;
@@ -681,13 +710,23 @@ a {
   text-shadow: 0 0 8px rgba(255, 107, 93, 0.48);
 }
 
+.budo-counter-action-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.budo-counter-action-row-compact {
+  grid-template-columns: minmax(0, 1fr) 64px;
+}
+
 .budo-counter-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  flex: 1 1 0;
-  max-width: 160px;
+  width: 100%;
+  max-width: none;
   min-width: 0;
   min-height: 54px;
   border: 1px solid #166534;
@@ -714,9 +753,6 @@ a {
 }
 
 .budo-counter-button-minus-compact {
-  flex: 0 0 54px;
-  width: 54px;
-  max-width: 54px;
   gap: 0;
   padding: 0;
 }
@@ -780,6 +816,8 @@ a {
   align-items: center;
   justify-content: center;
   gap: 8px;
+  width: 100%;
+  max-width: none;
   min-width: 0;
   min-height: 54px;
   border: 1px solid #525252;
@@ -797,16 +835,11 @@ a {
 }
 
 .reg-counter-button-plus {
-  flex: 1 1 0;
-  max-width: 160px;
   background: linear-gradient(180deg, #71717a 0%, #3f3f46 100%);
   padding: 11px 16px;
 }
 
 .reg-counter-button-minus {
-  flex: 0 0 54px;
-  width: 54px;
-  max-width: 54px;
   background: linear-gradient(180deg, #5f6368 0%, #34363a 100%);
   padding: 0;
 }
@@ -854,61 +887,37 @@ a {
   font-size: 1.12rem;
 }
 
-.budo-counter-wrap:has(.reg-counter-button) {
-  gap: 6px;
-  width: 100%;
-  max-width: 620px;
-  margin-right: auto;
-  margin-left: auto;
+.budo-counter-panel-with-reg .budo-counter-button-plus,
+.budo-counter-panel-with-reg .reg-counter-button-plus {
+  padding: 8px 8px;
 }
 
-.budo-counter-wrap:has(.reg-counter-button) .budo-counter-meter {
-  flex-basis: 64px;
-  width: 64px;
-  max-width: 64px;
-}
-
-.budo-counter-wrap:has(.reg-counter-button) .budo-counter-display {
-  flex-basis: 80px;
-  width: 80px;
-  max-width: 80px;
-  font-size: 1.2rem;
-  letter-spacing: 0.1em;
-  padding-right: 8px;
-  padding-left: 10px;
-}
-
-.budo-counter-wrap:has(.reg-counter-button) .budo-counter-button-plus,
-.budo-counter-wrap:has(.reg-counter-button) .reg-counter-button-plus {
-  padding: 8px 4px;
-}
-
-.budo-counter-wrap:has(.reg-counter-button) .budo-counter-icon {
+.budo-counter-panel-with-reg .budo-counter-icon {
   width: 22px;
   height: 22px;
 }
 
-.budo-counter-wrap:has(.reg-counter-button) .budo-counter-button-plus,
-.budo-counter-wrap:has(.reg-counter-button) .reg-counter-button-plus {
+.budo-counter-panel-with-reg .budo-counter-button-plus,
+.budo-counter-panel-with-reg .reg-counter-button-plus {
   gap: 4px;
 }
 
-.budo-counter-wrap:has(.reg-counter-button) .budo-counter-text,
-.budo-counter-wrap:has(.reg-counter-button) .reg-counter-text {
+.budo-counter-panel-with-reg .budo-counter-text,
+.budo-counter-panel-with-reg .reg-counter-text {
   gap: 3px;
 }
 
-.budo-counter-wrap:has(.reg-counter-button) .budo-counter-main,
-.budo-counter-wrap:has(.reg-counter-button) .reg-counter-main {
+.budo-counter-panel-with-reg .budo-counter-main,
+.budo-counter-panel-with-reg .reg-counter-main {
   font-size: 0.72rem;
 }
 
-.budo-counter-wrap:has(.reg-counter-button) .budo-counter-plus,
-.budo-counter-wrap:has(.reg-counter-button) .reg-counter-plus {
+.budo-counter-panel-with-reg .budo-counter-plus,
+.budo-counter-panel-with-reg .reg-counter-plus {
   font-size: 0.94rem;
 }
 
-.budo-counter-wrap:has(.reg-counter-button) .reg-counter-symbol {
+.budo-counter-panel-with-reg .reg-counter-symbol {
   width: 28px;
   height: 22px;
   border-width: 1px;
@@ -1285,17 +1294,30 @@ a {
     padding: 12px 16px;
   }
 
+  .budo-counter-panel {
+    gap: 7px;
+    width: min(100%, 360px);
+  }
+
+  .budo-counter-status-row,
+  .budo-counter-action-row {
+    gap: 6px;
+  }
+
+  .budo-counter-status-row {
+    grid-template-columns: minmax(0, 1fr) 88px;
+  }
+
   .budo-counter-meter {
-    flex-basis: 56px;
-    width: 56px;
-    max-width: 56px;
     min-height: 56px;
+    padding: 5px;
+  }
+
+  .budo-counter-meter-grid {
+    gap: 3px;
   }
 
   .budo-counter-display {
-    flex-basis: 78px;
-    width: 78px;
-    max-width: 78px;
     min-height: 56px;
     font-size: 1.22rem;
     letter-spacing: 0.1em;
@@ -1303,29 +1325,8 @@ a {
     padding-left: 10px;
   }
 
-  .budo-counter-wrap:has(.reg-counter-button) .budo-counter-meter {
-    flex-basis: 48px;
-    width: 48px;
-    max-width: 48px;
-  }
-
-  .budo-counter-wrap:has(.reg-counter-button) .budo-counter-display {
-    flex-basis: 66px;
-    width: 66px;
-    max-width: 66px;
-    font-size: 1.04rem;
-    letter-spacing: 0.08em;
-    padding-right: 6px;
-    padding-left: 8px;
-  }
-
-  .budo-counter-button-minus-compact,
-  .reg-counter-button-minus {
-    flex-basis: 52px;
-    width: 52px;
-    max-width: 52px;
-    min-height: 56px;
-    padding: 0;
+  .budo-counter-action-row-compact {
+    grid-template-columns: minmax(0, 1fr) 56px;
   }
 
   .result-group {
@@ -1364,50 +1365,5 @@ a {
 
   .result-value {
     text-align: left;
-  }
-}
-
-@media (max-width: 430px) {
-  .budo-counter-wrap:has(.reg-counter-button) {
-    display: grid;
-    grid-template-columns: 48px 66px minmax(0, 1fr) 52px;
-  }
-
-  .budo-counter-wrap:has(.reg-counter-button) .budo-counter-meter {
-    grid-column: 1;
-    grid-row: 1;
-    width: 100%;
-    max-width: none;
-  }
-
-  .budo-counter-wrap:has(.reg-counter-button) .budo-counter-display {
-    grid-column: 2;
-    grid-row: 1;
-    width: 100%;
-    max-width: none;
-  }
-
-  .budo-counter-wrap:has(.reg-counter-button) .budo-counter-button-plus {
-    grid-column: 3;
-    grid-row: 1;
-    width: 100%;
-    max-width: none;
-  }
-
-  .budo-counter-wrap:has(.reg-counter-button) .budo-counter-button-minus {
-    grid-column: 4;
-    grid-row: 1;
-  }
-
-  .budo-counter-wrap:has(.reg-counter-button) .reg-counter-button-plus {
-    grid-column: 3;
-    grid-row: 2;
-    width: 100%;
-    max-width: none;
-  }
-
-  .budo-counter-wrap:has(.reg-counter-button) .reg-counter-button-minus {
-    grid-column: 4;
-    grid-row: 2;
   }
 }
