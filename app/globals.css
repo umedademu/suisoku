@@ -650,8 +650,8 @@ a {
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-rows: repeat(3, minmax(0, 1fr));
-  gap: 4px;
+  grid-template-rows: repeat(5, minmax(0, 1fr));
+  gap: 3px;
   height: 100%;
 }
 
@@ -668,12 +668,46 @@ a {
 }
 
 .budo-counter-meter-fill {
-  background: linear-gradient(90deg, #fff08b 0%, #ffba52 48%, #ff7048 100%);
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.14),
     0 0 12px rgba(255, 176, 82, 0.42);
   transform-origin: left center;
-  animation: budo-counter-meter-drain 10s linear forwards;
+  animation: budo-counter-meter-drain 60s linear forwards;
+}
+
+.budo-counter-meter-fill-amber {
+  background: linear-gradient(90deg, #fff08b 0%, #ffba52 48%, #ff7048 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.14),
+    0 0 12px rgba(255, 176, 82, 0.42);
+}
+
+.budo-counter-meter-fill-lime {
+  background: linear-gradient(90deg, #dcff9f 0%, #8adf57 48%, #2fb870 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.14),
+    0 0 12px rgba(123, 235, 120, 0.38);
+}
+
+.budo-counter-meter-fill-cyan {
+  background: linear-gradient(90deg, #b4fff4 0%, #5ed9f3 48%, #2e95df 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.14),
+    0 0 12px rgba(94, 217, 243, 0.4);
+}
+
+.budo-counter-meter-fill-blue {
+  background: linear-gradient(90deg, #bed3ff 0%, #7292ff 48%, #455ddc 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.14),
+    0 0 12px rgba(114, 146, 255, 0.4);
+}
+
+.budo-counter-meter-fill-pink {
+  background: linear-gradient(90deg, #ffd1ea 0%, #ff82c5 48%, #ff4f8e 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.14),
+    0 0 12px rgba(255, 130, 197, 0.4);
 }
 
 @keyframes budo-counter-meter-drain {
@@ -1314,7 +1348,7 @@ a {
   }
 
   .budo-counter-meter-grid {
-    gap: 3px;
+    gap: 2px;
   }
 
   .budo-counter-display {

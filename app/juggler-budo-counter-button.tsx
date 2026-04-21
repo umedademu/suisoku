@@ -17,7 +17,13 @@ function formatBudoCount(count: string | number | undefined) {
   return String(safeCount).padStart(4, "0");
 }
 
-const MAX_METER_BANDS = 3;
+const MAX_METER_BANDS = 5;
+const METER_COLOR_NAMES = ["amber", "lime", "cyan", "blue", "pink"] as const;
+
+type MeterBand = {
+  id: number;
+  colorName: (typeof METER_COLOR_NAMES)[number];
+};
 
 export function JugglerBudoCounterButton({
   count,
@@ -28,18 +34,23 @@ export function JugglerBudoCounterButton({
 }: JugglerBudoCounterButtonProps) {
   const showsSingleRegCounter = Boolean(onSingleRegIncrement && onSingleRegDecrement);
   const budoCountText = formatBudoCount(count);
-  const [meterBandIds, setMeterBandIds] = useState<number[]>([]);
+  const [meterBands, setMeterBands] = useState<MeterBand[]>([]);
   const meterBandIdRef = useRef(0);
+  const meterColorIndexRef = useRef(0);
 
   const startMeter = () => {
     meterBandIdRef.current += 1;
-    const nextId = meterBandIdRef.current;
+    const nextBand: MeterBand = {
+      id: meterBandIdRef.current,
+      colorName: METER_COLOR_NAMES[meterColorIndexRef.current]
+    };
 
-    setMeterBandIds((current) => [...current, nextId].slice(-MAX_METER_BANDS));
+    meterColorIndexRef.current = (meterColorIndexRef.current + 1) % METER_COLOR_NAMES.length;
+    setMeterBands((current) => [...current, nextBand].slice(-MAX_METER_BANDS));
   };
 
   const removeMeterBand = (id: number) => {
-    setMeterBandIds((current) => current.filter((currentId) => currentId !== id));
+    setMeterBands((current) => current.filter((band) => band.id !== id));
   };
 
   const handleIncrementClick = () => {
@@ -76,12 +87,12 @@ export function JugglerBudoCounterButton({
                 style={{ gridRow: index + 1 }}
               />
             ))}
-            {meterBandIds.map((bandId, index) => (
+            {meterBands.map((band, index) => (
               <span
-                key={bandId}
-                className="budo-counter-meter-fill"
+                key={band.id}
+                className={`budo-counter-meter-fill budo-counter-meter-fill-${band.colorName}`}
                 style={{ gridRow: index + 1 }}
-                onAnimationEnd={() => removeMeterBand(bandId)}
+                onAnimationEnd={() => removeMeterBand(band.id)}
               />
             ))}
           </div>
