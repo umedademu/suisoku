@@ -19,10 +19,12 @@ function formatBudoCount(count: string | number | undefined) {
 
 const MAX_METER_BANDS = 5;
 const METER_COLOR_NAMES = ["amber", "lime", "cyan", "blue", "pink"] as const;
+const SINGLE_REG_COLOR_NAME = "gray" as const;
+const DISPLAY_COLOR_NAMES = [...METER_COLOR_NAMES, SINGLE_REG_COLOR_NAME] as const;
 
 type MeterBand = {
   id: number;
-  colorName: (typeof METER_COLOR_NAMES)[number];
+  colorName: (typeof DISPLAY_COLOR_NAMES)[number];
 };
 
 export function JugglerBudoCounterButton({
@@ -39,7 +41,7 @@ export function JugglerBudoCounterButton({
     useState<(typeof METER_COLOR_NAMES)[number] | null>(null);
   const [panelEffectSequence, setPanelEffectSequence] = useState(0);
   const [panelEffectColorName, setPanelEffectColorName] =
-    useState<(typeof METER_COLOR_NAMES)[number] | null>(null);
+    useState<(typeof DISPLAY_COLOR_NAMES)[number] | null>(null);
   const meterBandIdRef = useRef(0);
   const meterColorIndexRef = useRef(0);
   const panelEffectAnimationName =
@@ -49,19 +51,30 @@ export function JugglerBudoCounterButton({
         ? "budo-counter-panel-jolt-a"
         : "budo-counter-panel-jolt-b";
 
-  const startMeter = () => {
+  const startMeter = (colorName: (typeof DISPLAY_COLOR_NAMES)[number], updatesDisplayColor: boolean) => {
     meterBandIdRef.current += 1;
-    const nextColorName = METER_COLOR_NAMES[meterColorIndexRef.current];
     const nextBand: MeterBand = {
       id: meterBandIdRef.current,
-      colorName: nextColorName
+      colorName
     };
 
-    meterColorIndexRef.current = (meterColorIndexRef.current + 1) % METER_COLOR_NAMES.length;
     setMeterBands((current) => [...current, nextBand].slice(-MAX_METER_BANDS));
-    setDisplayColorName(nextColorName);
-    setPanelEffectColorName(nextColorName);
+    if (updatesDisplayColor && colorName !== SINGLE_REG_COLOR_NAME) {
+      setDisplayColorName(colorName);
+    }
+    setPanelEffectColorName(colorName);
     setPanelEffectSequence((current) => current + 1);
+  };
+
+  const startBudoMeter = () => {
+    const nextColorName = METER_COLOR_NAMES[meterColorIndexRef.current];
+
+    meterColorIndexRef.current = (meterColorIndexRef.current + 1) % METER_COLOR_NAMES.length;
+    startMeter(nextColorName, true);
+  };
+
+  const startSingleRegMeter = () => {
+    startMeter(SINGLE_REG_COLOR_NAME, false);
   };
 
   const removeMeterBand = (id: number) => {
@@ -70,22 +83,22 @@ export function JugglerBudoCounterButton({
 
   const handleIncrementClick = () => {
     onIncrement();
-    startMeter();
+    startBudoMeter();
   };
 
   const handleDecrementClick = () => {
     onDecrement();
-    startMeter();
+    startBudoMeter();
   };
 
   const handleSingleRegIncrementClick = () => {
     onSingleRegIncrement?.();
-    startMeter();
+    startSingleRegMeter();
   };
 
   const handleSingleRegDecrementClick = () => {
     onSingleRegDecrement?.();
-    startMeter();
+    startSingleRegMeter();
   };
 
   return (

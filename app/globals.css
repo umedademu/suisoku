@@ -665,6 +665,10 @@ a {
   --budo-panel-effect-rgb: 255, 130, 197;
 }
 
+.budo-counter-panel-tone-gray {
+  --budo-panel-effect-rgb: 176, 182, 191;
+}
+
 @keyframes budo-counter-panel-flash-sweep {
   0% {
     opacity: 0;
@@ -822,6 +826,13 @@ a {
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.14),
     0 0 12px rgba(255, 130, 197, 0.4);
+}
+
+.budo-counter-meter-fill-gray {
+  background: linear-gradient(90deg, #edf0f5 0%, #b0b6bf 48%, #747b87 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.16),
+    0 0 12px rgba(176, 182, 191, 0.34);
 }
 
 @keyframes budo-counter-meter-drain {
