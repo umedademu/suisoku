@@ -35,18 +35,22 @@ export function JugglerBudoCounterButton({
   const showsSingleRegCounter = Boolean(onSingleRegIncrement && onSingleRegDecrement);
   const budoCountText = formatBudoCount(count);
   const [meterBands, setMeterBands] = useState<MeterBand[]>([]);
+  const [displayColorName, setDisplayColorName] =
+    useState<(typeof METER_COLOR_NAMES)[number] | null>(null);
   const meterBandIdRef = useRef(0);
   const meterColorIndexRef = useRef(0);
 
   const startMeter = () => {
     meterBandIdRef.current += 1;
+    const nextColorName = METER_COLOR_NAMES[meterColorIndexRef.current];
     const nextBand: MeterBand = {
       id: meterBandIdRef.current,
-      colorName: METER_COLOR_NAMES[meterColorIndexRef.current]
+      colorName: nextColorName
     };
 
     meterColorIndexRef.current = (meterColorIndexRef.current + 1) % METER_COLOR_NAMES.length;
     setMeterBands((current) => [...current, nextBand].slice(-MAX_METER_BANDS));
+    setDisplayColorName(nextColorName);
   };
 
   const removeMeterBand = (id: number) => {
@@ -98,7 +102,7 @@ export function JugglerBudoCounterButton({
           </div>
         </div>
         <output
-          className="budo-counter-display"
+          className={`budo-counter-display${displayColorName ? ` budo-counter-display-${displayColorName}` : ""}`}
           aria-label={`現在のブドウ数 ${budoCountText}`}
           aria-live="polite"
         >
