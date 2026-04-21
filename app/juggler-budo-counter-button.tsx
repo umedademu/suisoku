@@ -138,7 +138,10 @@ export function JugglerBudoCounterButton({
           aria-label={`現在のブドウ数 ${budoCountText}`}
           aria-live="polite"
         >
-          {budoCountText}
+          <span className="budo-counter-display-glow" aria-hidden="true">
+            {budoCountText}
+          </span>
+          <span className="budo-counter-display-value">{budoCountText}</span>
         </output>
       </div>
       <div

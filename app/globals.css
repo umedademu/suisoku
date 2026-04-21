@@ -848,55 +848,180 @@ a {
 }
 
 .budo-counter-display {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: flex-end;
   min-height: 54px;
+  min-width: 6.6ch;
+  overflow: hidden;
   border: 1px solid #4b1113;
   border-radius: 8px;
-  background: linear-gradient(180deg, #2b090d 0%, #140406 100%);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 24%),
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.035) 0,
+      rgba(255, 255, 255, 0.035) 1px,
+      transparent 1px,
+      transparent 14px
+    ),
+    linear-gradient(180deg, #2b090d 0%, #140406 100%);
   box-shadow:
     inset 0 2px 10px rgba(0, 0, 0, 0.45),
+    inset 0 0 18px rgba(255, 107, 93, 0.1),
     0 10px 18px rgba(70, 8, 10, 0.22);
   color: #ff6b5d;
-  font-family: "Consolas", "Courier New", monospace;
-  font-size: 1.55rem;
+  font-family: "Orbitron", "Consolas", "Courier New", monospace;
+  font-size: 2.35rem;
   font-variant-numeric: tabular-nums;
-  font-weight: 700;
-  letter-spacing: 0.14em;
+  font-weight: 800;
+  letter-spacing: 0.16em;
   line-height: 1;
-  padding: 0 12px 0 14px;
+  padding: 0 14px 0 18px;
   transition:
     color 0.18s ease,
-    text-shadow 0.18s ease;
-  text-shadow: 0 0 8px rgba(255, 107, 93, 0.48);
+    text-shadow 0.18s ease,
+    box-shadow 0.18s ease;
+  text-transform: uppercase;
+}
+
+.budo-counter-display::before {
+  content: "";
+  position: absolute;
+  inset: 7px 10px;
+  border-radius: 4px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 42%),
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.04) 0,
+      rgba(255, 255, 255, 0.04) 1px,
+      transparent 1px,
+      transparent 7px
+    );
+  opacity: 0.58;
+  pointer-events: none;
+}
+
+.budo-counter-display-glow,
+.budo-counter-display-value {
+  display: block;
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.budo-counter-display-glow {
+  position: absolute;
+  right: 14px;
+  opacity: 0.22;
+  filter: blur(7px);
+  pointer-events: none;
+}
+
+.budo-counter-display-value {
+  position: relative;
+  z-index: 1;
+  text-shadow:
+    0 0 6px currentColor,
+    0 0 12px color-mix(in srgb, currentColor 78%, transparent);
 }
 
 .budo-counter-display-amber {
   color: #ffba52;
-  text-shadow: 0 0 8px rgba(255, 176, 82, 0.52);
+  box-shadow:
+    inset 0 2px 10px rgba(0, 0, 0, 0.45),
+    inset 0 0 18px rgba(255, 176, 82, 0.14),
+    0 10px 18px rgba(70, 8, 10, 0.22);
+}
+
+.budo-counter-display-amber .budo-counter-display-value,
+.budo-counter-display-amber .budo-counter-display-glow {
+  text-shadow: 0 0 8px rgba(255, 176, 82, 0.52), 0 0 16px rgba(255, 176, 82, 0.34);
 }
 
 .budo-counter-display-lime {
   color: #8adf57;
-  text-shadow: 0 0 8px rgba(123, 235, 120, 0.48);
+  box-shadow:
+    inset 0 2px 10px rgba(0, 0, 0, 0.45),
+    inset 0 0 18px rgba(123, 235, 120, 0.14),
+    0 10px 18px rgba(70, 8, 10, 0.22);
+}
+
+.budo-counter-display-lime .budo-counter-display-value,
+.budo-counter-display-lime .budo-counter-display-glow {
+  text-shadow: 0 0 8px rgba(123, 235, 120, 0.5), 0 0 16px rgba(123, 235, 120, 0.3);
 }
 
 .budo-counter-display-cyan {
   color: #5ed9f3;
-  text-shadow: 0 0 8px rgba(94, 217, 243, 0.48);
+  box-shadow:
+    inset 0 2px 10px rgba(0, 0, 0, 0.45),
+    inset 0 0 18px rgba(94, 217, 243, 0.14),
+    0 10px 18px rgba(70, 8, 10, 0.22);
+}
+
+.budo-counter-display-cyan .budo-counter-display-value,
+.budo-counter-display-cyan .budo-counter-display-glow {
+  text-shadow: 0 0 8px rgba(94, 217, 243, 0.5), 0 0 16px rgba(94, 217, 243, 0.3);
 }
 
 .budo-counter-display-blue {
   color: #7292ff;
-  text-shadow: 0 0 8px rgba(114, 146, 255, 0.5);
+  box-shadow:
+    inset 0 2px 10px rgba(0, 0, 0, 0.45),
+    inset 0 0 18px rgba(114, 146, 255, 0.16),
+    0 10px 18px rgba(70, 8, 10, 0.22);
+}
+
+.budo-counter-display-blue .budo-counter-display-value,
+.budo-counter-display-blue .budo-counter-display-glow {
+  text-shadow: 0 0 8px rgba(114, 146, 255, 0.52), 0 0 16px rgba(114, 146, 255, 0.32);
 }
 
 .budo-counter-display-pink {
   color: #ff82c5;
-  text-shadow: 0 0 8px rgba(255, 130, 197, 0.5);
+  box-shadow:
+    inset 0 2px 10px rgba(0, 0, 0, 0.45),
+    inset 0 0 18px rgba(255, 130, 197, 0.16),
+    0 10px 18px rgba(70, 8, 10, 0.22);
 }
 
+.budo-counter-display-pink .budo-counter-display-value,
+.budo-counter-display-pink .budo-counter-display-glow {
+  text-shadow: 0 0 8px rgba(255, 130, 197, 0.52), 0 0 16px rgba(255, 130, 197, 0.32);
+}
+
+.budo-counter-display-gray .budo-counter-display-value,
+.budo-counter-display-gray .budo-counter-display-glow {
+  text-shadow: 0 0 8px rgba(176, 182, 191, 0.46), 0 0 14px rgba(176, 182, 191, 0.28);
+}
+
+@supports not (color: color-mix(in srgb, red 50%, transparent)) {
+  .budo-counter-display-value {
+    text-shadow: 0 0 6px currentColor, 0 0 12px currentColor;
+  }
+}
+
+@media (max-width: 640px) {
+  .budo-counter-display {
+    font-size: 2.1rem;
+    min-width: 6.1ch;
+    padding: 0 12px 0 16px;
+  }
+
+  .budo-counter-display-glow {
+    right: 12px;
+  }
+}
+
+@media (max-width: 420px) {
+  .budo-counter-display {
+    font-size: 1.92rem;
+    min-width: 5.7ch;
+    letter-spacing: 0.13em;
+  }
+}
 .budo-counter-action-row {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
