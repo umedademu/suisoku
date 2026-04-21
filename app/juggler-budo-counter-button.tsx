@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 type JugglerBudoCounterButtonProps = {
   count?: string | number;
   onIncrement: () => void;
@@ -24,9 +26,41 @@ export function JugglerBudoCounterButton({
 }: JugglerBudoCounterButtonProps) {
   const showsSingleRegCounter = Boolean(onSingleRegIncrement && onSingleRegDecrement);
   const budoCountText = formatBudoCount(count);
+  const [meterSequence, setMeterSequence] = useState(0);
+  const [hasRecentAction, setHasRecentAction] = useState(false);
+
+  const startMeter = () => {
+    setHasRecentAction(true);
+    setMeterSequence((current) => current + 1);
+  };
+
+  const handleIncrementClick = () => {
+    onIncrement();
+    startMeter();
+  };
+
+  const handleDecrementClick = () => {
+    onDecrement();
+    startMeter();
+  };
+
+  const handleSingleRegIncrementClick = () => {
+    onSingleRegIncrement?.();
+    startMeter();
+  };
+
+  const handleSingleRegDecrementClick = () => {
+    onSingleRegDecrement?.();
+    startMeter();
+  };
 
   return (
     <>
+      <div className="budo-counter-meter" aria-hidden="true">
+        {hasRecentAction ? (
+          <span key={meterSequence} className="budo-counter-meter-fill" />
+        ) : null}
+      </div>
       <output
         className="budo-counter-display"
         aria-label={`現在のブドウ数 ${budoCountText}`}
@@ -37,7 +71,7 @@ export function JugglerBudoCounterButton({
       <button
         className="budo-counter-button budo-counter-button-plus"
         type="button"
-        onClick={onIncrement}
+        onClick={handleIncrementClick}
         aria-label="通常時のブドウを1加算"
       >
         <svg className="budo-counter-icon" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
@@ -59,7 +93,7 @@ export function JugglerBudoCounterButton({
       <button
         className={`budo-counter-button budo-counter-button-minus${showsSingleRegCounter ? " budo-counter-button-minus-compact" : ""}`}
         type="button"
-        onClick={onDecrement}
+        onClick={handleDecrementClick}
         aria-label="通常時のブドウを1減算"
       >
         {showsSingleRegCounter ? (
@@ -89,7 +123,7 @@ export function JugglerBudoCounterButton({
           <button
             className="reg-counter-button reg-counter-button-plus"
             type="button"
-            onClick={onSingleRegIncrement}
+            onClick={handleSingleRegIncrementClick}
             aria-label="単独REGを1加算"
           >
             <span className="reg-counter-symbol" aria-hidden="true">
@@ -103,7 +137,7 @@ export function JugglerBudoCounterButton({
           <button
             className="reg-counter-button reg-counter-button-minus"
             type="button"
-            onClick={onSingleRegDecrement}
+            onClick={handleSingleRegDecrementClick}
             aria-label="単独REGを1減算"
           >
             <span className="reg-counter-minus-text">-1</span>

@@ -604,6 +604,58 @@ a {
   margin-top: 8px;
 }
 
+.budo-counter-meter {
+  position: relative;
+  display: inline-flex;
+  align-items: stretch;
+  flex: 0 0 84px;
+  width: 84px;
+  max-width: 84px;
+  min-height: 54px;
+  border: 1px solid #73510f;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #31250d 0%, #171005 100%);
+  box-shadow:
+    inset 0 2px 10px rgba(0, 0, 0, 0.42),
+    0 10px 18px rgba(115, 81, 15, 0.18);
+  overflow: hidden;
+}
+
+.budo-counter-meter::before {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border-radius: 4px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, transparent 48%, rgba(0, 0, 0, 0.18) 100%),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.12) 0 1px, transparent 1px 12px);
+  pointer-events: none;
+}
+
+.budo-counter-meter-fill {
+  position: absolute;
+  inset: 6px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #fff08b 0%, #ffba52 48%, #ff7048 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.14),
+    0 0 12px rgba(255, 176, 82, 0.42);
+  transform-origin: left center;
+  animation: budo-counter-meter-drain 10s linear forwards;
+}
+
+@keyframes budo-counter-meter-drain {
+  from {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+
+  to {
+    opacity: 0.2;
+    transform: scaleX(0);
+  }
+}
+
 .budo-counter-display {
   display: inline-flex;
   align-items: center;
@@ -805,9 +857,15 @@ a {
 .budo-counter-wrap:has(.reg-counter-button) {
   gap: 6px;
   width: 100%;
-  max-width: 540px;
+  max-width: 620px;
   margin-right: auto;
   margin-left: auto;
+}
+
+.budo-counter-wrap:has(.reg-counter-button) .budo-counter-meter {
+  flex-basis: 64px;
+  width: 64px;
+  max-width: 64px;
 }
 
 .budo-counter-wrap:has(.reg-counter-button) .budo-counter-display {
@@ -1227,15 +1285,38 @@ a {
     padding: 12px 16px;
   }
 
-  .budo-counter-display {
-    flex-basis: 88px;
-    width: 88px;
-    max-width: 88px;
+  .budo-counter-meter {
+    flex-basis: 56px;
+    width: 56px;
+    max-width: 56px;
     min-height: 56px;
-    font-size: 1.34rem;
-    letter-spacing: 0.12em;
-    padding-right: 10px;
-    padding-left: 12px;
+  }
+
+  .budo-counter-display {
+    flex-basis: 78px;
+    width: 78px;
+    max-width: 78px;
+    min-height: 56px;
+    font-size: 1.22rem;
+    letter-spacing: 0.1em;
+    padding-right: 8px;
+    padding-left: 10px;
+  }
+
+  .budo-counter-wrap:has(.reg-counter-button) .budo-counter-meter {
+    flex-basis: 48px;
+    width: 48px;
+    max-width: 48px;
+  }
+
+  .budo-counter-wrap:has(.reg-counter-button) .budo-counter-display {
+    flex-basis: 66px;
+    width: 66px;
+    max-width: 66px;
+    font-size: 1.04rem;
+    letter-spacing: 0.08em;
+    padding-right: 6px;
+    padding-left: 8px;
   }
 
   .budo-counter-button-minus-compact,
@@ -1286,40 +1367,47 @@ a {
   }
 }
 
-@media (max-width: 365px) {
+@media (max-width: 430px) {
   .budo-counter-wrap:has(.reg-counter-button) {
     display: grid;
-    grid-template-columns: 76px minmax(0, 1fr) 52px;
+    grid-template-columns: 48px 66px minmax(0, 1fr) 52px;
   }
 
-  .budo-counter-wrap:has(.reg-counter-button) .budo-counter-display {
+  .budo-counter-wrap:has(.reg-counter-button) .budo-counter-meter {
     grid-column: 1;
     grid-row: 1;
     width: 100%;
     max-width: none;
   }
 
-  .budo-counter-wrap:has(.reg-counter-button) .budo-counter-button-plus {
+  .budo-counter-wrap:has(.reg-counter-button) .budo-counter-display {
     grid-column: 2;
+    grid-row: 1;
+    width: 100%;
+    max-width: none;
+  }
+
+  .budo-counter-wrap:has(.reg-counter-button) .budo-counter-button-plus {
+    grid-column: 3;
     grid-row: 1;
     width: 100%;
     max-width: none;
   }
 
   .budo-counter-wrap:has(.reg-counter-button) .budo-counter-button-minus {
-    grid-column: 3;
+    grid-column: 4;
     grid-row: 1;
   }
 
   .budo-counter-wrap:has(.reg-counter-button) .reg-counter-button-plus {
-    grid-column: 2;
+    grid-column: 3;
     grid-row: 2;
     width: 100%;
     max-width: none;
   }
 
   .budo-counter-wrap:has(.reg-counter-button) .reg-counter-button-minus {
-    grid-column: 3;
+    grid-column: 4;
     grid-row: 2;
   }
 }
