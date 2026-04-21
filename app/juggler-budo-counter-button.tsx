@@ -1,22 +1,39 @@
 "use client";
 
 type JugglerBudoCounterButtonProps = {
+  count?: string | number;
   onIncrement: () => void;
   onDecrement: () => void;
   onSingleRegIncrement?: () => void;
   onSingleRegDecrement?: () => void;
 };
 
+function formatBudoCount(count: string | number | undefined) {
+  const parsed = Number(count);
+  const safeCount = Number.isFinite(parsed) ? Math.max(0, Math.trunc(parsed)) : 0;
+
+  return String(safeCount).padStart(4, "0");
+}
+
 export function JugglerBudoCounterButton({
+  count,
   onIncrement,
   onDecrement,
   onSingleRegIncrement,
   onSingleRegDecrement
 }: JugglerBudoCounterButtonProps) {
   const showsSingleRegCounter = Boolean(onSingleRegIncrement && onSingleRegDecrement);
+  const budoCountText = formatBudoCount(count);
 
   return (
     <>
+      <output
+        className="budo-counter-display"
+        aria-label={`現在のブドウ数 ${budoCountText}`}
+        aria-live="polite"
+      >
+        {budoCountText}
+      </output>
       <button
         className="budo-counter-button budo-counter-button-plus"
         type="button"

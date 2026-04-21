@@ -725,6 +725,7 @@ export default function MyJuggler5Page() {
               {group.fields.some((field) => field.key === "budo") ? (
                 <div className="budo-counter-wrap">
                   <JugglerBudoCounterButton
+                    count={inputValues.budo}
                     onIncrement={handleBudoIncrement}
                     onDecrement={handleBudoDecrement}
                     onSingleRegIncrement={handleSingleRegIncrement}

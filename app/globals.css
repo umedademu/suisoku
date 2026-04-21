@@ -604,6 +604,31 @@ a {
   margin-top: 8px;
 }
 
+.budo-counter-display {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 0 0 102px;
+  width: 102px;
+  max-width: 102px;
+  min-height: 54px;
+  border: 1px solid #4b1113;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #2b090d 0%, #140406 100%);
+  box-shadow:
+    inset 0 2px 10px rgba(0, 0, 0, 0.45),
+    0 10px 18px rgba(70, 8, 10, 0.22);
+  color: #ff6b5d;
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: 1.55rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  padding: 0 12px 0 14px;
+  text-shadow: 0 0 8px rgba(255, 107, 93, 0.48);
+}
+
 .budo-counter-button {
   display: inline-flex;
   align-items: center;
@@ -780,9 +805,19 @@ a {
 .budo-counter-wrap:has(.reg-counter-button) {
   gap: 6px;
   width: 100%;
-  max-width: 460px;
+  max-width: 540px;
   margin-right: auto;
   margin-left: auto;
+}
+
+.budo-counter-wrap:has(.reg-counter-button) .budo-counter-display {
+  flex-basis: 80px;
+  width: 80px;
+  max-width: 80px;
+  font-size: 1.2rem;
+  letter-spacing: 0.1em;
+  padding-right: 8px;
+  padding-left: 10px;
 }
 
 .budo-counter-wrap:has(.reg-counter-button) .budo-counter-button-plus,
@@ -1192,6 +1227,17 @@ a {
     padding: 12px 16px;
   }
 
+  .budo-counter-display {
+    flex-basis: 88px;
+    width: 88px;
+    max-width: 88px;
+    min-height: 56px;
+    font-size: 1.34rem;
+    letter-spacing: 0.12em;
+    padding-right: 10px;
+    padding-left: 12px;
+  }
+
   .budo-counter-button-minus-compact,
   .reg-counter-button-minus {
     flex-basis: 52px;
@@ -1243,12 +1289,37 @@ a {
 @media (max-width: 365px) {
   .budo-counter-wrap:has(.reg-counter-button) {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 52px;
+    grid-template-columns: 76px minmax(0, 1fr) 52px;
   }
 
-  .budo-counter-wrap:has(.reg-counter-button) .budo-counter-button-plus,
-  .budo-counter-wrap:has(.reg-counter-button) .reg-counter-button-plus {
+  .budo-counter-wrap:has(.reg-counter-button) .budo-counter-display {
+    grid-column: 1;
+    grid-row: 1;
     width: 100%;
     max-width: none;
+  }
+
+  .budo-counter-wrap:has(.reg-counter-button) .budo-counter-button-plus {
+    grid-column: 2;
+    grid-row: 1;
+    width: 100%;
+    max-width: none;
+  }
+
+  .budo-counter-wrap:has(.reg-counter-button) .budo-counter-button-minus {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .budo-counter-wrap:has(.reg-counter-button) .reg-counter-button-plus {
+    grid-column: 2;
+    grid-row: 2;
+    width: 100%;
+    max-width: none;
+  }
+
+  .budo-counter-wrap:has(.reg-counter-button) .reg-counter-button-minus {
+    grid-column: 3;
+    grid-row: 2;
   }
 }
