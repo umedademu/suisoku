@@ -37,8 +37,17 @@ export function JugglerBudoCounterButton({
   const [meterBands, setMeterBands] = useState<MeterBand[]>([]);
   const [displayColorName, setDisplayColorName] =
     useState<(typeof METER_COLOR_NAMES)[number] | null>(null);
+  const [panelEffectSequence, setPanelEffectSequence] = useState(0);
+  const [panelEffectColorName, setPanelEffectColorName] =
+    useState<(typeof METER_COLOR_NAMES)[number] | null>(null);
   const meterBandIdRef = useRef(0);
   const meterColorIndexRef = useRef(0);
+  const panelEffectAnimationName =
+    panelEffectSequence === 0
+      ? undefined
+      : panelEffectSequence % 2 === 0
+        ? "budo-counter-panel-jolt-a"
+        : "budo-counter-panel-jolt-b";
 
   const startMeter = () => {
     meterBandIdRef.current += 1;
@@ -51,6 +60,8 @@ export function JugglerBudoCounterButton({
     meterColorIndexRef.current = (meterColorIndexRef.current + 1) % METER_COLOR_NAMES.length;
     setMeterBands((current) => [...current, nextBand].slice(-MAX_METER_BANDS));
     setDisplayColorName(nextColorName);
+    setPanelEffectColorName(nextColorName);
+    setPanelEffectSequence((current) => current + 1);
   };
 
   const removeMeterBand = (id: number) => {
@@ -79,8 +90,16 @@ export function JugglerBudoCounterButton({
 
   return (
     <div
-      className={`budo-counter-panel${showsSingleRegCounter ? " budo-counter-panel-with-reg" : ""}`}
+      className={`budo-counter-panel${showsSingleRegCounter ? " budo-counter-panel-with-reg" : ""}${panelEffectColorName ? ` budo-counter-panel-tone-${panelEffectColorName}` : ""}`}
+      style={
+        panelEffectAnimationName
+          ? { animation: `${panelEffectAnimationName} 360ms cubic-bezier(0.22, 0.9, 0.28, 1)` }
+          : undefined
+      }
     >
+      {panelEffectColorName && panelEffectSequence > 0 ? (
+        <span key={panelEffectSequence} className="budo-counter-panel-flash" aria-hidden="true" />
+      ) : null}
       <div className="budo-counter-status-row">
         <div className="budo-counter-meter" aria-hidden="true">
           <div className="budo-counter-meter-grid">
