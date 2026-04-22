@@ -4,7 +4,7 @@ export default function Home() {
   return (
     <main className="page-shell">
       <div className="card">
-        <h1 className="title">推測ツールv0.56</h1>
+        <h1 className="title">推測ツールv0.57</h1>
         <div className="link-list">
           <Link className="link-button" href="/hanabi">
             ハナビBH

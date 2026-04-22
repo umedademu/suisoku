@@ -17,6 +17,19 @@ function formatBudoCount(count: string | number | undefined) {
   return String(safeCount).padStart(4, "0");
 }
 
+const SEGMENT_MAP: Record<string, boolean[]> = {
+  "0": [true, true, true, true, true, true, false],
+  "1": [false, true, true, false, false, false, false],
+  "2": [true, true, false, true, true, false, true],
+  "3": [true, true, true, true, false, false, true],
+  "4": [false, true, true, false, false, true, true],
+  "5": [true, false, true, true, false, true, true],
+  "6": [true, false, true, true, true, true, true],
+  "7": [true, true, true, false, false, false, false],
+  "8": [true, true, true, true, true, true, true],
+  "9": [true, true, true, true, false, true, true]
+};
+
 const MAX_METER_BANDS = 5;
 const METER_COLOR_NAMES = ["amber", "lime", "cyan", "blue", "pink"] as const;
 const SINGLE_REG_COLOR_NAME = "gray" as const;
@@ -141,7 +154,23 @@ export function JugglerBudoCounterButton({
           <span className="budo-counter-display-glow" aria-hidden="true">
             {budoCountText}
           </span>
-          <span className="budo-counter-display-value">{budoCountText}</span>
+          <span className="budo-counter-display-value" aria-hidden="true">
+            {Array.from(budoCountText).map((digit, index) => {
+              const segments = SEGMENT_MAP[digit] ?? SEGMENT_MAP["0"];
+
+              return (
+                <span key={`${digit}-${index}`} className="seven-seg-digit">
+                  {segments.map((isOn, segmentIndex) => (
+                    <span
+                      key={segmentIndex}
+                      className={`seven-seg-segment seven-seg-segment-${segmentIndex}${isOn ? " is-on" : ""}`}
+                    />
+                  ))}
+                </span>
+              );
+            })}
+          </span>
+          <span className="sr-only">{budoCountText}</span>
         </output>
       </div>
       <div
