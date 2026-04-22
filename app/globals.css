@@ -875,8 +875,10 @@ a {
   font-family: "Orbitron", "Consolas", "Courier New", monospace;
   font-size: 2.35rem;
   font-variant-numeric: tabular-nums;
-  font-weight: 800;
-  letter-spacing: 0.16em;
+  font-feature-settings: "tnum" 1, "zero" 1;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  font-stretch: expanded;
   line-height: 1;
   padding: 0 14px 0 18px;
   transition:
@@ -899,6 +901,13 @@ a {
       rgba(255, 255, 255, 0.04) 1px,
       transparent 1px,
       transparent 7px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.022) 0,
+      rgba(255, 255, 255, 0.022) 1px,
+      transparent 1px,
+      transparent 24px
     );
   opacity: 0.58;
   pointer-events: none;
@@ -922,9 +931,13 @@ a {
 .budo-counter-display-value {
   position: relative;
   z-index: 1;
+  display: inline-block;
+  transform: scaleX(1.08);
   text-shadow:
-    0 0 6px currentColor,
-    0 0 12px color-mix(in srgb, currentColor 78%, transparent);
+    0 0 4px currentColor,
+    0 0 12px color-mix(in srgb, currentColor 78%, transparent),
+    0 0 20px color-mix(in srgb, currentColor 38%, transparent);
+  -webkit-text-stroke: 0.6px color-mix(in srgb, currentColor 78%, #ffd1cb 22%);
 }
 
 .budo-counter-display-amber {
@@ -1019,7 +1032,14 @@ a {
   .budo-counter-display {
     font-size: 1.92rem;
     min-width: 5.7ch;
-    letter-spacing: 0.13em;
+    letter-spacing: 0.06em;
+  }
+}
+
+@supports (-webkit-text-stroke: 1px #fff) {
+  .budo-counter-display-glow,
+  .budo-counter-display-value {
+    font-family: "Orbitron", "Rajdhani", "Consolas", "Courier New", monospace;
   }
 }
 .budo-counter-action-row {
