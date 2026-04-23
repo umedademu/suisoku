@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 
 type JugglerBudoCounterButtonProps = {
   count?: string | number;
@@ -37,12 +37,16 @@ export function JugglerBudoCounterButton({
   const showsSingleRegCounter = Boolean(onSingleRegIncrement && onSingleRegDecrement);
   const budoCountText = formatBudoCount(count);
   const [isRotated, setIsRotated] = useState(false);
+  const [rotatedScale, setRotatedScale] = useState(1);
+  const [rotatedViewportHeight, setRotatedViewportHeight] = useState<number | null>(null);
   const [meterBands, setMeterBands] = useState<MeterBand[]>([]);
   const [displayColorName, setDisplayColorName] =
     useState<(typeof METER_COLOR_NAMES)[number] | null>(null);
   const [panelEffectSequence, setPanelEffectSequence] = useState(0);
   const [panelEffectColorName, setPanelEffectColorName] =
     useState<(typeof DISPLAY_COLOR_NAMES)[number] | null>(null);
+  const viewportRef = useRef<HTMLDivElement | null>(null);
+  const panelRef = useRef<HTMLDivElement | null>(null);
   const meterBandIdRef = useRef(0);
   const meterColorIndexRef = useRef(0);
   const panelEffectAnimationName =
@@ -102,6 +106,57 @@ export function JugglerBudoCounterButton({
     startSingleRegMeter();
   };
 
+  useLayoutEffect(() => {
+    if (!isRotated) {
+      setRotatedScale(1);
+      setRotatedViewportHeight(null);
+      return;
+    }
+
+    const updateRotatedLayout = () => {
+      const viewport = viewportRef.current;
+      const panel = panelRef.current;
+
+      if (!viewport || !panel) {
+        return;
+      }
+
+      const availableWidth = viewport.clientWidth;
+      const naturalWidth = panel.offsetWidth;
+      const naturalHeight = panel.offsetHeight;
+
+      if (availableWidth <= 0 || naturalWidth <= 0 || naturalHeight <= 0) {
+        return;
+      }
+
+      const nextScale = availableWidth / naturalHeight;
+
+      setRotatedScale(nextScale);
+      setRotatedViewportHeight(naturalWidth * nextScale);
+    };
+
+    updateRotatedLayout();
+
+    const observer = new ResizeObserver(() => {
+      updateRotatedLayout();
+    });
+
+    if (viewportRef.current) {
+      observer.observe(viewportRef.current);
+    }
+
+    if (panelRef.current) {
+      observer.observe(panelRef.current);
+    }
+
+    window.addEventListener("resize", updateRotatedLayout);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", updateRotatedLayout);
+    };
+  }, [isRotated, showsSingleRegCounter]);
+
   return (
     <div className={`budo-counter-shell${isRotated ? " budo-counter-shell-rotated" : ""}`}>
       <div className="budo-counter-toolbar">
@@ -123,8 +178,19 @@ export function JugglerBudoCounterButton({
           </svg>
         </button>
       </div>
-      <div className="budo-counter-viewport">
-        <div className={`budo-counter-turntable${isRotated ? " budo-counter-turntable-rotated" : ""}`}>
+      <div
+        className="budo-counter-viewport"
+        ref={viewportRef}
+        style={isRotated && rotatedViewportHeight ? { minHeight: `${rotatedViewportHeight}px` } : undefined}
+      >
+        <div
+          className={`budo-counter-turntable${isRotated ? " budo-counter-turntable-rotated" : ""}`}
+          style={
+            isRotated
+              ? { transform: `translate(-50%, -50%) rotate(-90deg) scale(${rotatedScale})` }
+              : undefined
+          }
+        >
           <div
             className={`budo-counter-motion${panelEffectColorName ? ` budo-counter-panel-tone-${panelEffectColorName}` : ""}`}
             style={
@@ -136,7 +202,10 @@ export function JugglerBudoCounterButton({
             {panelEffectColorName && panelEffectSequence > 0 ? (
               <span key={panelEffectSequence} className="budo-counter-panel-flash" aria-hidden="true" />
             ) : null}
-            <div className={`budo-counter-panel${showsSingleRegCounter ? " budo-counter-panel-with-reg" : ""}`}>
+            <div
+              className={`budo-counter-panel${showsSingleRegCounter ? " budo-counter-panel-with-reg" : ""}`}
+              ref={panelRef}
+            >
               <div className="budo-counter-status-row">
                 <div className="budo-counter-meter" aria-hidden="true">
                   <div className="budo-counter-meter-grid">
