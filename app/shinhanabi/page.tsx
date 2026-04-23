@@ -716,6 +716,7 @@ export default function ShinHanabiPage() {
           probabilityText: string;
           weightedText: string;
         }>;
+        totalPayoutText: string;
         totalText: string;
       }
     | null
@@ -1063,6 +1064,7 @@ export default function ShinHanabiPage() {
           probabilityText: "-",
           weightedText: "-"
         })),
+        totalPayoutText: "-",
         totalText: "-"
       });
       return;
@@ -1113,6 +1115,13 @@ export default function ShinHanabiPage() {
       const probability = totalWeight > 0 ? scaledRows[index].weight / totalWeight : 0;
       return sum + settingExpectationValues[index].expectedYen * probability;
     }, 0);
+    const totalExpectedPayoutRate =
+      totalWeight > 0
+        ? settingExpectationValues.reduce((sum, row, index) => {
+            const probability = scaledRows[index].weight / totalWeight;
+            return sum + row.payoutRate * probability;
+          }, 0)
+        : null;
     const hourlyExpectedYen =
       practiceGames > 0 ? (totalExpectedYen * 700) / practiceGames : null;
 
@@ -1121,6 +1130,7 @@ export default function ShinHanabiPage() {
       payoutHeaderText: formatInputPercentage(strategyRate),
       hourlyText: hourlyExpectedYen !== null ? formatHourlyYen(hourlyExpectedYen) : "-",
       rows: expectationRows,
+      totalPayoutText: totalExpectedPayoutRate !== null ? formatPayout(totalExpectedPayoutRate) : "-",
       totalText: formatYen(totalExpectedYen)
     });
   };
@@ -1307,7 +1317,7 @@ export default function ShinHanabiPage() {
                       ))}
                       <tr>
                         <th scope="row">合計</th>
-                        <td>-</td>
+                        <td>{settingExpectationTable.totalPayoutText}</td>
                         <td>-</td>
                         <td>-</td>
                         <td>{settingExpectationTable.totalText}</td>
