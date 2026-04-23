@@ -606,12 +606,12 @@ a {
 }
 
 .budo-counter-shell-rotated {
-  --budo-counter-rotated-span: min(calc(100svh - 24px), 560px);
+  --budo-counter-rotated-span: min(100svw, 560px);
   width: 100vw;
   max-width: none;
   margin-left: calc(50% - 50vw);
   margin-right: calc(50% - 50vw);
-  padding: 0 10px;
+  padding: 0;
 }
 
 .budo-counter-toolbar {
@@ -1583,8 +1583,7 @@ a {
   }
 
   .budo-counter-shell-rotated {
-    --budo-counter-rotated-span: min(calc(100svh - 12px), 520px);
-    padding: 0 6px;
+    --budo-counter-rotated-span: 100svw;
   }
 
   .budo-counter-rotate-button {
