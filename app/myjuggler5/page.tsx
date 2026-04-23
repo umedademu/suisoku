@@ -11,7 +11,9 @@ const settings = [
     rb: "1/409.6",
     budo: "1/5.90",
     singleReg: "1/655.36",
-    payout: "97.80%"
+    payoutPublic: "97.0%",
+    payoutCherry: "97.83%",
+    payoutFull: "98.61%"
   },
   {
     setting: "設定2",
@@ -19,7 +21,9 @@ const settings = [
     rb: "1/385.5",
     budo: "1/5.85",
     singleReg: "1/595.78",
-    payout: "98.85%"
+    payoutPublic: "98.0%",
+    payoutCherry: "98.95%",
+    payoutFull: "99.73%"
   },
   {
     setting: "設定3",
@@ -27,7 +31,9 @@ const settings = [
     rb: "1/336.1",
     budo: "1/5.80",
     singleReg: "1/496.48",
-    payout: "100.63%"
+    payoutPublic: "99.9%",
+    payoutCherry: "101.19%",
+    payoutFull: "101.97%"
   },
   {
     setting: "設定4",
@@ -35,7 +41,9 @@ const settings = [
     rb: "1/290.0",
     budo: "1/5.78",
     singleReg: "1/404.54",
-    payout: "103.66%"
+    payoutPublic: "102.8%",
+    payoutCherry: "104.31%",
+    payoutFull: "105.09%"
   },
   {
     setting: "設定5",
@@ -43,7 +51,9 @@ const settings = [
     rb: "1/268.6",
     budo: "1/5.76",
     singleReg: "1/390.10",
-    payout: "106.37%"
+    payoutPublic: "105.3%",
+    payoutCherry: "107.19%",
+    payoutFull: "107.97%"
   },
   {
     setting: "設定6",
@@ -51,7 +61,9 @@ const settings = [
     rb: "1/229.1",
     budo: "1/5.66",
     singleReg: "1/327.68",
-    payout: "110.50%"
+    payoutPublic: "109.4%",
+    payoutCherry: "111.65%",
+    payoutFull: "112.44%"
   }
 ];
 
@@ -68,7 +80,27 @@ type StandardInputGroup = {
   fields: InputField[];
 };
 
-type InputGroup = StandardInputGroup;
+type ChoiceOption = {
+  value: PayoutMode;
+  label: string;
+};
+
+type ChoiceInputGroup = {
+  title: string;
+  note?: string;
+  choiceKey: "payoutMode";
+  options: ChoiceOption[];
+};
+
+type InputGroup = StandardInputGroup | ChoiceInputGroup;
+
+type PayoutMode = "public" | "cherry" | "full";
+
+const payoutModeLabels: Record<PayoutMode, string> = {
+  public: "公表値",
+  cherry: "チェリー狙い",
+  full: "フル攻略"
+};
 
 const inputGroups: InputGroup[] = [
   {
@@ -92,6 +124,16 @@ const inputGroups: InputGroup[] = [
     fields: [
       { key: "budo", label: "ブドウ" },
       { key: "singleReg", label: "単独REG" }
+    ]
+  },
+  {
+    title: "打ち方",
+    note: "期待値の計算に使用",
+    choiceKey: "payoutMode",
+    options: [
+      { value: "public", label: "公表値" },
+      { value: "cherry", label: "チェリー狙い" },
+      { value: "full", label: "フル攻略" }
     ]
   },
   {
@@ -121,10 +163,13 @@ const inputGroups: InputGroup[] = [
 
 const initialValues = {
   ...Object.fromEntries(
-    inputGroups.flatMap((group) => group.fields.map((field) => [field.key, ""] as const))
+    inputGroups.flatMap((group) =>
+      "fields" in group ? group.fields.map((field) => [field.key, ""] as const) : []
+    )
   ),
   medalRent: "46",
-  exchangeRate: "5.0"
+  exchangeRate: "5.0",
+  payoutMode: "cherry" as PayoutMode
 };
 
 const STORAGE_KEY = "suisoku-myjuggler5-inputs";
@@ -136,7 +181,15 @@ const specGroups = [
       { label: "BIG", key: "bb" },
       { label: "REG", key: "rb" },
       { label: "ボーナス合算", key: "bonusTotal" },
-      { label: "出玉率", key: "payout" }
+      { label: "公表値", key: "payoutPublic" }
+    ]
+  },
+  {
+    title: "打ち方ごとの機械割",
+    columns: [
+      { label: "公表値", key: "payoutPublic" },
+      { label: "チェリー狙い", key: "payoutCherry" },
+      { label: "フル攻略", key: "payoutFull" }
     ]
   },
   {
@@ -213,7 +266,9 @@ const settingsDisplay = settings.map((setting) => ({
   bonusTotal: formatRateFromProbability(parseRate(setting.bb) + parseRate(setting.rb)),
   budo: formatRateFromProbability(parseRate(setting.budo)),
   singleReg: formatRateFromProbability(parseRate(setting.singleReg)),
-  payout: setting.payout
+  payoutPublic: setting.payoutPublic,
+  payoutCherry: setting.payoutCherry,
+  payoutFull: setting.payoutFull
 }));
 
 function toNumber(value: string) {
@@ -358,8 +413,20 @@ function formatPercent(probability: number) {
   return "0%";
 }
 
+function getSelectedPayout(setting: (typeof settings)[number], payoutMode: PayoutMode) {
+  if (payoutMode === "cherry") {
+    return parsePayoutRate(setting.payoutCherry);
+  }
+
+  if (payoutMode === "full") {
+    return parsePayoutRate(setting.payoutFull);
+  }
+
+  return parsePayoutRate(setting.payoutPublic);
+}
+
 export default function MyJuggler5Page() {
-  const [inputValues, setInputValues] = useState<Record<string, string>>(initialValues);
+  const [inputValues, setInputValues] = useState<Record<string, string | PayoutMode>>(initialValues);
   const [settingExpectationTable, setSettingExpectationTable] = useState<
     | {
         headerText: string;
@@ -415,9 +482,17 @@ export default function MyJuggler5Page() {
 
       if (raw) {
         const parsed = JSON.parse(raw) as Record<string, unknown>;
-        const nextValues: Record<string, string> = { ...initialValues };
+        const nextValues: Record<string, string | PayoutMode> = { ...initialValues };
 
         Object.entries(parsed).forEach(([key, value]) => {
+          if (key === "payoutMode") {
+            if (value === "public" || value === "cherry" || value === "full") {
+              nextValues[key] = value;
+            }
+
+            return;
+          }
+
           if (typeof value === "string" && key in nextValues) {
             nextValues[key] = value;
           }
@@ -440,9 +515,9 @@ export default function MyJuggler5Page() {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(inputValues));
   }, [hasLoadedSavedValues, inputValues]);
 
-  const medalRentValue = toNumber(inputValues.medalRent);
-  const exchangeRateValue = toNumber(inputValues.exchangeRate);
-  const cashInvestmentValue = Math.max(0, toNumber(inputValues.cashInvestment));
+  const medalRentValue = toNumber(String(inputValues.medalRent ?? ""));
+  const exchangeRateValue = toNumber(String(inputValues.exchangeRate ?? ""));
+  const cashInvestmentValue = Math.max(0, toNumber(String(inputValues.cashInvestment ?? "")));
   const liveYenPerMedal = medalRentValue > 0 ? 1000 / medalRentValue : 0;
   const liveExchangeYen = exchangeRateValue > 0 ? 100 / exchangeRateValue : 0;
   const liveCashGapLoss =
@@ -491,21 +566,22 @@ export default function MyJuggler5Page() {
   const handleEstimate = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const budoRaw = inputValues.budo;
+    const budoRaw = String(inputValues.budo ?? "");
     const hasBudoInput = budoRaw.trim() !== "";
-    const singleRegRaw = inputValues.singleReg;
+    const singleRegRaw = String(inputValues.singleReg ?? "");
     const hasSingleRegInput = singleRegRaw.trim() !== "";
-    const beforeGames = toNumber(inputValues.beforeGames);
-    const beforeBig = toNumber(inputValues.beforeBig);
-    const beforeReg = toNumber(inputValues.beforeReg);
-    const currentGames = toNumber(inputValues.currentGames);
-    const currentBig = toNumber(inputValues.currentBig);
-    const currentReg = toNumber(inputValues.currentReg);
+    const beforeGames = toNumber(String(inputValues.beforeGames ?? ""));
+    const beforeBig = toNumber(String(inputValues.beforeBig ?? ""));
+    const beforeReg = toNumber(String(inputValues.beforeReg ?? ""));
+    const currentGames = toNumber(String(inputValues.currentGames ?? ""));
+    const currentBig = toNumber(String(inputValues.currentBig ?? ""));
+    const currentReg = toNumber(String(inputValues.currentReg ?? ""));
     const budo = toNumber(budoRaw);
     const singleReg = toNumber(singleRegRaw);
-    const medalRent = toNumber(inputValues.medalRent);
-    const exchangeRate = toNumber(inputValues.exchangeRate);
-    const cashInvestment = Math.max(0, toNumber(inputValues.cashInvestment));
+    const medalRent = toNumber(String(inputValues.medalRent ?? ""));
+    const exchangeRate = toNumber(String(inputValues.exchangeRate ?? ""));
+    const cashInvestment = Math.max(0, toNumber(String(inputValues.cashInvestment ?? "")));
+    const payoutMode = (inputValues.payoutMode as PayoutMode) ?? "cherry";
     const yenPerMedal = exchangeRate > 0 ? 100 / exchangeRate : 0;
     const cashGapLoss =
       medalRent > 0 && exchangeRate > 0
@@ -517,7 +593,7 @@ export default function MyJuggler5Page() {
     void beforeReg;
     const totalBonus = currentBig + currentReg;
     const settingExpectationValues = settings.map((setting) => {
-      const payoutRate = parsePayoutRate(setting.payout);
+      const payoutRate = getSelectedPayout(setting, payoutMode);
 
       return {
         label: setting.setting,
@@ -613,7 +689,7 @@ export default function MyJuggler5Page() {
       setOverallSettingRows(null);
       setSettingExpectationTable({
         headerText: `${practiceGames}G`,
-        payoutHeaderText: "出玉率",
+        payoutHeaderText: payoutModeLabels[payoutMode],
         hourlyText: "-",
         rows: settingExpectationValues.map((row) => ({
           label: row.label,
@@ -677,7 +753,7 @@ export default function MyJuggler5Page() {
 
     setSettingExpectationTable({
       headerText: `${practiceGames}G`,
-      payoutHeaderText: "出玉率",
+      payoutHeaderText: payoutModeLabels[payoutMode],
       hourlyText: hourlyExpectedYen !== null ? formatHourlyYen(hourlyExpectedYen) : "-",
       rows: expectationRows,
       totalText: formatYen(totalExpectedYen)
@@ -695,44 +771,69 @@ export default function MyJuggler5Page() {
                 <p className="group-title">【{group.title}】</p>
                 {group.note ? <p className="group-note">{group.note}</p> : null}
               </div>
-              <div className={`input-row input-row-${Math.min(group.fields.length, 3)}`}>
-                {group.fields.map((field) => (
-                  <div className="input-field-wrap" key={field.key}>
-                    <label className="input-field">
-                      <span className="input-label">{field.label}</span>
-                      <span className="input-control">
-                        <input
-                          className={`number-input${field.widthClass ? ` ${field.widthClass}` : ""}`}
-                          type="number"
-                          inputMode="numeric"
-                          value={inputValues[field.key]}
-                          onChange={(event) =>
-                            setInputValues((current) => ({
-                              ...current,
-                              [field.key]: event.target.value
-                            }))
-                          }
-                        />
-                        {field.unit ? <span className="input-unit">{field.unit}</span> : null}
-                        {liveFieldTexts[field.key] ? (
-                          <span className="input-live-text">{liveFieldTexts[field.key]}</span>
-                        ) : null}
-                      </span>
-                    </label>
+              {"fields" in group ? (
+                <>
+                  <div className={`input-row input-row-${Math.min(group.fields.length, 3)}`}>
+                    {group.fields.map((field) => (
+                      <div className="input-field-wrap" key={field.key}>
+                        <label className="input-field">
+                          <span className="input-label">{field.label}</span>
+                          <span className="input-control">
+                            <input
+                              className={`number-input${field.widthClass ? ` ${field.widthClass}` : ""}`}
+                              type="number"
+                              inputMode="numeric"
+                              value={String(inputValues[field.key] ?? "")}
+                              onChange={(event) =>
+                                setInputValues((current) => ({
+                                  ...current,
+                                  [field.key]: event.target.value
+                                }))
+                              }
+                            />
+                            {field.unit ? <span className="input-unit">{field.unit}</span> : null}
+                            {liveFieldTexts[field.key] ? (
+                              <span className="input-live-text">{liveFieldTexts[field.key]}</span>
+                            ) : null}
+                          </span>
+                        </label>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-              {group.fields.some((field) => field.key === "budo") ? (
-                <div className="budo-counter-wrap">
-                  <JugglerBudoCounterButton
-                    count={inputValues.budo}
-                    onIncrement={handleBudoIncrement}
-                    onDecrement={handleBudoDecrement}
-                    onSingleRegIncrement={handleSingleRegIncrement}
-                    onSingleRegDecrement={handleSingleRegDecrement}
-                  />
+                  {group.fields.some((field) => field.key === "budo") ? (
+                    <div className="budo-counter-wrap">
+                      <JugglerBudoCounterButton
+                        count={inputValues.budo}
+                        onIncrement={handleBudoIncrement}
+                        onDecrement={handleBudoDecrement}
+                        onSingleRegIncrement={handleSingleRegIncrement}
+                        onSingleRegDecrement={handleSingleRegDecrement}
+                      />
+                    </div>
+                  ) : null}
+                </>
+              ) : (
+                <div className="choice-group">
+                  {group.options.map((option) => (
+                    <label className="choice-option" key={option.value}>
+                      <input
+                        className="choice-radio"
+                        type="radio"
+                        name={group.choiceKey}
+                        value={option.value}
+                        checked={inputValues[group.choiceKey] === option.value}
+                        onChange={() =>
+                          setInputValues((current) => ({
+                            ...current,
+                            [group.choiceKey]: option.value
+                          }))
+                        }
+                      />
+                      <span className="choice-text">{option.label}</span>
+                    </label>
+                  ))}
                 </div>
-              ) : null}
+              )}
             </section>
           ))}
           <SaveSlotControls {...saveSlots} />
