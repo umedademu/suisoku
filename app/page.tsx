@@ -39,6 +39,9 @@ export default function Home() {
           <Link className="link-button" href="/jugglergirlsss">
             ジャグラーガールズSS
           </Link>
+          <Link className="link-button" href="/ultramiraclejuggler">
+            ウルトラミラクルジャグラー
+          </Link>
           <Link className="link-button" href="/myjuggler5">
             マイジャグラーV
           </Link>
