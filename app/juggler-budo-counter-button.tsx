@@ -19,13 +19,20 @@ function formatBudoCount(count: string | number | undefined) {
 
 const MAX_METER_BANDS = 5;
 const METER_COLOR_NAMES = ["amber", "lime", "cyan", "blue", "pink"] as const;
+const DECREMENT_COLOR_NAME = "white" as const;
 const SINGLE_REG_COLOR_NAME = "gray" as const;
-const DISPLAY_COLOR_NAMES = [...METER_COLOR_NAMES, SINGLE_REG_COLOR_NAME] as const;
+const EFFECT_COLOR_NAMES = [...METER_COLOR_NAMES, DECREMENT_COLOR_NAME, SINGLE_REG_COLOR_NAME] as const;
 
 type MeterBand = {
   id: number;
-  colorName: (typeof DISPLAY_COLOR_NAMES)[number];
+  colorName: (typeof EFFECT_COLOR_NAMES)[number];
 };
+
+function isDisplayColorName(
+  colorName: (typeof EFFECT_COLOR_NAMES)[number]
+): colorName is (typeof METER_COLOR_NAMES)[number] {
+  return METER_COLOR_NAMES.includes(colorName as (typeof METER_COLOR_NAMES)[number]);
+}
 
 export function JugglerBudoCounterButton({
   count,
@@ -44,7 +51,7 @@ export function JugglerBudoCounterButton({
     useState<(typeof METER_COLOR_NAMES)[number] | null>(null);
   const [panelEffectSequence, setPanelEffectSequence] = useState(0);
   const [panelEffectColorName, setPanelEffectColorName] =
-    useState<(typeof DISPLAY_COLOR_NAMES)[number] | null>(null);
+    useState<(typeof EFFECT_COLOR_NAMES)[number] | null>(null);
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const meterBandIdRef = useRef(0);
@@ -56,7 +63,7 @@ export function JugglerBudoCounterButton({
         ? "budo-counter-panel-jolt-a"
         : "budo-counter-panel-jolt-b";
 
-  const startMeter = (colorName: (typeof DISPLAY_COLOR_NAMES)[number], updatesDisplayColor: boolean) => {
+  const startMeter = (colorName: (typeof EFFECT_COLOR_NAMES)[number], updatesDisplayColor: boolean) => {
     meterBandIdRef.current += 1;
     const nextBand: MeterBand = {
       id: meterBandIdRef.current,
@@ -64,7 +71,7 @@ export function JugglerBudoCounterButton({
     };
 
     setMeterBands((current) => [...current, nextBand].slice(-MAX_METER_BANDS));
-    if (updatesDisplayColor && colorName !== SINGLE_REG_COLOR_NAME) {
+    if (updatesDisplayColor && isDisplayColorName(colorName)) {
       setDisplayColorName(colorName);
     }
     setPanelEffectColorName(colorName);
@@ -82,6 +89,10 @@ export function JugglerBudoCounterButton({
     startMeter(SINGLE_REG_COLOR_NAME, false);
   };
 
+  const startDecrementMeter = () => {
+    startMeter(DECREMENT_COLOR_NAME, false);
+  };
+
   const removeMeterBand = (id: number) => {
     setMeterBands((current) => current.filter((band) => band.id !== id));
   };
@@ -93,7 +104,7 @@ export function JugglerBudoCounterButton({
 
   const handleDecrementClick = () => {
     onDecrement();
-    startBudoMeter();
+    startDecrementMeter();
   };
 
   const handleSingleRegIncrementClick = () => {
@@ -103,7 +114,7 @@ export function JugglerBudoCounterButton({
 
   const handleSingleRegDecrementClick = () => {
     onSingleRegDecrement?.();
-    startSingleRegMeter();
+    startDecrementMeter();
   };
 
   useLayoutEffect(() => {
