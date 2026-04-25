@@ -126,12 +126,16 @@ a {
 }
 
 .choice-group {
-  display: grid;
+  display: flex;
+  flex-wrap: nowrap;
   gap: 8px;
+  overflow-x: auto;
+  align-items: center;
 }
 
 .choice-option {
-  display: flex;
+  display: inline-flex;
+  flex: 0 0 auto;
   align-items: center;
   gap: 8px;
   border: 1px solid var(--border);

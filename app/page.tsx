@@ -1,10 +1,11 @@
 import Link from "next/link";
+import { APP_TITLE } from "../lib/app-info";
 
 export default function Home() {
   return (
     <main className="page-shell">
       <div className="card">
-        <h1 className="title">推測ツールv0.58</h1>
+        <h1 className="title">{APP_TITLE}</h1>
         <div className="link-list">
           <Link className="link-button" href="/hanabi">
             ハナビBH

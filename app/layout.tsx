@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { APP_TITLE } from "../lib/app-info";
 
 export const metadata: Metadata = {
-  title: "推測ツールv0.50",
-  description: "推測ツールv0.50"
+  title: APP_TITLE,
+  description: APP_TITLE
 };
 
 export default function RootLayout({
