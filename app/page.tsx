@@ -1,54 +1,34 @@
 import Link from "next/link";
 import { APP_TITLE } from "../lib/app-info";
 
+const machineLinks = [
+  { href: "/neoimjugglerex", label: "ネオアイムジャグラーEX" },
+  { href: "/myjuggler5", label: "マイジャグラーV" },
+  { href: "/gogojuggler3", label: "ゴーゴージャグラー3" },
+  { href: "/sfunkyjuggler2", label: "Sファンキージャグラー2" },
+  { href: "/smisterjuggler", label: "Sミスタージャグラー" },
+  { href: "/jugglergirlsss", label: "ジャグラーガールズSS" },
+  { href: "/ultramiraclejuggler", label: "ウルトラミラクルジャグラー" },
+  { href: "/lhanabi", label: "スマスロ Lハナビ" },
+  { href: "/shinhanabi", label: "新ハナビ" },
+  { href: "/hanabi", label: "ハナビBH" },
+  { href: "/thunderv", label: "スマスロ サンダーV" },
+  { href: "/versusrevis", label: "バーサス リヴァイズ" },
+  { href: "/hanahanahouou", label: "ハナハナホウオウ ～天翔～" },
+  { href: "/happyjuggler", label: "ハッピージャグラーVⅢ" }
+] as const;
+
 export default function Home() {
   return (
     <main className="page-shell">
       <div className="card">
         <h1 className="title">{APP_TITLE}</h1>
         <div className="link-list">
-          <Link className="link-button" href="/hanabi">
-            ハナビBH
-          </Link>
-          <Link className="link-button" href="/happyjuggler">
-            ハッピージャグラーVⅢ
-          </Link>
-          <Link className="link-button" href="/lhanabi">
-            スマスロ Lハナビ
-          </Link>
-          <Link className="link-button" href="/shinhanabi">
-            新ハナビ
-          </Link>
-          <Link className="link-button" href="/thunderv">
-            スマスロ サンダーV
-          </Link>
-          <Link className="link-button" href="/versusrevis">
-            バーサス リヴァイズ
-          </Link>
-          <Link className="link-button" href="/hanahanahouou">
-            ハナハナホウオウ ～天翔～
-          </Link>
-          <Link className="link-button" href="/gogojuggler3">
-            ゴーゴージャグラー3
-          </Link>
-          <Link className="link-button" href="/sfunkyjuggler2">
-            Sファンキージャグラー2
-          </Link>
-          <Link className="link-button" href="/smisterjuggler">
-            Sミスタージャグラー
-          </Link>
-          <Link className="link-button" href="/jugglergirlsss">
-            ジャグラーガールズSS
-          </Link>
-          <Link className="link-button" href="/ultramiraclejuggler">
-            ウルトラミラクルジャグラー
-          </Link>
-          <Link className="link-button" href="/myjuggler5">
-            マイジャグラーV
-          </Link>
-          <Link className="link-button" href="/neoimjugglerex">
-            ネオアイムジャグラーEX
-          </Link>
+          {machineLinks.map((machine) => (
+            <Link className="link-button" href={machine.href} key={machine.href}>
+              {machine.label}
+            </Link>
+          ))}
         </div>
       </div>
     </main>
