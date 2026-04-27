@@ -97,6 +97,8 @@ const payoutModeLabels: Record<PayoutMode, string> = {
   full: "フル攻略"
 };
 
+const defaultPayoutMode: PayoutMode = "cherry";
+
 const inputGroups: InputGroup[] = [
   {
     title: "開始前",
@@ -161,7 +163,7 @@ const initialValues = {
   ),
   medalRent: "46",
   exchangeRate: "5.0",
-  payoutMode: "public" as PayoutMode
+  payoutMode: defaultPayoutMode
 };
 
 const STORAGE_KEY = "suisoku-smisterjuggler-inputs";
@@ -173,7 +175,7 @@ const specGroups = [
       { label: "BIG", key: "bb" },
       { label: "REG", key: "rb" },
       { label: "ボーナス合算", key: "bonusTotal" },
-      { label: "公表値", key: "payoutPublic" }
+      { label: "機械割", key: "payoutCherry" }
     ]
   },
   {
@@ -549,7 +551,7 @@ export default function SMisterJugglerPage() {
     const medalRent = toNumber(String(inputValues.medalRent ?? ""));
     const exchangeRate = toNumber(String(inputValues.exchangeRate ?? ""));
     const cashInvestment = Math.max(0, toNumber(String(inputValues.cashInvestment ?? "")));
-    const payoutMode = (inputValues.payoutMode as PayoutMode) ?? "public";
+    const payoutMode = (inputValues.payoutMode as PayoutMode) ?? defaultPayoutMode;
     const yenPerMedal = exchangeRate > 0 ? 100 / exchangeRate : 0;
     const cashGapLoss =
       medalRent > 0 && exchangeRate > 0
@@ -929,7 +931,16 @@ export default function SMisterJugglerPage() {
                     <tr>
                       <th>設定</th>
                       {group.columns.map((column) => (
-                        <th key={`${group.title}-${column.key}`}>{column.label}</th>
+                        <th key={`${group.title}-${column.key}`}>
+                          {group.title === "基本スペック" && column.key === "payoutCherry" ? (
+                            <>
+                              <div className="table-head-main">{column.label}</div>
+                              <div className="table-head-sub">{payoutModeLabels[defaultPayoutMode]}</div>
+                            </>
+                          ) : (
+                            column.label
+                          )}
+                        </th>
                       ))}
                     </tr>
                   </thead>
