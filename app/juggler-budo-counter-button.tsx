@@ -44,6 +44,7 @@ export function JugglerBudoCounterButton({
   mainLabel = "ブドウ"
 }: JugglerBudoCounterButtonProps) {
   const showsSingleRegCounter = Boolean(onSingleRegIncrement && onSingleRegDecrement);
+  const isBellCounter = mainLabel === "ベル";
   const budoCountText = formatBudoCount(count);
   const [isRotated, setIsRotated] = useState(false);
   const [rotatedScale, setRotatedScale] = useState(1);
@@ -118,6 +119,41 @@ export function JugglerBudoCounterButton({
     onSingleRegDecrement?.();
     startDecrementMeter();
   };
+
+  const counterIcon = isBellCounter ? (
+    <svg
+      className="budo-counter-icon budo-counter-icon-bell"
+      viewBox="0 0 64 64"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path className="budo-counter-bell-ribbon" d="M18 15h8l6 7 6-7h8l-9 11h-10z" />
+      <path
+        className="budo-counter-bell-body"
+        d="M21 24c0-7 5-12 11-12s11 5 11 12v3c0 5 2 10 6 14H15c4-4 6-9 6-14z"
+      />
+      <path
+        className="budo-counter-bell-body budo-counter-bell-body-small"
+        d="M30 21c0-4 3-7 6-7s6 3 6 7v3c0 4 1 8 4 11H26c3-3 4-7 4-11z"
+      />
+      <path className="budo-counter-bell-shine" d="M27 24c1-4 4-6 8-6" />
+      <path className="budo-counter-bell-shine" d="M36 19c2 0 4 1 5 3" />
+      <circle className="budo-counter-bell-clapper" cx="32" cy="43" r="3.6" />
+      <path className="budo-counter-bell-base" d="M22 41h20c-1 5-5 8-10 8s-9-3-10-8z" />
+    </svg>
+  ) : (
+    <svg className="budo-counter-icon" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+      <path className="budo-counter-stem" d="M36 8c-5 4-7 8-7 14" />
+      <path className="budo-counter-leaf" d="M39 12c8-2 14 2 16 9-8 2-14 0-18-5" />
+      <circle cx="27" cy="25" r="8" />
+      <circle cx="39" cy="25" r="8" />
+      <circle cx="21" cy="37" r="8" />
+      <circle cx="33" cy="37" r="8" />
+      <circle cx="45" cy="37" r="8" />
+      <circle cx="27" cy="49" r="8" />
+      <circle cx="39" cy="49" r="8" />
+    </svg>
+  );
 
   useLayoutEffect(() => {
     if (!isRotated) {
@@ -251,7 +287,9 @@ export function JugglerBudoCounterButton({
                 className={`budo-counter-action-row${showsSingleRegCounter ? " budo-counter-action-row-compact" : ""}`}
               >
                 <button
-                  className={`budo-counter-button budo-counter-button-minus${showsSingleRegCounter ? " budo-counter-button-minus-compact" : ""}`}
+                  className={`budo-counter-button budo-counter-button-minus${
+                    isBellCounter ? " budo-counter-button-minus-bell" : ""
+                  }${showsSingleRegCounter ? " budo-counter-button-minus-compact" : ""}`}
                   type="button"
                   onClick={handleDecrementClick}
                   aria-label={`通常時の${mainLabel}を1減算`}
@@ -260,17 +298,7 @@ export function JugglerBudoCounterButton({
                     <span className="budo-counter-minus-text">-1</span>
                   ) : (
                     <>
-                      <svg className="budo-counter-icon" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
-                        <path className="budo-counter-stem" d="M36 8c-5 4-7 8-7 14" />
-                        <path className="budo-counter-leaf" d="M39 12c8-2 14 2 16 9-8 2-14 0-18-5" />
-                        <circle cx="27" cy="25" r="8" />
-                        <circle cx="39" cy="25" r="8" />
-                        <circle cx="21" cy="37" r="8" />
-                        <circle cx="33" cy="37" r="8" />
-                        <circle cx="45" cy="37" r="8" />
-                        <circle cx="27" cy="49" r="8" />
-                        <circle cx="39" cy="49" r="8" />
-                      </svg>
+                      {counterIcon}
                       <span className="budo-counter-text">
                         <span className="budo-counter-main">{mainLabel}</span>
                         <span className="budo-counter-plus">-1</span>
@@ -279,22 +307,14 @@ export function JugglerBudoCounterButton({
                   )}
                 </button>
                 <button
-                  className="budo-counter-button budo-counter-button-plus"
+                  className={`budo-counter-button budo-counter-button-plus${
+                    isBellCounter ? " budo-counter-button-plus-bell" : ""
+                  }`}
                   type="button"
                   onClick={handleIncrementClick}
                   aria-label={`通常時の${mainLabel}を1加算`}
                 >
-                  <svg className="budo-counter-icon" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
-                    <path className="budo-counter-stem" d="M36 8c-5 4-7 8-7 14" />
-                    <path className="budo-counter-leaf" d="M39 12c8-2 14 2 16 9-8 2-14 0-18-5" />
-                    <circle cx="27" cy="25" r="8" />
-                    <circle cx="39" cy="25" r="8" />
-                    <circle cx="21" cy="37" r="8" />
-                    <circle cx="33" cy="37" r="8" />
-                    <circle cx="45" cy="37" r="8" />
-                    <circle cx="27" cy="49" r="8" />
-                    <circle cx="39" cy="49" r="8" />
-                  </svg>
+                  {counterIcon}
                   <span className="budo-counter-text">
                     <span className="budo-counter-main">{mainLabel}</span>
                     <span className="budo-counter-plus">+1</span>

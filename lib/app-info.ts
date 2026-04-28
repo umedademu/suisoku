@@ -1,3 +1,3 @@
-export const APP_VERSION = "0.63";
+export const APP_VERSION = "0.64";
 
 export const APP_TITLE = `推測ツールv${APP_VERSION}`;

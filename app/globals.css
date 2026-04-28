@@ -1051,6 +1051,18 @@ a {
   background: linear-gradient(180deg, #2f8d6a 0%, #166050 100%);
 }
 
+.budo-counter-button-plus-bell {
+  border-color: #a16207;
+  background: linear-gradient(180deg, #ffd95e 0%, #e0a312 54%, #a45b00 100%);
+  box-shadow: 0 10px 18px rgba(161, 98, 7, 0.24);
+}
+
+.budo-counter-button-minus-bell {
+  border-color: #9a6a00;
+  background: linear-gradient(180deg, #f5c64b 0%, #c98a0b 54%, #8a5600 100%);
+  box-shadow: 0 10px 18px rgba(154, 106, 0, 0.22);
+}
+
 .budo-counter-button-minus-compact {
   gap: 0;
   padding: 0 8px;
@@ -1075,6 +1087,11 @@ a {
   stroke-width: 2;
 }
 
+.budo-counter-icon-bell {
+  fill: none;
+  stroke: none;
+}
+
 .budo-counter-stem {
   fill: none;
   stroke: #e6ffd9;
@@ -1086,6 +1103,33 @@ a {
   fill: #b9f77d;
   stroke: #e6ffd9;
   stroke-linejoin: round;
+}
+
+.budo-counter-bell-ribbon {
+  fill: #fff2b3;
+}
+
+.budo-counter-bell-body {
+  fill: #ffcf48;
+}
+
+.budo-counter-bell-body-small {
+  fill: #f6ae1b;
+}
+
+.budo-counter-bell-shine {
+  fill: none;
+  stroke: rgba(255, 249, 214, 0.95);
+  stroke-linecap: round;
+  stroke-width: 2.6;
+}
+
+.budo-counter-bell-clapper {
+  fill: #7c3f00;
+}
+
+.budo-counter-bell-base {
+  fill: #a95f05;
 }
 
 .budo-counter-text {
