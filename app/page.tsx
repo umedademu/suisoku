@@ -15,6 +15,7 @@ const machineLinks = [
   { href: "/thunderv", label: "スマスロ サンダーV" },
   { href: "/versusrevis", label: "バーサス リヴァイズ" },
   { href: "/hanahanahouou", label: "ハナハナホウオウ ～天翔～" },
+  { href: "/newkinghanahanav", label: "ニューキングハナハナV" },
   { href: "/happyjuggler", label: "ハッピージャグラーVⅢ" }
 ] as const;
 

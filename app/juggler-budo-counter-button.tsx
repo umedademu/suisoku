@@ -8,6 +8,7 @@ type JugglerBudoCounterButtonProps = {
   onDecrement: () => void;
   onSingleRegIncrement?: () => void;
   onSingleRegDecrement?: () => void;
+  mainLabel?: string;
 };
 
 function formatBudoCount(count: string | number | undefined) {
@@ -39,7 +40,8 @@ export function JugglerBudoCounterButton({
   onIncrement,
   onDecrement,
   onSingleRegIncrement,
-  onSingleRegDecrement
+  onSingleRegDecrement,
+  mainLabel = "ブドウ"
 }: JugglerBudoCounterButtonProps) {
   const showsSingleRegCounter = Boolean(onSingleRegIncrement && onSingleRegDecrement);
   const budoCountText = formatBudoCount(count);
@@ -239,7 +241,7 @@ export function JugglerBudoCounterButton({
                 </div>
                 <output
                   className={`budo-counter-display${displayColorName ? ` budo-counter-display-${displayColorName}` : ""}`}
-                  aria-label={`現在のブドウ数 ${budoCountText}`}
+                  aria-label={`現在の${mainLabel}数 ${budoCountText}`}
                   aria-live="polite"
                 >
                   {budoCountText}
@@ -252,7 +254,7 @@ export function JugglerBudoCounterButton({
                   className={`budo-counter-button budo-counter-button-minus${showsSingleRegCounter ? " budo-counter-button-minus-compact" : ""}`}
                   type="button"
                   onClick={handleDecrementClick}
-                  aria-label="通常時のブドウを1減算"
+                  aria-label={`通常時の${mainLabel}を1減算`}
                 >
                   {showsSingleRegCounter ? (
                     <span className="budo-counter-minus-text">-1</span>
@@ -270,7 +272,7 @@ export function JugglerBudoCounterButton({
                         <circle cx="39" cy="49" r="8" />
                       </svg>
                       <span className="budo-counter-text">
-                        <span className="budo-counter-main">ブドウ</span>
+                        <span className="budo-counter-main">{mainLabel}</span>
                         <span className="budo-counter-plus">-1</span>
                       </span>
                     </>
@@ -280,7 +282,7 @@ export function JugglerBudoCounterButton({
                   className="budo-counter-button budo-counter-button-plus"
                   type="button"
                   onClick={handleIncrementClick}
-                  aria-label="通常時のブドウを1加算"
+                  aria-label={`通常時の${mainLabel}を1加算`}
                 >
                   <svg className="budo-counter-icon" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
                     <path className="budo-counter-stem" d="M36 8c-5 4-7 8-7 14" />
@@ -294,7 +296,7 @@ export function JugglerBudoCounterButton({
                     <circle cx="39" cy="49" r="8" />
                   </svg>
                   <span className="budo-counter-text">
-                    <span className="budo-counter-main">ブドウ</span>
+                    <span className="budo-counter-main">{mainLabel}</span>
                     <span className="budo-counter-plus">+1</span>
                   </span>
                 </button>

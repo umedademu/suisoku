@@ -7,129 +7,108 @@ import { SaveSlotControls, useSaveSlots } from "../save-slots";
 const settings = [
   {
     setting: "設定1",
-    bb: "1/297",
+    bb: "1/299",
     rb: "1/496",
-    bell: "1/7.50",
-    topBlue: "3.70%",
-    topYellow: "2.91%",
-    topGreen: "1.96%",
-    topRed: "1.25%",
-    topRainbow: "0.01%",
-    topTotal: "9.82%",
-    sideBlue: "36.04%",
-    sideYellow: "24.20%",
-    sideGreen: "23.84%",
-    sideRed: "15.90%",
-    sideRainbow: "0.02%",
-    soundRetro: "6.24%",
-    bigSuika: "1/48.13",
-    bigHazure: "1/63908",
+    bell: "1/7.628",
+    bigFrontSuika: "1/29.79",
+    bigFrontHazure: "1/65536.0",
+    btSideBlue: "1/2.778",
+    btSideYellow: "1/4.168",
+    btSideGreen: "1/4.168",
+    btSideRed: "1/6.249",
+    btSideRainbow: "1/4681.143",
+    bigAfterBlue: "1/27.22",
+    bigAfterYellow: "1/34.86",
+    bigAfterGreen: "1/52.01",
+    bigAfterPurple: "1/78.02",
+    bigAfterRainbow: "1/8192.00",
+    retroSound: "1/16.155",
+    regSuika: "1/102.40",
     payout: "97%"
   },
   {
     setting: "設定2",
-    bb: "1/284",
-    rb: "1/458",
-    bell: "1/7.44",
-    topBlue: "3.98%",
-    topYellow: "3.24%",
-    topGreen: "2.05%",
-    topRed: "1.30%",
-    topRainbow: "0.02%",
-    topTotal: "10.59%",
-    sideBlue: "23.32%",
-    sideYellow: "34.78%",
-    sideGreen: "16.73%",
-    sideRed: "25.14%",
-    sideRainbow: "0.04%",
-    soundRetro: "7.08%",
-    bigSuika: "1/44.36",
-    bigHazure: "1/35254",
+    bb: "1/291",
+    rb: "1/471",
+    bell: "1/7.502",
+    bigFrontSuika: "1/27.31",
+    bigFrontHazure: "1/32768.0",
+    btSideBlue: "1/4.312",
+    btSideYellow: "1/2.875",
+    btSideGreen: "1/5.956",
+    btSideRed: "1/3.970",
+    btSideRainbow: "1/2048.000",
+    bigAfterBlue: "1/24.63",
+    bigAfterYellow: "1/33.22",
+    bigAfterGreen: "1/48.33",
+    bigAfterPurple: "1/72.98",
+    bigAfterRainbow: "1/2520.62",
+    retroSound: "1/13.495",
+    regSuika: "1/78.96",
     payout: "99%"
   },
   {
     setting: "設定3",
-    bb: "1/273",
-    rb: "1/425",
-    bell: "1/7.40",
-    topBlue: "4.30%",
-    topYellow: "3.52%",
-    topGreen: "2.35%",
-    topRed: "1.49%",
-    topRainbow: "0.07%",
-    topTotal: "11.73%",
-    sideBlue: "33.70%",
-    sideYellow: "22.18%",
-    sideGreen: "26.56%",
-    sideRed: "17.45%",
-    sideRainbow: "0.11%",
-    soundRetro: "7.72%",
-    bigSuika: "1/41.05",
-    bigHazure: "1/21162",
+    bb: "1/281",
+    rb: "1/442",
+    bell: "1/7.474",
+    bigFrontSuika: "1/24.27",
+    bigFrontHazure: "1/21845.3",
+    btSideBlue: "1/2.979",
+    btSideYellow: "1/4.468",
+    btSideGreen: "1/3.792",
+    btSideRed: "1/5.688",
+    btSideRainbow: "1/992.970",
+    bigAfterBlue: "1/23.26",
+    bigAfterYellow: "1/28.35",
+    bigAfterGreen: "1/42.92",
+    bigAfterPurple: "1/66.67",
+    bigAfterRainbow: "1/1638.40",
+    retroSound: "1/12.469",
+    regSuika: "1/54.80",
     payout: "101%"
   },
   {
     setting: "設定4",
-    bb: "1/262",
-    rb: "1/397",
-    bell: "1/7.33",
-    topBlue: "4.76%",
-    topYellow: "3.79%",
-    topGreen: "2.60%",
-    topRed: "1.58%",
-    topRainbow: "0.11%",
-    topTotal: "12.85%",
-    sideBlue: "21.29%",
-    sideYellow: "32.46%",
-    sideGreen: "18.25%",
-    sideRed: "27.81%",
-    sideRainbow: "0.18%",
-    soundRetro: "10.27%",
-    bigSuika: "1/37.40",
-    bigHazure: "1/17578",
-    payout: "103%"
+    bb: "1/268",
+    rb: "1/409",
+    bell: "1/7.379",
+    bigFrontSuika: "1/20.81",
+    bigFrontHazure: "1/16384.0",
+    btSideBlue: "1/4.639",
+    btSideYellow: "1/3.092",
+    btSideGreen: "1/5.445",
+    btSideRed: "1/3.630",
+    btSideRainbow: "1/508.031",
+    bigAfterBlue: "1/20.48",
+    bigAfterYellow: "1/26.01",
+    bigAfterGreen: "1/39.67",
+    bigAfterPurple: "1/63.69",
+    bigAfterRainbow: "1/1424.70",
+    retroSound: "1/10.707",
+    regSuika: "1/54.80",
+    payout: "104%"
   },
   {
-    setting: "設定5",
-    bb: "1/249",
-    rb: "1/366",
-    bell: "1/7.29",
-    topBlue: "5.17%",
-    topYellow: "4.18%",
-    topGreen: "2.84%",
-    topRed: "1.73%",
-    topRainbow: "0.20%",
-    topTotal: "14.12%",
-    sideBlue: "31.11%",
-    sideYellow: "20.57%",
-    sideGreen: "28.67%",
-    sideRed: "19.25%",
-    sideRainbow: "0.40%",
-    soundRetro: "10.93%",
-    bigSuika: "1/34.76",
-    bigHazure: "1/12417",
-    payout: "106%"
-  },
-  {
-    setting: "設定6",
-    bb: "1/236",
-    rb: "1/337",
-    bell: "1/7.24",
-    topBlue: "5.77%",
-    topYellow: "4.49%",
-    topGreen: "3.00%",
-    topRed: "1.88%",
-    topRainbow: "0.42%",
-    topTotal: "15.57%",
-    sideBlue: "24.90%",
-    sideYellow: "24.77%",
-    sideGreen: "24.68%",
-    sideRed: "24.89%",
-    sideRainbow: "0.76%",
-    soundRetro: "12.68%",
-    bigSuika: "1/31.93",
-    bigHazure: "1/10439",
-    payout: "109%"
+    setting: "設定V",
+    bb: "1/253",
+    rb: "1/372",
+    bell: "1/7.266",
+    bigFrontSuika: "1/18.89",
+    bigFrontHazure: "1/13107.2",
+    btSideBlue: "1/3.218",
+    btSideYellow: "1/4.827",
+    btSideGreen: "1/3.485",
+    btSideRed: "1/5.229",
+    btSideRainbow: "1/256.000",
+    bigAfterBlue: "1/18.67",
+    bigAfterYellow: "1/24.36",
+    bigAfterGreen: "1/37.45",
+    bigAfterPurple: "1/57.49",
+    bigAfterRainbow: "1/504.12",
+    retroSound: "1/9.506",
+    regSuika: "1/54.80",
+    payout: "108%"
   }
 ];
 
@@ -141,29 +120,27 @@ type InputField = {
 };
 
 type StandardInputGroup = {
+  kind: "fields";
   title: string;
   note?: string;
   rowClass?: string;
   fields: InputField[];
 };
 
-type PieceInputRow = {
-  label: string;
-  trialKey: string;
-  occurrenceKey: string;
-};
-
-type PieceInputGroup = {
+type TrialInputGroup = {
+  kind: "trial";
   title: string;
-  rowClass?: string;
-  inputWidthClass?: string;
-  rows: PieceInputRow[];
+  note?: string;
+  trialField: InputField;
+  fields: InputField[];
+  fieldsRowClass?: string;
 };
 
-type InputGroup = StandardInputGroup | PieceInputGroup;
+type InputGroup = StandardInputGroup | TrialInputGroup;
 
 const inputGroups: InputGroup[] = [
   {
+    kind: "fields",
     title: "開始前",
     fields: [
       { key: "beforeGames", label: "G数" },
@@ -172,6 +149,7 @@ const inputGroups: InputGroup[] = [
     ]
   },
   {
+    kind: "fields",
     title: "現在",
     fields: [
       { key: "currentGames", label: "G数" },
@@ -180,52 +158,108 @@ const inputGroups: InputGroup[] = [
     ]
   },
   {
+    kind: "fields",
     title: "通常時小役",
     fields: [{ key: "bell", label: "ベル", widthClass: "number-input-bell-wide" }]
   },
   {
-    title: "BIG中小役",
-    note: "分母はBIG回数×24Gで自動計算",
+    kind: "trial",
+    title: "BIG前半パート",
+    note: "消化G数を分母に使います",
+    trialField: {
+      key: "bigFrontGames",
+      label: "消化G数",
+      unit: "G",
+      widthClass: "number-input-big-role"
+    },
     fields: [
-      { key: "bigSuika", label: "スイカ", widthClass: "number-input-big-role" },
-      { key: "bigHazure", label: "ハズレ", widthClass: "number-input-big-role" }
+      { key: "bigFrontSuika", label: "スイカ", widthClass: "number-input-big-role" },
+      { key: "bigFrontHazure", label: "ハズレ", widthClass: "number-input-big-role" }
     ]
   },
   {
-    title: "BIG後トップランプ",
-    rowClass: "input-row-lamp",
+    kind: "trial",
+    title: "BT中ビタ押し時サイドランプ",
+    note: "試行回数を分母に使います",
+    trialField: {
+      key: "btSideTrials",
+      label: "試行回数",
+      unit: "回",
+      widthClass: "number-input-piece-tight"
+    },
     fields: [
-      { key: "topBlue", label: "青", widthClass: "number-input-lamp" },
-      { key: "topYellow", label: "黄", widthClass: "number-input-lamp" },
-      { key: "topGreen", label: "緑", widthClass: "number-input-lamp" },
-      { key: "topRed", label: "赤", widthClass: "number-input-lamp" },
-      { key: "topRainbow", label: "虹", widthClass: "number-input-lamp" }
-    ]
+      { key: "btSideBlue", label: "青", widthClass: "number-input-lamp" },
+      { key: "btSideYellow", label: "黄", widthClass: "number-input-lamp" },
+      { key: "btSideGreen", label: "緑", widthClass: "number-input-lamp" },
+      { key: "btSideRed", label: "赤", widthClass: "number-input-lamp" },
+      { key: "btSideRainbow", label: "虹", widthClass: "number-input-lamp" }
+    ],
+    fieldsRowClass: "input-row-lamp"
   },
   {
-    title: "REG中サイドランプ",
-    rowClass: "input-row-lamp",
+    kind: "trial",
+    title: "BIG後ハイビスカスランプ",
+    note: "試行回数を分母に使います",
+    trialField: {
+      key: "bigAfterTrials",
+      label: "試行回数",
+      unit: "回",
+      widthClass: "number-input-piece-tight"
+    },
     fields: [
-      { key: "sideBlue", label: "青", widthClass: "number-input-lamp" },
-      { key: "sideYellow", label: "黄", widthClass: "number-input-lamp" },
-      { key: "sideGreen", label: "緑", widthClass: "number-input-lamp" },
-      { key: "sideRed", label: "赤", widthClass: "number-input-lamp" },
-      { key: "sideRainbow", label: "虹", widthClass: "number-input-lamp" }
-    ]
+      { key: "bigAfterBlue", label: "青", widthClass: "number-input-lamp" },
+      { key: "bigAfterYellow", label: "黄", widthClass: "number-input-lamp" },
+      { key: "bigAfterGreen", label: "緑", widthClass: "number-input-lamp" },
+      { key: "bigAfterPurple", label: "紫", widthClass: "number-input-lamp" },
+      { key: "bigAfterRainbow", label: "虹", widthClass: "number-input-lamp" }
+    ],
+    fieldsRowClass: "input-row-lamp"
   },
   {
-    title: "連チャンサウンド選択率",
-    rowClass: "piece-input-row-tight",
-    inputWidthClass: "number-input-piece-tight",
-    rows: [
-      {
-        label: "レトロ",
-        trialKey: "soundRetroTrials",
-        occurrenceKey: "soundRetroHits"
-      }
-    ]
+    kind: "trial",
+    title: "REG後ハイビスカスランプ",
+    note: "試行回数を分母に使います",
+    trialField: {
+      key: "regAfterTrials",
+      label: "試行回数",
+      unit: "回",
+      widthClass: "number-input-piece-tight"
+    },
+    fields: [
+      { key: "regAfterWhite", label: "白", widthClass: "number-input-lamp" },
+      { key: "regAfterBlue", label: "青", widthClass: "number-input-lamp" },
+      { key: "regAfterYellow", label: "黄", widthClass: "number-input-lamp" },
+      { key: "regAfterGreen", label: "緑", widthClass: "number-input-lamp" },
+      { key: "regAfterPurple", label: "紫", widthClass: "number-input-lamp" }
+    ],
+    fieldsRowClass: "input-row-lamp"
   },
   {
+    kind: "trial",
+    title: "レトロサウンド発生率",
+    note: "試行回数を分母に使います",
+    trialField: {
+      key: "retroSoundTrials",
+      label: "試行回数",
+      unit: "回",
+      widthClass: "number-input-piece-tight"
+    },
+    fields: [{ key: "retroSoundHits", label: "発生", widthClass: "number-input-piece-tight" }]
+  },
+  {
+    kind: "trial",
+    title: "REG中小役",
+    note: "REG中の消化G数を分母に使います",
+    trialField: {
+      key: "regGames",
+      label: "消化G数",
+      unit: "G",
+      widthClass: "number-input-big-role"
+    },
+    fields: [{ key: "regSuika", label: "スイカ", widthClass: "number-input-big-role" }]
+  },
+  {
+    kind: "fields",
     title: "店情報",
     fields: [
       {
@@ -253,19 +287,19 @@ const inputGroups: InputGroup[] = [
 const initialValues = {
   ...Object.fromEntries(
     inputGroups.flatMap((group) =>
-      "fields" in group
+      group.kind === "fields"
         ? group.fields.map((field) => [field.key, ""] as const)
-        : group.rows.flatMap((row) => [
-            [row.trialKey, ""] as const,
-            [row.occurrenceKey, ""] as const
-          ])
+        : [
+            [group.trialField.key, ""] as const,
+            ...group.fields.map((field) => [field.key, ""] as const)
+          ]
     )
   ),
   medalRent: "46",
   exchangeRate: "5.0"
 };
 
-const STORAGE_KEY = "suisoku-hanahanahouou-inputs";
+const STORAGE_KEY = "suisoku-newkinghanahanav-inputs";
 
 const specGroups = [
   {
@@ -282,37 +316,48 @@ const specGroups = [
     columns: [{ label: "ベル", key: "bell" }]
   },
   {
-    title: "BIG中小役",
+    title: "BIG前半パート",
     columns: [
-      { label: "スイカ", key: "bigSuika" },
-      { label: "ハズレ", key: "bigHazure" }
+      { label: "スイカ", key: "bigFrontSuika" },
+      { label: "ハズレ", key: "bigFrontHazure" }
     ]
   },
   {
-    title: "BIG後トップランプ",
+    title: "BT中ビタ押し時サイドランプ",
     columns: [
-      { label: "青", key: "topBlue" },
-      { label: "黄", key: "topYellow" },
-      { label: "緑", key: "topGreen" },
-      { label: "赤", key: "topRed" },
-      { label: "虹", key: "topRainbow" },
-      { label: "計", key: "topTotal" }
+      { label: "青", key: "btSideBlue" },
+      { label: "黄", key: "btSideYellow" },
+      { label: "緑", key: "btSideGreen" },
+      { label: "赤", key: "btSideRed" },
+      { label: "虹", key: "btSideRainbow" }
     ]
   },
   {
-    title: "REG中サイドランプ",
+    title: "BIG後ハイビスカスランプ",
     columns: [
-      { label: "青", key: "sideBlue" },
-      { label: "黄", key: "sideYellow" },
-      { label: "緑", key: "sideGreen" },
-      { label: "赤", key: "sideRed" },
-      { label: "虹", key: "sideRainbow" }
+      { label: "青", key: "bigAfterBlue" },
+      { label: "黄", key: "bigAfterYellow" },
+      { label: "緑", key: "bigAfterGreen" },
+      { label: "紫", key: "bigAfterPurple" },
+      { label: "虹", key: "bigAfterRainbow" }
     ]
   },
   {
-    title: "連チャンサウンド選択率",
-    columns: [{ label: "レトロ", key: "soundRetro" }]
+    title: "レトロサウンド発生率",
+    columns: [{ label: "発生", key: "retroSound" }]
+  },
+  {
+    title: "REG中小役",
+    columns: [{ label: "スイカ", key: "regSuika" }]
   }
+] as const;
+
+const regAfterHintRows = [
+  { color: "白", hint: "デフォルト" },
+  { color: "青", hint: "設定2以上確定" },
+  { color: "黄", hint: "設定3以上確定" },
+  { color: "緑", hint: "設定4以上確定" },
+  { color: "紫", hint: "設定V以上確定" }
 ] as const;
 
 const probabilityDisplayGroups = [
@@ -331,40 +376,44 @@ const probabilityDisplayGroups = [
     items: [{ title: "ベル", key: "bell" as const }]
   },
   {
-    title: "BIG中小役",
+    title: "BIG前半パート",
     headerSuffix: "G",
     items: [
-      { title: "スイカ", key: "bigSuika" as const },
-      { title: "ハズレ", key: "bigHazure" as const }
+      { title: "スイカ", key: "bigFrontSuika" as const },
+      { title: "ハズレ", key: "bigFrontHazure" as const }
     ]
   },
   {
-    title: "BIG後トップランプ",
+    title: "BT中ビタ押し時サイドランプ",
     headerSuffix: "回",
     items: [
-      { title: "青", key: "topBlue" as const },
-      { title: "黄", key: "topYellow" as const },
-      { title: "緑", key: "topGreen" as const },
-      { title: "赤", key: "topRed" as const },
-      { title: "虹", key: "topRainbow" as const },
-      { title: "計", key: "topTotal" as const }
+      { title: "青", key: "btSideBlue" as const },
+      { title: "黄", key: "btSideYellow" as const },
+      { title: "緑", key: "btSideGreen" as const },
+      { title: "赤", key: "btSideRed" as const },
+      { title: "虹", key: "btSideRainbow" as const }
     ]
   },
   {
-    title: "REG中サイドランプ",
+    title: "BIG後ハイビスカスランプ",
     headerSuffix: "回",
     items: [
-      { title: "青", key: "sideBlue" as const },
-      { title: "黄", key: "sideYellow" as const },
-      { title: "緑", key: "sideGreen" as const },
-      { title: "赤", key: "sideRed" as const },
-      { title: "虹", key: "sideRainbow" as const }
+      { title: "青", key: "bigAfterBlue" as const },
+      { title: "黄", key: "bigAfterYellow" as const },
+      { title: "緑", key: "bigAfterGreen" as const },
+      { title: "紫", key: "bigAfterPurple" as const },
+      { title: "虹", key: "bigAfterRainbow" as const }
     ]
   },
   {
-    title: "連チャンサウンド",
+    title: "レトロサウンド",
     headerSuffix: "回",
-    items: [{ title: "レトロ", key: "soundRetro" as const }]
+    items: [{ title: "発生", key: "retroSound" as const }]
+  },
+  {
+    title: "REG中小役",
+    headerSuffix: "G",
+    items: [{ title: "スイカ", key: "regSuika" as const }]
   }
 ] as const;
 
@@ -373,26 +422,33 @@ type RateKey =
   | "rb"
   | "sum"
   | "bell"
-  | "topBlue"
-  | "topYellow"
-  | "topGreen"
-  | "topRed"
-  | "topRainbow"
-  | "topTotal"
-  | "sideBlue"
-  | "sideYellow"
-  | "sideGreen"
-  | "sideRed"
-  | "sideRainbow"
-  | "soundRetro"
-  | "bigSuika"
-  | "bigHazure";
+  | "bigFrontSuika"
+  | "bigFrontHazure"
+  | "btSideBlue"
+  | "btSideYellow"
+  | "btSideGreen"
+  | "btSideRed"
+  | "btSideRainbow"
+  | "bigAfterBlue"
+  | "bigAfterYellow"
+  | "bigAfterGreen"
+  | "bigAfterPurple"
+  | "bigAfterRainbow"
+  | "retroSound"
+  | "regSuika";
 
 type ProbabilityDefinition = {
   key: RateKey;
   count: number;
   base: number;
   summaryStyle?: "frequency" | "percent";
+};
+
+type RegAfterHintSummary = {
+  trialText: string;
+  countText: string;
+  strongestText: string;
+  minimumSettingRank: number;
 };
 
 function parseRate(value: string) {
@@ -417,26 +473,27 @@ function parsePayoutRate(value: string) {
   return percent / 100;
 }
 
-const settingRates = settings.map((setting) => ({
+const settingRates = settings.map((setting, index) => ({
   label: setting.setting,
+  rank: index + 1,
   bb: parseRate(setting.bb),
   rb: parseRate(setting.rb),
   sum: parseRate(setting.bb) + parseRate(setting.rb),
   bell: parseRate(setting.bell),
-  topBlue: parsePayoutRate(setting.topBlue),
-  topYellow: parsePayoutRate(setting.topYellow),
-  topGreen: parsePayoutRate(setting.topGreen),
-  topRed: parsePayoutRate(setting.topRed),
-  topRainbow: parsePayoutRate(setting.topRainbow),
-  topTotal: parsePayoutRate(setting.topTotal),
-  sideBlue: parsePayoutRate(setting.sideBlue),
-  sideYellow: parsePayoutRate(setting.sideYellow),
-  sideGreen: parsePayoutRate(setting.sideGreen),
-  sideRed: parsePayoutRate(setting.sideRed),
-  sideRainbow: parsePayoutRate(setting.sideRainbow),
-  soundRetro: parsePayoutRate(setting.soundRetro),
-  bigSuika: parseRate(setting.bigSuika),
-  bigHazure: parseRate(setting.bigHazure)
+  bigFrontSuika: parseRate(setting.bigFrontSuika),
+  bigFrontHazure: parseRate(setting.bigFrontHazure),
+  btSideBlue: parseRate(setting.btSideBlue),
+  btSideYellow: parseRate(setting.btSideYellow),
+  btSideGreen: parseRate(setting.btSideGreen),
+  btSideRed: parseRate(setting.btSideRed),
+  btSideRainbow: parseRate(setting.btSideRainbow),
+  bigAfterBlue: parseRate(setting.bigAfterBlue),
+  bigAfterYellow: parseRate(setting.bigAfterYellow),
+  bigAfterGreen: parseRate(setting.bigAfterGreen),
+  bigAfterPurple: parseRate(setting.bigAfterPurple),
+  bigAfterRainbow: parseRate(setting.bigAfterRainbow),
+  retroSound: parseRate(setting.retroSound),
+  regSuika: parseRate(setting.regSuika)
 }));
 
 const settingsDisplay = settings.map((setting) => ({
@@ -445,20 +502,20 @@ const settingsDisplay = settings.map((setting) => ({
   rb: formatRateFromProbability(parseRate(setting.rb)),
   bonusTotal: formatRateFromProbability(parseRate(setting.bb) + parseRate(setting.rb)),
   bell: formatRateFromProbability(parseRate(setting.bell)),
-  topBlue: formatOccurrenceRate(parsePayoutRate(setting.topBlue)),
-  topYellow: formatOccurrenceRate(parsePayoutRate(setting.topYellow)),
-  topGreen: formatOccurrenceRate(parsePayoutRate(setting.topGreen)),
-  topRed: formatOccurrenceRate(parsePayoutRate(setting.topRed)),
-  topRainbow: formatOccurrenceRate(parsePayoutRate(setting.topRainbow)),
-  topTotal: formatOccurrenceRate(parsePayoutRate(setting.topTotal)),
-  sideBlue: formatOccurrenceRate(parsePayoutRate(setting.sideBlue)),
-  sideYellow: formatOccurrenceRate(parsePayoutRate(setting.sideYellow)),
-  sideGreen: formatOccurrenceRate(parsePayoutRate(setting.sideGreen)),
-  sideRed: formatOccurrenceRate(parsePayoutRate(setting.sideRed)),
-  sideRainbow: formatOccurrenceRate(parsePayoutRate(setting.sideRainbow)),
-  soundRetro: formatOccurrenceRate(parsePayoutRate(setting.soundRetro)),
-  bigSuika: formatRateFromProbability(parseRate(setting.bigSuika)),
-  bigHazure: formatRateFromProbability(parseRate(setting.bigHazure)),
+  bigFrontSuika: formatRateFromProbability(parseRate(setting.bigFrontSuika)),
+  bigFrontHazure: formatRateFromProbability(parseRate(setting.bigFrontHazure)),
+  btSideBlue: formatOccurrenceRate(parseRate(setting.btSideBlue)),
+  btSideYellow: formatOccurrenceRate(parseRate(setting.btSideYellow)),
+  btSideGreen: formatOccurrenceRate(parseRate(setting.btSideGreen)),
+  btSideRed: formatOccurrenceRate(parseRate(setting.btSideRed)),
+  btSideRainbow: formatOccurrenceRate(parseRate(setting.btSideRainbow)),
+  bigAfterBlue: formatOccurrenceRate(parseRate(setting.bigAfterBlue)),
+  bigAfterYellow: formatOccurrenceRate(parseRate(setting.bigAfterYellow)),
+  bigAfterGreen: formatOccurrenceRate(parseRate(setting.bigAfterGreen)),
+  bigAfterPurple: formatOccurrenceRate(parseRate(setting.bigAfterPurple)),
+  bigAfterRainbow: formatOccurrenceRate(parseRate(setting.bigAfterRainbow)),
+  retroSound: formatOccurrenceRate(parseRate(setting.retroSound)),
+  regSuika: formatRateFromProbability(parseRate(setting.regSuika)),
   payout: setting.payout
 }));
 
@@ -620,7 +677,47 @@ function formatPercent(probability: number) {
   return "0%";
 }
 
-export default function HanaHanaHououPage() {
+function getRegAfterHintSummary(
+  regAfterTrials: number,
+  regAfterWhite: number,
+  regAfterBlue: number,
+  regAfterYellow: number,
+  regAfterGreen: number,
+  regAfterPurple: number
+): RegAfterHintSummary {
+  const totalCount =
+    regAfterWhite + regAfterBlue + regAfterYellow + regAfterGreen + regAfterPurple;
+
+  let strongestText = "未入力";
+  let minimumSettingRank = 1;
+
+  if (regAfterPurple > 0) {
+    strongestText = "紫あり: 設定V以上確定";
+    minimumSettingRank = 5;
+  } else if (regAfterGreen > 0) {
+    strongestText = "緑あり: 設定4以上確定";
+    minimumSettingRank = 4;
+  } else if (regAfterYellow > 0) {
+    strongestText = "黄あり: 設定3以上確定";
+    minimumSettingRank = 3;
+  } else if (regAfterBlue > 0) {
+    strongestText = "青あり: 設定2以上確定";
+    minimumSettingRank = 2;
+  } else if (regAfterWhite > 0) {
+    strongestText = "白のみ: デフォルト";
+  } else if (regAfterTrials > 0 || totalCount > 0) {
+    strongestText = "確定示唆なし";
+  }
+
+  return {
+    trialText: `${regAfterTrials}回`,
+    countText: `白${regAfterWhite} / 青${regAfterBlue} / 黄${regAfterYellow} / 緑${regAfterGreen} / 紫${regAfterPurple}`,
+    strongestText,
+    minimumSettingRank
+  };
+}
+
+export default function NewKingHanaHanaVPage() {
   const [inputValues, setInputValues] = useState<Record<string, string>>(initialValues);
   const [settingExpectationTable, setSettingExpectationTable] = useState<
     | {
@@ -653,12 +750,14 @@ export default function HanaHanaHououPage() {
       }>;
     }> | null
   >(null);
+  const [regAfterHintSummary, setRegAfterHintSummary] = useState<RegAfterHintSummary | null>(null);
   const [hasLoadedSavedValues, setHasLoadedSavedValues] = useState(false);
 
   const resetResults = () => {
     setSettingExpectationTable(null);
     setOverallSettingRows(null);
     setProbabilityGroups(null);
+    setRegAfterHintSummary(null);
   };
 
   const saveSlots = useSaveSlots({
@@ -706,10 +805,6 @@ export default function HanaHanaHououPage() {
   const medalRentValue = toNumber(inputValues.medalRent);
   const exchangeRateValue = toNumber(inputValues.exchangeRate);
   const cashInvestmentValue = Math.max(0, toNumber(inputValues.cashInvestment));
-  const currentBigValue = toNumber(inputValues.currentBig);
-  const beforeBigValue = toNumber(inputValues.beforeBig);
-  const practiceBigCount = Math.max(0, currentBigValue - beforeBigValue);
-  const bigRoleBaseGames = practiceBigCount * 24;
   const liveYenPerMedal = medalRentValue > 0 ? 1000 / medalRentValue : 0;
   const liveExchangeYen = exchangeRateValue > 0 ? 100 / exchangeRateValue : 0;
   const liveCashGapLoss =
@@ -722,7 +817,6 @@ export default function HanaHanaHououPage() {
     cashInvestment:
       cashInvestmentValue > 0 && liveCashGapLoss > 0 ? formatLossYen(liveCashGapLoss) : ""
   };
-  const bigRoleNote = `${practiceBigCount}回×24G = ${bigRoleBaseGames}G`;
 
   const handleClear = () => {
     saveSlots.onClearCurrentData();
@@ -745,27 +839,40 @@ export default function HanaHanaHououPage() {
   const handleEstimate = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    const bellRaw = inputValues.bell;
+    const hasBellInput = bellRaw.trim() !== "";
     const beforeGames = toNumber(inputValues.beforeGames);
     const beforeBig = toNumber(inputValues.beforeBig);
     const beforeReg = toNumber(inputValues.beforeReg);
     const currentGames = toNumber(inputValues.currentGames);
     const currentBig = toNumber(inputValues.currentBig);
     const currentReg = toNumber(inputValues.currentReg);
-    const bell = toNumber(inputValues.bell);
-    const topBlue = toNumber(inputValues.topBlue);
-    const topYellow = toNumber(inputValues.topYellow);
-    const topGreen = toNumber(inputValues.topGreen);
-    const topRed = toNumber(inputValues.topRed);
-    const topRainbow = toNumber(inputValues.topRainbow);
-    const sideBlue = toNumber(inputValues.sideBlue);
-    const sideYellow = toNumber(inputValues.sideYellow);
-    const sideGreen = toNumber(inputValues.sideGreen);
-    const sideRed = toNumber(inputValues.sideRed);
-    const sideRainbow = toNumber(inputValues.sideRainbow);
-    const soundRetroTrials = toNumber(inputValues.soundRetroTrials);
-    const soundRetroHits = toNumber(inputValues.soundRetroHits);
-    const bigSuika = toNumber(inputValues.bigSuika);
-    const bigHazure = toNumber(inputValues.bigHazure);
+    const bell = toNumber(bellRaw);
+    const bigFrontGames = toNumber(inputValues.bigFrontGames);
+    const bigFrontSuika = toNumber(inputValues.bigFrontSuika);
+    const bigFrontHazure = toNumber(inputValues.bigFrontHazure);
+    const btSideTrials = toNumber(inputValues.btSideTrials);
+    const btSideBlue = toNumber(inputValues.btSideBlue);
+    const btSideYellow = toNumber(inputValues.btSideYellow);
+    const btSideGreen = toNumber(inputValues.btSideGreen);
+    const btSideRed = toNumber(inputValues.btSideRed);
+    const btSideRainbow = toNumber(inputValues.btSideRainbow);
+    const bigAfterTrials = toNumber(inputValues.bigAfterTrials);
+    const bigAfterBlue = toNumber(inputValues.bigAfterBlue);
+    const bigAfterYellow = toNumber(inputValues.bigAfterYellow);
+    const bigAfterGreen = toNumber(inputValues.bigAfterGreen);
+    const bigAfterPurple = toNumber(inputValues.bigAfterPurple);
+    const bigAfterRainbow = toNumber(inputValues.bigAfterRainbow);
+    const regAfterTrials = toNumber(inputValues.regAfterTrials);
+    const regAfterWhite = toNumber(inputValues.regAfterWhite);
+    const regAfterBlue = toNumber(inputValues.regAfterBlue);
+    const regAfterYellow = toNumber(inputValues.regAfterYellow);
+    const regAfterGreen = toNumber(inputValues.regAfterGreen);
+    const regAfterPurple = toNumber(inputValues.regAfterPurple);
+    const retroSoundTrials = toNumber(inputValues.retroSoundTrials);
+    const retroSoundHits = toNumber(inputValues.retroSoundHits);
+    const regGames = toNumber(inputValues.regGames);
+    const regSuika = toNumber(inputValues.regSuika);
     const medalRent = toNumber(inputValues.medalRent);
     const exchangeRate = toNumber(inputValues.exchangeRate);
     const cashInvestment = Math.max(0, toNumber(inputValues.cashInvestment));
@@ -776,15 +883,25 @@ export default function HanaHanaHououPage() {
         : 0;
 
     const practiceGames = currentGames - beforeGames;
-    const practiceBig = currentBig - beforeBig;
-    const practiceReg = currentReg - beforeReg;
     const totalBonus = currentBig + currentReg;
-    const topTotal = topBlue + topYellow + topGreen + topRed + topRainbow;
-    const settingExpectationValues = settings.map((setting) => {
+    const regAfterHint = getRegAfterHintSummary(
+      regAfterTrials,
+      regAfterWhite,
+      regAfterBlue,
+      regAfterYellow,
+      regAfterGreen,
+      regAfterPurple
+    );
+    const guaranteeMinimumRank = regAfterHint.minimumSettingRank;
+
+    setRegAfterHintSummary(regAfterHint);
+
+    const settingExpectationValues = settings.map((setting, index) => {
       const payoutRate = parsePayoutRate(setting.payout);
 
       return {
         label: setting.setting,
+        rank: index + 1,
         payoutRate,
         expectedYen: practiceGames * 3 * yenPerMedal * (payoutRate - 1) - cashGapLoss
       };
@@ -812,86 +929,85 @@ export default function HanaHanaHououPage() {
         base: practiceGames
       },
       {
-        key: "topBlue",
-        count: topBlue,
-        base: practiceBig,
+        key: "bigFrontSuika",
+        count: bigFrontSuika,
+        base: bigFrontGames
+      },
+      {
+        key: "bigFrontHazure",
+        count: bigFrontHazure,
+        base: bigFrontGames
+      },
+      {
+        key: "btSideBlue",
+        count: btSideBlue,
+        base: btSideTrials,
         summaryStyle: "percent"
       },
       {
-        key: "topYellow",
-        count: topYellow,
-        base: practiceBig,
+        key: "btSideYellow",
+        count: btSideYellow,
+        base: btSideTrials,
         summaryStyle: "percent"
       },
       {
-        key: "topGreen",
-        count: topGreen,
-        base: practiceBig,
+        key: "btSideGreen",
+        count: btSideGreen,
+        base: btSideTrials,
         summaryStyle: "percent"
       },
       {
-        key: "topRed",
-        count: topRed,
-        base: practiceBig,
+        key: "btSideRed",
+        count: btSideRed,
+        base: btSideTrials,
         summaryStyle: "percent"
       },
       {
-        key: "topRainbow",
-        count: topRainbow,
-        base: practiceBig,
+        key: "btSideRainbow",
+        count: btSideRainbow,
+        base: btSideTrials,
         summaryStyle: "percent"
       },
       {
-        key: "topTotal",
-        count: topTotal,
-        base: practiceBig,
+        key: "bigAfterBlue",
+        count: bigAfterBlue,
+        base: bigAfterTrials,
         summaryStyle: "percent"
       },
       {
-        key: "sideBlue",
-        count: sideBlue,
-        base: practiceReg,
+        key: "bigAfterYellow",
+        count: bigAfterYellow,
+        base: bigAfterTrials,
         summaryStyle: "percent"
       },
       {
-        key: "sideYellow",
-        count: sideYellow,
-        base: practiceReg,
+        key: "bigAfterGreen",
+        count: bigAfterGreen,
+        base: bigAfterTrials,
         summaryStyle: "percent"
       },
       {
-        key: "sideGreen",
-        count: sideGreen,
-        base: practiceReg,
+        key: "bigAfterPurple",
+        count: bigAfterPurple,
+        base: bigAfterTrials,
         summaryStyle: "percent"
       },
       {
-        key: "sideRed",
-        count: sideRed,
-        base: practiceReg,
+        key: "bigAfterRainbow",
+        count: bigAfterRainbow,
+        base: bigAfterTrials,
         summaryStyle: "percent"
       },
       {
-        key: "sideRainbow",
-        count: sideRainbow,
-        base: practiceReg,
+        key: "retroSound",
+        count: retroSoundHits,
+        base: retroSoundTrials,
         summaryStyle: "percent"
       },
       {
-        key: "soundRetro",
-        count: soundRetroHits,
-        base: soundRetroTrials,
-        summaryStyle: "percent"
-      },
-      {
-        key: "bigSuika",
-        count: bigSuika,
-        base: practiceBig * 24
-      },
-      {
-        key: "bigHazure",
-        count: bigHazure,
-        base: practiceBig * 24
+        key: "regSuika",
+        count: regSuika,
+        base: regGames
       }
     ];
 
@@ -902,7 +1018,7 @@ export default function HanaHanaHououPage() {
     const validProbabilityDefinitions = probabilityDefinitions.filter(
       (definition) =>
         definition.key !== "sum" &&
-        definition.key !== "topTotal" &&
+        (definition.key !== "bell" || hasBellInput) &&
         definition.base > 0 &&
         definition.count >= 0 &&
         definition.count <= definition.base
@@ -915,13 +1031,27 @@ export default function HanaHanaHououPage() {
         columns: group.items.map((item) => {
           const definition = probabilityDefinitionMap[item.key];
 
+          if (item.key === "bell" && !hasBellInput) {
+            return {
+              label: item.title,
+              summaryText: "未入力",
+              values: settings.map((setting) => ({
+                label: setting.setting,
+                value: "-"
+              }))
+            };
+          }
+
           const weights = settingRates.map((setting) => ({
             label: setting.label,
-            weight: calculateBinomialProbability(
-              definition.count,
-              definition.base,
-              setting[item.key]
-            )
+            weight:
+              setting.rank >= guaranteeMinimumRank
+                ? calculateBinomialProbability(
+                    definition.count,
+                    definition.base,
+                    setting[item.key]
+                  )
+                : 0
           }));
           const totalWeight = weights.reduce((sum, row) => sum + row.weight, 0);
 
@@ -964,22 +1094,32 @@ export default function HanaHanaHououPage() {
 
     const totalLogRows = settingRates.map((setting) => ({
       label: setting.label,
-      logValue: validProbabilityDefinitions.reduce(
-        (sum, definition) =>
-          sum +
-          calculateLogBinomialProbability(
-            definition.count,
-            definition.base,
-            setting[definition.key]
-          ),
-        0
-      )
+      logValue:
+        setting.rank >= guaranteeMinimumRank
+          ? validProbabilityDefinitions.reduce(
+              (sum, definition) =>
+                sum +
+                calculateLogBinomialProbability(
+                  definition.count,
+                  definition.base,
+                  setting[definition.key]
+                ),
+              0
+            )
+          : Number.NEGATIVE_INFINITY
     }));
 
-    const maxLogValue = Math.max(...totalLogRows.map((row) => row.logValue));
+    const finiteLogRows = totalLogRows.filter((row) => Number.isFinite(row.logValue));
+    const maxLogValue =
+      finiteLogRows.length > 0
+        ? Math.max(...finiteLogRows.map((row) => row.logValue))
+        : Number.NEGATIVE_INFINITY;
     const scaledRows = totalLogRows.map((row) => ({
       label: row.label,
-      weight: Math.exp(row.logValue - maxLogValue)
+      weight:
+        Number.isFinite(row.logValue) && Number.isFinite(maxLogValue)
+          ? Math.exp(row.logValue - maxLogValue)
+          : 0
     }));
     const totalWeight = scaledRows.reduce((sum, row) => sum + row.weight, 0);
 
@@ -1030,19 +1170,15 @@ export default function HanaHanaHououPage() {
   return (
     <main className="page-shell">
       <div className="card card-wide">
-        <h1 className="title">ハナハナホウオウ ～天翔～</h1>
+        <h1 className="title">ニューキングハナハナV</h1>
         <form className="input-form" onSubmit={handleEstimate}>
           {inputGroups.map((group, index) => (
             <section className="input-group" key={`${group.title}-${index}`}>
               <div className="group-title-row">
                 <p className="group-title">【{group.title}】</p>
-                {"fields" in group && group.title === "BIG中小役" ? (
-                  <p className="group-note">{bigRoleNote}</p>
-                ) : "note" in group && group.note ? (
-                  <p className="group-note">{group.note}</p>
-                ) : null}
+                {group.note ? <p className="group-note">{group.note}</p> : null}
               </div>
-              {"fields" in group ? (
+              {group.kind === "fields" ? (
                 <>
                   <div
                     className={`input-row input-row-${Math.min(group.fields.length, 3)}${
@@ -1087,56 +1223,62 @@ export default function HanaHanaHououPage() {
                   ) : null}
                 </>
               ) : (
-                <div className="piece-input-group">
-                  {group.rows.map((row) => (
-                    <div
-                      className={`piece-input-row${group.rowClass ? ` ${group.rowClass}` : ""}`}
-                      key={row.label}
-                    >
-                      <p className="piece-input-label">{row.label}</p>
+                <>
+                  <div className="input-row input-row-1">
+                    <div className="input-field-wrap">
                       <label className="input-field">
-                        <span className="input-label">試行</span>
+                        <span className="input-label">{group.trialField.label}</span>
                         <span className="input-control">
                           <input
-                            className={`number-input number-input-piece${
-                              group.inputWidthClass ? ` ${group.inputWidthClass}` : ""
+                            className={`number-input${
+                              group.trialField.widthClass ? ` ${group.trialField.widthClass}` : ""
                             }`}
                             type="number"
                             inputMode="numeric"
-                            value={inputValues[row.trialKey]}
+                            value={inputValues[group.trialField.key]}
                             onChange={(event) =>
                               setInputValues((current) => ({
                                 ...current,
-                                [row.trialKey]: event.target.value
+                                [group.trialField.key]: event.target.value
                               }))
                             }
                           />
-                          <span className="input-unit">回</span>
-                        </span>
-                      </label>
-                      <label className="input-field">
-                        <span className="input-label">発生</span>
-                        <span className="input-control">
-                          <input
-                            className={`number-input number-input-piece${
-                              group.inputWidthClass ? ` ${group.inputWidthClass}` : ""
-                            }`}
-                            type="number"
-                            inputMode="numeric"
-                            value={inputValues[row.occurrenceKey]}
-                            onChange={(event) =>
-                              setInputValues((current) => ({
-                                ...current,
-                                [row.occurrenceKey]: event.target.value
-                              }))
-                            }
-                          />
-                          <span className="input-unit">回</span>
+                          {group.trialField.unit ? (
+                            <span className="input-unit">{group.trialField.unit}</span>
+                          ) : null}
                         </span>
                       </label>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                  <div
+                    className={`input-row input-row-${Math.min(group.fields.length, 3)}${
+                      group.fieldsRowClass ? ` ${group.fieldsRowClass}` : ""
+                    }`}
+                  >
+                    {group.fields.map((field) => (
+                      <div className="input-field-wrap" key={field.key}>
+                        <label className="input-field">
+                          <span className="input-label">{field.label}</span>
+                          <span className="input-control">
+                            <input
+                              className={`number-input${field.widthClass ? ` ${field.widthClass}` : ""}`}
+                              type="number"
+                              inputMode="numeric"
+                              value={inputValues[field.key]}
+                              onChange={(event) =>
+                                setInputValues((current) => ({
+                                  ...current,
+                                  [field.key]: event.target.value
+                                }))
+                              }
+                            />
+                            {field.unit ? <span className="input-unit">{field.unit}</span> : null}
+                          </span>
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </>
               )}
             </section>
           ))}
@@ -1165,6 +1307,25 @@ export default function HanaHanaHououPage() {
                       <p className="result-value">{row.value}</p>
                     </div>
                   ))}
+                </div>
+              ) : null}
+              {regAfterHintSummary ? (
+                <div className="result-subgroup">
+                  <h3 className="result-section-title">REG後ハイビスカスランプ</h3>
+                  <div className="result-list">
+                    <div className="result-item">
+                      <p className="result-label">試行回数</p>
+                      <p className="result-value">{regAfterHintSummary.trialText}</p>
+                    </div>
+                    <div className="result-item">
+                      <p className="result-label">色別回数</p>
+                      <p className="result-value">{regAfterHintSummary.countText}</p>
+                    </div>
+                    <div className="result-item">
+                      <p className="result-label">最も強い示唆</p>
+                      <p className="result-value">{regAfterHintSummary.strongestText}</p>
+                    </div>
+                  </div>
                 </div>
               ) : null}
               <div className="result-subgroup">
@@ -1284,6 +1445,27 @@ export default function HanaHanaHououPage() {
               </div>
             </section>
           ))}
+          <section className="spec-group">
+            <h2 className="spec-title">【REG後ハイビスカスランプ】</h2>
+            <div className="table-wrap">
+              <table className="data-table data-table-compact">
+                <thead>
+                  <tr>
+                    <th>色</th>
+                    <th>設定示唆</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {regAfterHintRows.map((row) => (
+                    <tr key={row.color}>
+                      <th scope="row">{row.color}</th>
+                      <td>{row.hint}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
         </section>
       </div>
     </main>
