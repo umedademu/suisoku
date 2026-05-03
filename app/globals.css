@@ -53,6 +53,10 @@ a {
   text-align: center;
 }
 
+.card-home {
+  max-width: 760px;
+}
+
 .card-wide {
   max-width: 370px;
 }
@@ -70,15 +74,43 @@ a {
   margin: 24px auto 0;
 }
 
+.machine-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  width: min(100%, 700px);
+  margin: 24px auto 0;
+  align-items: start;
+}
+
+.machine-column {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.machine-column-title {
+  margin: 0;
+  font-size: 0.98rem;
+}
+
+.link-list-column {
+  width: 100%;
+  margin: 0;
+}
+
 .link-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
   border-radius: 999px;
   background: var(--accent);
   color: #fffaf4;
   font-size: 1rem;
   font-weight: 700;
+  text-align: center;
+  white-space: normal;
   padding: 14px 28px;
   transition:
     transform 0.2s ease,
@@ -1489,6 +1521,27 @@ a {
 
   .title {
     font-size: clamp(1.5rem, 7.5vw, 1.95rem);
+  }
+
+  .machine-grid {
+    gap: 8px;
+  }
+
+  .machine-column {
+    gap: 8px;
+  }
+
+  .machine-column-title {
+    font-size: 0.82rem;
+  }
+
+  .link-list-column {
+    gap: 8px;
+  }
+
+  .link-button {
+    font-size: 0.86rem;
+    padding: 12px 10px;
   }
 
   .input-row-2 {
