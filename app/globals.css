@@ -89,11 +89,6 @@ a {
   min-width: 0;
 }
 
-.machine-column-title {
-  margin: 0;
-  font-size: 0.98rem;
-}
-
 .link-list-column {
   width: 100%;
   margin: 0;
@@ -1529,10 +1524,6 @@ a {
 
   .machine-column {
     gap: 8px;
-  }
-
-  .machine-column-title {
-    font-size: 0.82rem;
   }
 
   .link-list-column {

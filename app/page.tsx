@@ -29,7 +29,6 @@ export default function Home() {
         <h1 className="title">{APP_TITLE}</h1>
         <div className="machine-grid">
           <section className="machine-column">
-            <h2 className="machine-column-title">ジャグラー系</h2>
             <div className="link-list link-list-column">
               {jugglerLinks.map((machine) => (
                 <Link className="link-button" href={machine.href} key={machine.href}>
@@ -39,7 +38,6 @@ export default function Home() {
             </div>
           </section>
           <section className="machine-column">
-            <h2 className="machine-column-title">その他</h2>
             <div className="link-list link-list-column">
               {otherLinks.map((machine) => (
                 <Link className="link-button" href={machine.href} key={machine.href}>
