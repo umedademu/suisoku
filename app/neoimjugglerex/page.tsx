@@ -9,40 +9,40 @@ const settings = [
     setting: "設定1",
     bb: "1/273.1",
     rb: "1/439.8",
-    budo: "1/6.02",
+    budo: "1/6.06",
     singleReg: "1/630.15",
     payoutPublic: "97.0%",
-    payoutCherry: "97.97%",
+    payoutCherry: "97.57%",
     payoutFull: "98.70%"
   },
   {
     setting: "設定2",
     bb: "1/269.7",
     rb: "1/399.6",
-    budo: "1/6.02",
+    budo: "1/6.04",
     singleReg: "1/574.88",
     payoutPublic: "98.0%",
-    payoutCherry: "99.09%",
+    payoutCherry: "98.86%",
     payoutFull: "99.82%"
   },
   {
     setting: "設定3",
     bb: "1/269.7",
     rb: "1/331.0",
-    budo: "1/6.02",
+    budo: "1/6.04",
     singleReg: "1/474.90",
     payoutPublic: "99.5%",
-    payoutCherry: "100.75%",
+    payoutCherry: "100.51%",
     payoutFull: "101.48%"
   },
   {
     setting: "設定4",
     bb: "1/259.0",
     rb: "1/315.1",
-    budo: "1/6.02",
+    budo: "1/6.04",
     singleReg: "1/448.88",
     payoutPublic: "101.1%",
-    payoutCherry: "102.53%",
+    payoutCherry: "102.27%",
     payoutFull: "103.27%"
   },
   {
@@ -52,17 +52,17 @@ const settings = [
     budo: "1/6.02",
     singleReg: "1/364.09",
     payoutPublic: "104.3%",
-    payoutCherry: "104.93%",
+    payoutCherry: "104.83%",
     payoutFull: "105.66%"
   },
   {
     setting: "設定6",
     bb: "1/255.0",
     rb: "1/255.0",
-    budo: "1/5.78",
+    budo: "1/5.80",
     singleReg: "1/364.09",
     payoutPublic: "105.5%",
-    payoutCherry: "107.29%",
+    payoutCherry: "107.03%",
     payoutFull: "108.01%"
   }
 ];
