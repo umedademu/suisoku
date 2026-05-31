@@ -1030,6 +1030,7 @@ export default function HanaHanaHououPage() {
   return (
     <main className="page-shell">
       <div className="card card-wide">
+        <a className="top-page-link" href="/">トップページに戻る</a>
         <h1 className="title">ハナハナホウオウ ～天翔～</h1>
         <form className="input-form" onSubmit={handleEstimate}>
           {inputGroups.map((group, index) => (

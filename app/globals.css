@@ -67,6 +67,20 @@ a {
   line-height: 1.1;
 }
 
+.top-page-link {
+  display: inline-flex;
+  margin: 0 0 14px;
+  color: var(--accent-strong);
+  font-size: 0.92rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.top-page-link:hover {
+  color: var(--accent);
+}
+
 .link-list {
   display: grid;
   gap: 12px;
@@ -1516,6 +1530,11 @@ a {
 
   .title {
     font-size: clamp(1.5rem, 7.5vw, 1.95rem);
+  }
+
+  .top-page-link {
+    margin-bottom: 10px;
+    font-size: 0.86rem;
   }
 
   .machine-grid {

@@ -1137,6 +1137,7 @@ export default function LHanabiPage() {
   return (
     <main className="page-shell">
       <div className="card card-wide">
+        <a className="top-page-link" href="/">トップページに戻る</a>
         <h1 className="title">スマスロ Lハナビ</h1>
         <section className="mode-switch">
           <p className="mode-switch-label">入力モード</p>

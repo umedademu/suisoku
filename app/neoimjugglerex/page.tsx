@@ -774,6 +774,7 @@ export default function NeoImJugglerExPage() {
   return (
     <main className="page-shell">
       <div className="card card-wide">
+        <a className="top-page-link" href="/">トップページに戻る</a>
         <h1 className="title">ネオアイムジャグラーEX</h1>
         <form className="input-form" onSubmit={handleEstimate}>
           {inputGroups.map((group, index) => (
