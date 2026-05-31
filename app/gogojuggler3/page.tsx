@@ -10,42 +10,42 @@ const settings = [
     bb: "1/259.0",
     rb: "1/354.2",
     budo: "1/6.25",
-    payout: "98.39%"
+    payout: "98.28%"
   },
   {
     setting: "設定2",
     bb: "1/258.0",
     rb: "1/332.7",
     budo: "1/6.20",
-    payout: "99.36%"
+    payout: "99.34%"
   },
   {
     setting: "設定3",
     bb: "1/257.0",
     rb: "1/306.2",
     budo: "1/6.15",
-    payout: "100.60%"
+    payout: "100.65%"
   },
   {
     setting: "設定4",
     bb: "1/254.0",
     rb: "1/268.6",
     budo: "1/6.07",
-    payout: "102.83%"
+    payout: "103.05%"
   },
   {
     setting: "設定5",
     bb: "1/247.3",
     rb: "1/247.3",
     budo: "1/6.00",
-    payout: "105.08%"
+    payout: "105.46%"
   },
   {
     setting: "設定6",
     bb: "1/234.9",
     rb: "1/234.9",
     budo: "1/5.92",
-    payout: "107.83%"
+    payout: "108.46%"
   }
 ];
 
@@ -127,7 +127,7 @@ const specGroups = [
       { label: "BIG", key: "bb" },
       { label: "REG", key: "rb" },
       { label: "ボーナス合算", key: "bonusTotal" },
-      { label: "機械割", key: "payout" }
+      { label: "機械割(チェリー狙い)", key: "payout" }
     ]
   },
   {
@@ -572,7 +572,7 @@ export default function GoGoJuggler3Page() {
       setOverallSettingRows(null);
       setSettingExpectationTable({
         headerText: `${practiceGames}G`,
-        payoutHeaderText: "公表値",
+        payoutHeaderText: "チェリー狙い",
         hourlyText: "-",
         rows: settingExpectationValues.map((row) => ({
           label: row.label,
@@ -644,7 +644,7 @@ export default function GoGoJuggler3Page() {
 
     setSettingExpectationTable({
       headerText: `${practiceGames}G`,
-      payoutHeaderText: "公表値",
+      payoutHeaderText: "チェリー狙い",
       hourlyText: hourlyExpectedYen !== null ? formatHourlyYen(hourlyExpectedYen) : "-",
       rows: expectationRows,
       totalPayoutText: totalExpectedPayoutRate !== null ? formatPayout(totalExpectedPayoutRate) : "-",
