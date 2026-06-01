@@ -96,6 +96,8 @@ type ChoiceInputGroup = {
 type InputGroup = StandardInputGroup | ChoiceInputGroup;
 
 type PayoutMode = "public" | "cherry" | "full";
+type GrapeGameMode = "fromStart" | "practice" | "total";
+type InputValue = string | PayoutMode | GrapeGameMode;
 
 const payoutModeLabels: Record<PayoutMode, string> = {
   public: "公表値",
@@ -104,6 +106,19 @@ const payoutModeLabels: Record<PayoutMode, string> = {
 };
 
 const defaultPayoutMode: PayoutMode = "cherry";
+const defaultGrapeGameMode: GrapeGameMode = "fromStart";
+
+const grapeGameModeLabels: Record<GrapeGameMode, string> = {
+  fromStart: "開始前G数",
+  practice: "実践G数",
+  total: "総G数"
+};
+
+const grapeGameModeOptions: Array<{ value: GrapeGameMode; label: string }> = [
+  { value: "fromStart", label: "開始前G数" },
+  { value: "practice", label: "実践G数" },
+  { value: "total", label: "総G数" }
+];
 
 const inputGroups: InputGroup[] = [
   {
@@ -172,6 +187,9 @@ const initialValues = {
   ),
   medalRent: "46",
   exchangeRate: "5.0",
+  grapeDiff: "",
+  grapePracticeGames: "",
+  grapeGameMode: defaultGrapeGameMode,
   payoutMode: defaultPayoutMode
 };
 
@@ -428,8 +446,210 @@ function getSelectedPayout(setting: (typeof settings)[number], payoutMode: Payou
   return parsePayoutRate(setting.payoutPublic);
 }
 
+const grapeEstimateSpec = {
+  bigPayout: 252,
+  regPayout: 96,
+  replayDenominator: 7.3,
+  replayPayout: 3,
+  grapePayout: 8,
+  cherryPayout: 2,
+  oneBetGrapeDenominator: 10.3,
+  oneBetReplayDenominator: 7.3,
+  oneBetGrapePayout: 8,
+  oneBetReplayPayout: 1,
+  postAnnouncementBonusRatio: 0.75,
+  oneBetGameFactor: 1 / 3,
+  cherryDenominatorsBySetting: [
+    [1, 36.36],
+    [2, 35.92],
+    [3, 36.0],
+    [4, 36.35],
+    [5, 35.92],
+    [6, 35.73]
+  ] as const
+};
+
+type GrapeEstimateSource = {
+  games: number;
+  bb: number;
+  rb: number;
+  label: string;
+};
+
+type GrapeEstimateResult =
+  | {
+      status: "empty" | "invalid";
+      message: string;
+    }
+  | {
+      status: "ok";
+      count: number;
+      roundedCount: number;
+      denominator: number;
+      probability: number;
+      normalGames: number;
+      source: GrapeEstimateSource;
+      cherryDenominator: number;
+      averageSetting: number;
+    };
+
+function interpolateProbability(
+  settingAverage: number,
+  denominatorRows: typeof grapeEstimateSpec.cherryDenominatorsBySetting
+) {
+  const rows = denominatorRows.map(([setting, denominator]) => ({
+    setting,
+    probability: 1 / denominator
+  }));
+  const first = rows[0];
+  const last = rows[rows.length - 1];
+
+  if (settingAverage <= first.setting) {
+    return first.probability;
+  }
+
+  if (settingAverage >= last.setting) {
+    return last.probability;
+  }
+
+  for (let index = 0; index < rows.length - 1; index += 1) {
+    const left = rows[index];
+    const right = rows[index + 1];
+
+    if (settingAverage < left.setting || settingAverage > right.setting) {
+      continue;
+    }
+
+    const progress = (settingAverage - left.setting) / (right.setting - left.setting);
+    return left.probability + (right.probability - left.probability) * progress;
+  }
+
+  return first.probability;
+}
+
+function calculateBonusAverageSetting(games: number, bb: number, rb: number) {
+  if (games <= 0 || bb < 0 || rb < 0 || bb + rb <= 0) {
+    return 3.5;
+  }
+
+  const logRows = settingRates.map((setting, index) => ({
+    settingNumber: index + 1,
+    logValue:
+      calculateLogBinomialProbability(bb, games, setting.bb) +
+      calculateLogBinomialProbability(rb, games, setting.rb)
+  }));
+  const maxLogValue = Math.max(...logRows.map((row) => row.logValue));
+
+  if (!Number.isFinite(maxLogValue)) {
+    return 3.5;
+  }
+
+  const weightedRows = logRows.map((row) => ({
+    settingNumber: row.settingNumber,
+    weight: Math.exp(row.logValue - maxLogValue)
+  }));
+  const totalWeight = weightedRows.reduce((sum, row) => sum + row.weight, 0);
+
+  if (totalWeight <= 0) {
+    return 3.5;
+  }
+
+  return (
+    weightedRows.reduce((sum, row) => sum + row.settingNumber * row.weight, 0) / totalWeight
+  );
+}
+
+function calculateEstimatedGrape(
+  differenceValue: number,
+  source: GrapeEstimateSource
+): GrapeEstimateResult {
+  if (source.games <= 0 || source.bb < 0 || source.rb < 0) {
+    return {
+      status: "invalid",
+      message: "G数とボーナス回数を確認してください。"
+    };
+  }
+
+  const bonusCount = source.bb + source.rb;
+  const averageSetting = calculateBonusAverageSetting(source.games, source.bb, source.rb);
+  const cherryProbability = interpolateProbability(
+    averageSetting,
+    grapeEstimateSpec.cherryDenominatorsBySetting
+  );
+  const postAnnouncementBonusCount =
+    bonusCount * grapeEstimateSpec.postAnnouncementBonusRatio;
+  const oneBetEndProbability =
+    1 -
+    1 / grapeEstimateSpec.oneBetGrapeDenominator -
+    1 / grapeEstimateSpec.oneBetReplayDenominator;
+  const oneBetGames =
+    oneBetEndProbability > 0 ? postAnnouncementBonusCount / oneBetEndProbability : 0;
+  const normalGames = source.games - oneBetGames * grapeEstimateSpec.oneBetGameFactor;
+
+  if (!Number.isFinite(normalGames) || normalGames <= 0) {
+    return {
+      status: "invalid",
+      message: "通常時G数を計算できません。"
+    };
+  }
+
+  const correctedDifference =
+    differenceValue - postAnnouncementBonusCount / grapeEstimateSpec.oneBetReplayDenominator;
+  const totalInvestment = normalGames * 3 + oneBetGames;
+  const bonusPayout =
+    source.bb * grapeEstimateSpec.bigPayout + source.rb * grapeEstimateSpec.regPayout;
+  const totalSmallPayout = correctedDifference + totalInvestment - bonusPayout;
+  const replayPayout =
+    (normalGames * grapeEstimateSpec.replayPayout) / grapeEstimateSpec.replayDenominator;
+  const cherryPayout =
+    normalGames * grapeEstimateSpec.cherryPayout * cherryProbability;
+  const oneBetGrapePayout =
+    (oneBetGames * grapeEstimateSpec.oneBetGrapePayout) /
+    grapeEstimateSpec.oneBetGrapeDenominator;
+  const oneBetReplayPayout =
+    (oneBetGames * grapeEstimateSpec.oneBetReplayPayout) /
+    grapeEstimateSpec.oneBetReplayDenominator;
+  const grapePayout =
+    totalSmallPayout - replayPayout - cherryPayout - oneBetGrapePayout - oneBetReplayPayout;
+  const count = grapePayout / grapeEstimateSpec.grapePayout;
+
+  if (!Number.isFinite(count) || count <= 0) {
+    return {
+      status: "invalid",
+      message: "推定ブドウが0以下になりました。差枚数やG数を確認してください。"
+    };
+  }
+
+  const denominator = normalGames / count;
+  const probability = count / normalGames;
+
+  if (
+    !Number.isFinite(denominator) ||
+    !Number.isFinite(probability) ||
+    denominator <= 0 ||
+    probability <= 0
+  ) {
+    return {
+      status: "invalid",
+      message: "推定ブドウを計算できません。"
+    };
+  }
+
+  return {
+    status: "ok",
+    count,
+    roundedCount: Math.max(0, Math.round(count)),
+    denominator,
+    probability,
+    normalGames,
+    source,
+    cherryDenominator: 1 / cherryProbability,
+    averageSetting
+  };
+}
+
 export default function NeoImJugglerExPage() {
-  const [inputValues, setInputValues] = useState<Record<string, string | PayoutMode>>(initialValues);
+  const [inputValues, setInputValues] = useState<Record<string, InputValue>>(initialValues);
   const [settingExpectationTable, setSettingExpectationTable] = useState<
     | {
         headerText: string;
@@ -486,11 +706,19 @@ export default function NeoImJugglerExPage() {
 
       if (raw) {
         const parsed = JSON.parse(raw) as Record<string, unknown>;
-        const nextValues: Record<string, string | PayoutMode> = { ...initialValues };
+        const nextValues: Record<string, InputValue> = { ...initialValues };
 
         Object.entries(parsed).forEach(([key, value]) => {
           if (key === "payoutMode") {
             if (value === "public" || value === "cherry" || value === "full") {
+              nextValues[key] = value;
+            }
+
+            return;
+          }
+
+          if (key === "grapeGameMode") {
+            if (value === "fromStart" || value === "practice" || value === "total") {
               nextValues[key] = value;
             }
 
@@ -534,6 +762,51 @@ export default function NeoImJugglerExPage() {
     cashInvestment:
       cashInvestmentValue > 0 && liveCashGapLoss > 0 ? formatLossYen(liveCashGapLoss) : ""
   };
+  const liveBeforeGames = toNumber(String(inputValues.beforeGames ?? ""));
+  const liveBeforeBig = toNumber(String(inputValues.beforeBig ?? ""));
+  const liveBeforeReg = toNumber(String(inputValues.beforeReg ?? ""));
+  const liveCurrentGames = toNumber(String(inputValues.currentGames ?? ""));
+  const liveCurrentBig = toNumber(String(inputValues.currentBig ?? ""));
+  const liveCurrentReg = toNumber(String(inputValues.currentReg ?? ""));
+  const grapeGameMode =
+    inputValues.grapeGameMode === "fromStart" ||
+    inputValues.grapeGameMode === "practice" ||
+    inputValues.grapeGameMode === "total"
+      ? inputValues.grapeGameMode
+      : defaultGrapeGameMode;
+  const grapeEstimatePracticeBonus = {
+    bb: liveCurrentBig - liveBeforeBig,
+    rb: liveCurrentReg - liveBeforeReg
+  };
+  const grapeEstimateSource: GrapeEstimateSource =
+    grapeGameMode === "total"
+      ? {
+          games: liveCurrentGames,
+          bb: liveCurrentBig,
+          rb: liveCurrentReg,
+          label: grapeGameModeLabels.total
+        }
+      : grapeGameMode === "practice"
+        ? {
+            games: toNumber(String(inputValues.grapePracticeGames ?? "")),
+            bb: grapeEstimatePracticeBonus.bb,
+            rb: grapeEstimatePracticeBonus.rb,
+            label: grapeGameModeLabels.practice
+          }
+        : {
+            games: liveCurrentGames - liveBeforeGames,
+            bb: grapeEstimatePracticeBonus.bb,
+            rb: grapeEstimatePracticeBonus.rb,
+            label: grapeGameModeLabels.fromStart
+          };
+  const grapeDiffRaw = String(inputValues.grapeDiff ?? "");
+  const hasGrapeDiffInput = grapeDiffRaw.trim() !== "";
+  const estimatedGrape: GrapeEstimateResult = hasGrapeDiffInput
+    ? calculateEstimatedGrape(toNumber(grapeDiffRaw), grapeEstimateSource)
+    : {
+        status: "empty",
+        message: "差枚数を入力すると推定ブドウを表示します。"
+      };
 
   const handleClear = () => {
     saveSlots.onClearCurrentData();
@@ -550,6 +823,17 @@ export default function NeoImJugglerExPage() {
     setInputValues((current) => ({
       ...current,
       budo: String(Math.max(0, toNumber(String(current.budo ?? "")) - 1))
+    }));
+  };
+
+  const handleApplyEstimatedBudo = () => {
+    if (estimatedGrape.status !== "ok") {
+      return;
+    }
+
+    setInputValues((current) => ({
+      ...current,
+      budo: String(estimatedGrape.roundedCount)
     }));
   };
 
@@ -848,6 +1132,126 @@ export default function NeoImJugglerExPage() {
               )}
             </section>
           ))}
+          <section className="input-group estimated-budo-group">
+            <div className="group-title-row">
+              <p className="group-title">【ブドウ逆算】</p>
+              <p className="group-note">推定値</p>
+            </div>
+            <div className="input-row input-row-1">
+              <div className="input-field-wrap">
+                <label className="input-field">
+                  <span className="input-label">差枚数</span>
+                  <span className="input-control">
+                    <input
+                      className="number-input"
+                      type="number"
+                      inputMode="numeric"
+                      value={String(inputValues.grapeDiff ?? "")}
+                      onChange={(event) =>
+                        setInputValues((current) => ({
+                          ...current,
+                          grapeDiff: event.target.value
+                        }))
+                      }
+                    />
+                    <span className="input-unit">枚</span>
+                  </span>
+                </label>
+              </div>
+            </div>
+            <div className="choice-group">
+              {grapeGameModeOptions.map((option) => (
+                <label className="choice-option" key={option.value}>
+                  <input
+                    className="choice-radio"
+                    type="radio"
+                    name="grapeGameMode"
+                    value={option.value}
+                    checked={grapeGameMode === option.value}
+                    onChange={() =>
+                      setInputValues((current) => ({
+                        ...current,
+                        grapeGameMode: option.value
+                      }))
+                    }
+                  />
+                  <span className="choice-text">{option.label}</span>
+                </label>
+              ))}
+            </div>
+            {grapeGameMode === "practice" ? (
+              <div className="input-row input-row-1">
+                <div className="input-field-wrap">
+                  <label className="input-field">
+                    <span className="input-label">実践G数</span>
+                    <span className="input-control">
+                      <input
+                        className="number-input"
+                        type="number"
+                        inputMode="numeric"
+                        value={String(inputValues.grapePracticeGames ?? "")}
+                        onChange={(event) =>
+                          setInputValues((current) => ({
+                            ...current,
+                            grapePracticeGames: event.target.value
+                          }))
+                        }
+                      />
+                      <span className="input-unit">G</span>
+                    </span>
+                  </label>
+                </div>
+              </div>
+            ) : null}
+            <div
+              className={`estimated-budo-result${
+                estimatedGrape.status === "ok" ? " estimated-budo-result-ok" : ""
+              }`}
+            >
+              {estimatedGrape.status === "ok" ? (
+                <>
+                  <div className="estimated-budo-grid">
+                    <div className="estimated-budo-item">
+                      <span className="estimated-budo-label">使用G数</span>
+                      <span className="estimated-budo-value">
+                        {Math.round(estimatedGrape.source.games).toLocaleString("ja-JP")}G
+                      </span>
+                    </div>
+                    <div className="estimated-budo-item">
+                      <span className="estimated-budo-label">使用BB/RB</span>
+                      <span className="estimated-budo-value">
+                        {estimatedGrape.source.bb}/{estimatedGrape.source.rb}
+                      </span>
+                    </div>
+                    <div className="estimated-budo-item">
+                      <span className="estimated-budo-label">推定ブドウ数</span>
+                      <span className="estimated-budo-value">
+                        {estimatedGrape.count.toLocaleString("ja-JP", {
+                          maximumFractionDigits: 1
+                        })}
+                        個
+                      </span>
+                    </div>
+                    <div className="estimated-budo-item">
+                      <span className="estimated-budo-label">推定確率</span>
+                      <span className="estimated-budo-value">
+                        1/{formatDenominator(estimatedGrape.denominator)}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    className="estimated-budo-apply-button"
+                    type="button"
+                    onClick={handleApplyEstimatedBudo}
+                  >
+                    ブドウ欄へ反映
+                  </button>
+                </>
+              ) : (
+                <p className="estimated-budo-message">{estimatedGrape.message}</p>
+              )}
+            </div>
+          </section>
           <SaveSlotControls {...saveSlots} />
           <div className="action-row">
             <button className="clear-button" type="button" onClick={handleClear}>

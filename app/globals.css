@@ -487,6 +487,79 @@ a {
   border-color: var(--accent);
 }
 
+.estimated-budo-group {
+  border-top: 1px solid rgba(143, 47, 24, 0.16);
+  padding-top: 8px;
+}
+
+.estimated-budo-result {
+  display: grid;
+  gap: 8px;
+  border: 1px solid rgba(143, 47, 24, 0.18);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.62);
+  padding: 10px;
+}
+
+.estimated-budo-result-ok {
+  background: rgba(244, 255, 239, 0.7);
+  border-color: rgba(54, 115, 50, 0.24);
+}
+
+.estimated-budo-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.estimated-budo-item {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.estimated-budo-label {
+  color: rgba(29, 29, 27, 0.68);
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.estimated-budo-value {
+  font-size: 0.92rem;
+  font-weight: 800;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.estimated-budo-message {
+  margin: 0;
+  color: rgba(29, 29, 27, 0.7);
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.estimated-budo-apply-button {
+  width: 100%;
+  border: 0;
+  border-radius: 12px;
+  background: #367332;
+  color: #fffaf4;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 800;
+  padding: 10px 12px;
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.estimated-budo-apply-button:hover {
+  background: #255d28;
+  transform: translateY(-1px);
+}
+
 .action-row {
   display: flex;
   justify-content: center;
