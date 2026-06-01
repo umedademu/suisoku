@@ -1,6 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import {
+  estimatedBudoInitialValues,
+  JugglerEstimatedBudo,
+  jugglerEstimatedBudoSpecs
+} from "../juggler-estimated-budo";
 import { JugglerBudoCounterButton } from "../juggler-budo-counter-button";
 import { SaveSlotControls, useSaveSlots } from "../save-slots";
 
@@ -163,6 +168,7 @@ const initialValues = {
   ),
   medalRent: "46",
   exchangeRate: "5.0",
+  ...estimatedBudoInitialValues,
   payoutMode: defaultPayoutMode
 };
 
@@ -806,6 +812,18 @@ export default function SMisterJugglerPage() {
               )}
             </section>
           ))}
+          <JugglerEstimatedBudo
+            spec={jugglerEstimatedBudoSpecs.sMisterJuggler}
+            inputValues={inputValues}
+            setInputValues={setInputValues}
+            settingRates={settingRates}
+            beforeGames={toNumber(String(inputValues.beforeGames ?? ""))}
+            beforeBig={toNumber(String(inputValues.beforeBig ?? ""))}
+            beforeReg={toNumber(String(inputValues.beforeReg ?? ""))}
+            currentGames={toNumber(String(inputValues.currentGames ?? ""))}
+            currentBig={toNumber(String(inputValues.currentBig ?? ""))}
+            currentReg={toNumber(String(inputValues.currentReg ?? ""))}
+          />
           <SaveSlotControls {...saveSlots} />
           <div className="action-row">
             <button className="clear-button" type="button" onClick={handleClear}>

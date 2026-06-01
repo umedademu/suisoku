@@ -1,6 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import {
+  estimatedBudoInitialValues,
+  JugglerEstimatedBudo,
+  jugglerEstimatedBudoSpecs
+} from "../juggler-estimated-budo";
 import { JugglerBudoCounterButton } from "../juggler-budo-counter-button";
 import { SaveSlotControls, useSaveSlots } from "../save-slots";
 
@@ -115,7 +120,8 @@ const initialValues = {
     inputGroups.flatMap((group) => group.fields.map((field) => [field.key, ""] as const))
   ),
   medalRent: "46",
-  exchangeRate: "5.0"
+  exchangeRate: "5.0",
+  ...estimatedBudoInitialValues
 };
 
 const STORAGE_KEY = "suisoku-gogojuggler3-inputs";
@@ -702,6 +708,18 @@ export default function GoGoJuggler3Page() {
               ) : null}
             </section>
           ))}
+          <JugglerEstimatedBudo
+            spec={jugglerEstimatedBudoSpecs.gogoJuggler3}
+            inputValues={inputValues}
+            setInputValues={setInputValues}
+            settingRates={settingRates}
+            beforeGames={toNumber(inputValues.beforeGames)}
+            beforeBig={toNumber(inputValues.beforeBig)}
+            beforeReg={toNumber(inputValues.beforeReg)}
+            currentGames={toNumber(inputValues.currentGames)}
+            currentBig={toNumber(inputValues.currentBig)}
+            currentReg={toNumber(inputValues.currentReg)}
+          />
           <SaveSlotControls {...saveSlots} />
           <div className="action-row">
             <button className="clear-button" type="button" onClick={handleClear}>
