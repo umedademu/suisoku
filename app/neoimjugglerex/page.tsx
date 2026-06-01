@@ -459,12 +459,12 @@ const grapeEstimateSpec = {
   oneBetReplayPayout: 1,
   postAnnouncementBonusRatio: 0.75,
   cherryDenominatorsBySetting: [
-    [1, 36.36],
-    [2, 35.92],
-    [3, 36.0],
-    [4, 36.35],
-    [5, 35.92],
-    [6, 35.73]
+    [1, 34.048637],
+    [2, 33.552947],
+    [3, 33.61935],
+    [4, 33.659477],
+    [5, 33.000429],
+    [6, 32.856162]
   ] as const
 };
 
