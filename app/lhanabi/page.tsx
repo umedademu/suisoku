@@ -317,6 +317,7 @@ const specGroups = [
     columns: [
       { label: "BIG", key: "bb" },
       { label: "REG", key: "rb" },
+      { label: "ボーナス合算", key: "bonusTotal" },
       { label: "機械割", key: "payout" },
       { label: "機械割(完全攻略)", key: "payoutFull" }
     ]
@@ -485,6 +486,7 @@ const settingsDisplay = settings.map((setting) => ({
   setting: setting.setting,
   bb: formatRateFromProbability(parseRate(setting.bb)),
   rb: formatRateFromProbability(parseRate(setting.rb)),
+  bonusTotal: formatRateFromProbability(parseRate(setting.bb) + parseRate(setting.rb)),
   furinA: formatRateFromProbability(parseRate(setting.furinA)),
   furinB: formatRateFromProbability(parseRate(setting.furinB)),
   furinTotal: formatRateFromProbability(parseRate(setting.furinA) + parseRate(setting.furinB)),
