@@ -458,7 +458,6 @@ const grapeEstimateSpec = {
   oneBetGrapePayout: 8,
   oneBetReplayPayout: 1,
   postAnnouncementBonusRatio: 0.75,
-  oneBetGameFactor: 1 / 3,
   cherryDenominatorsBySetting: [
     [1, 36.36],
     [2, 35.92],
@@ -559,6 +558,16 @@ function calculateBonusAverageSetting(games: number, bb: number, rb: number) {
   );
 }
 
+function calculateResetOneBetDisplayGames(postAnnouncementBonusCount: number) {
+  const continueProbability =
+    1 / grapeEstimateSpec.oneBetGrapeDenominator +
+    1 / grapeEstimateSpec.oneBetReplayDenominator;
+  const expectedDisplayGamesPerBonus =
+    Math.pow(continueProbability, 2) / (1 - Math.pow(continueProbability, 3));
+
+  return postAnnouncementBonusCount * expectedDisplayGamesPerBonus;
+}
+
 function calculateEstimatedGrape(
   differenceValue: number,
   source: GrapeEstimateSource
@@ -584,7 +593,8 @@ function calculateEstimatedGrape(
     1 / grapeEstimateSpec.oneBetReplayDenominator;
   const oneBetGames =
     oneBetEndProbability > 0 ? postAnnouncementBonusCount / oneBetEndProbability : 0;
-  const normalGames = source.games - oneBetGames * grapeEstimateSpec.oneBetGameFactor;
+  const oneBetDisplayGames = calculateResetOneBetDisplayGames(postAnnouncementBonusCount);
+  const normalGames = source.games - oneBetDisplayGames;
 
   if (!Number.isFinite(normalGames) || normalGames <= 0) {
     return {
