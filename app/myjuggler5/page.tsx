@@ -17,7 +17,7 @@ const settings = [
     budo: "1/5.90",
     singleReg: "1/655.36",
     payoutPublic: "97.0%",
-    payoutCherry: "97.74%",
+    payoutCherry: "97.70%",
     payoutFull: "98.61%"
   },
   {
@@ -27,7 +27,7 @@ const settings = [
     budo: "1/5.88",
     singleReg: "1/595.78",
     payoutPublic: "98.0%",
-    payoutCherry: "98.63%",
+    payoutCherry: "98.60%",
     payoutFull: "99.73%"
   },
   {
@@ -37,7 +37,7 @@ const settings = [
     budo: "1/5.82",
     singleReg: "1/496.48",
     payoutPublic: "99.9%",
-    payoutCherry: "100.87%",
+    payoutCherry: "100.90%",
     payoutFull: "101.97%"
   },
   {
@@ -47,7 +47,7 @@ const settings = [
     budo: "1/5.81",
     singleReg: "1/404.54",
     payoutPublic: "102.8%",
-    payoutCherry: "103.98%",
+    payoutCherry: "104.00%",
     payoutFull: "105.09%"
   },
   {
@@ -57,7 +57,7 @@ const settings = [
     budo: "1/5.79",
     singleReg: "1/390.10",
     payoutPublic: "105.3%",
-    payoutCherry: "106.85%",
+    payoutCherry: "106.90%",
     payoutFull: "107.97%"
   },
   {
@@ -67,7 +67,7 @@ const settings = [
     budo: "1/5.69",
     singleReg: "1/327.68",
     payoutPublic: "109.4%",
-    payoutCherry: "111.31%",
+    payoutCherry: "111.30%",
     payoutFull: "112.44%"
   }
 ];
