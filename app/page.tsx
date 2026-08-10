@@ -10,6 +10,7 @@ const machineLinks = [
   { href: "/jugglergirlsss", label: "ジャグラーガールズSS", isJuggler: true },
   { href: "/ultramiraclejuggler", label: "ウルトラミラクルジャグラー", isJuggler: true },
   { href: "/happyjuggler", label: "ハッピージャグラーVⅢ", isJuggler: true },
+  { href: "/kabaneri2", label: "カバネリ2", isJuggler: false },
   { href: "/lhanabi", label: "スマスロ Lハナビ", isJuggler: false },
   { href: "/shinhanabi", label: "新ハナビ", isJuggler: false },
   { href: "/hanabi", label: "ハナビBH", isJuggler: false },
