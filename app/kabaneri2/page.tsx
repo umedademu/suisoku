@@ -4,12 +4,48 @@ import { useEffect, useState } from "react";
 import { SaveSlotControls, useSaveSlots } from "../save-slots";
 
 const settings = [
-  { label: "設定1", lowerBellDenominator: 121.1, payout: 97.5 },
-  { label: "設定2", lowerBellDenominator: 114.4, payout: 98.5 },
-  { label: "設定3", lowerBellDenominator: 112.8, payout: 100.8 },
-  { label: "設定4", lowerBellDenominator: 106.2, payout: 106.0 },
-  { label: "設定5", lowerBellDenominator: 104.2, payout: 111.0 },
-  { label: "設定6", lowerBellDenominator: 99.1, payout: 114.9 }
+  {
+    label: "設定1",
+    lowerBellDenominator: 121.1,
+    cycle3Rate: 0.184,
+    cycle4Rate: 0.336,
+    payout: 97.5
+  },
+  {
+    label: "設定2",
+    lowerBellDenominator: 114.4,
+    cycle3Rate: 0.238,
+    cycle4Rate: 0.352,
+    payout: 98.5
+  },
+  {
+    label: "設定3",
+    lowerBellDenominator: 112.8,
+    cycle3Rate: 0.211,
+    cycle4Rate: 0.363,
+    payout: 100.8
+  },
+  {
+    label: "設定4",
+    lowerBellDenominator: 106.2,
+    cycle3Rate: 0.285,
+    cycle4Rate: 0.402,
+    payout: 106.0
+  },
+  {
+    label: "設定5",
+    lowerBellDenominator: 104.2,
+    cycle3Rate: 0.324,
+    cycle4Rate: 0.434,
+    payout: 111.0
+  },
+  {
+    label: "設定6",
+    lowerBellDenominator: 99.1,
+    cycle3Rate: 0.371,
+    cycle4Rate: 0.469,
+    payout: 114.9
+  }
 ] as const;
 
 type InputField = {
@@ -19,9 +55,29 @@ type InputField = {
   widthClass?: string;
 };
 
-type InputGroup = {
+type StandardInputGroup = {
   title: string;
   fields: InputField[];
+};
+
+type CycleInputRow = {
+  label: string;
+  trialKey: string;
+  hitKey: string;
+};
+
+type CycleInputGroup = {
+  title: string;
+  note: string;
+  rows: CycleInputRow[];
+};
+
+type InputGroup = StandardInputGroup | CycleInputGroup;
+
+type DetailColumn = {
+  label: string;
+  summaryText: string;
+  values: string[];
 };
 
 type EstimateResult = {
@@ -42,6 +98,7 @@ type EstimateResult = {
   totalPayoutText: string;
   totalExpectationText: string;
   hourlyText: string;
+  detailColumns: DetailColumn[];
 };
 
 const inputGroups: InputGroup[] = [
@@ -56,6 +113,22 @@ const inputGroups: InputGroup[] = [
   {
     title: "小役",
     fields: [{ key: "lowerBells", label: "下段ベル" }]
+  },
+  {
+    title: "周期当選",
+    note: "分母は試行回数、分子は当選回数",
+    rows: [
+      {
+        label: "3周期目",
+        trialKey: "cycle3Trials",
+        hitKey: "cycle3Hits"
+      },
+      {
+        label: "4周期目",
+        trialKey: "cycle4Trials",
+        hitKey: "cycle4Hits"
+      }
+    ]
   },
   {
     title: "店情報",
@@ -86,6 +159,10 @@ const initialValues: Record<string, string> = {
   beforeGames: "",
   currentGames: "",
   lowerBells: "",
+  cycle3Trials: "",
+  cycle3Hits: "",
+  cycle4Trials: "",
+  cycle4Hits: "",
   medalRent: "46",
   exchangeRate: "5.0",
   cashInvestment: ""
@@ -196,6 +273,25 @@ function calculateLogBinomialProbability(
   );
 }
 
+function calculateSettingProbabilities(
+  successCount: number,
+  totalCount: number,
+  getProbability: (setting: (typeof settings)[number]) => number
+) {
+  const logValues = settings.map((setting) =>
+    calculateLogBinomialProbability(successCount, totalCount, getProbability(setting))
+  );
+  const maxLogValue = Math.max(...logValues);
+  const weights = logValues.map((logValue) => Math.exp(logValue - maxLogValue));
+  const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
+
+  return weights.map((weight) => (totalWeight > 0 ? weight / totalWeight : 0));
+}
+
+function formatCycleSummary(hits: number, trials: number) {
+  return `${hits}/${trials} (${((hits / trials) * 100).toFixed(1)}%)`;
+}
+
 export default function Kabaneri2Page() {
   const [inputValues, setInputValues] = useState<Record<string, string>>(initialValues);
   const [estimateResult, setEstimateResult] = useState<EstimateResult | null>(null);
@@ -280,7 +376,25 @@ export default function Kabaneri2Page() {
     const beforeGames = toNumber(inputValues.beforeGames ?? "");
     const currentGames = toNumber(inputValues.currentGames ?? "");
     const practiceLowerBells = toNumber(inputValues.lowerBells ?? "");
-    const allCounts = [beforeGames, currentGames, practiceLowerBells];
+    const cycle3TrialsRaw = inputValues.cycle3Trials ?? "";
+    const cycle3HitsRaw = inputValues.cycle3Hits ?? "";
+    const cycle4TrialsRaw = inputValues.cycle4Trials ?? "";
+    const cycle4HitsRaw = inputValues.cycle4Hits ?? "";
+    const cycle3Trials = toNumber(cycle3TrialsRaw);
+    const cycle3Hits = toNumber(cycle3HitsRaw);
+    const cycle4Trials = toNumber(cycle4TrialsRaw);
+    const cycle4Hits = toNumber(cycle4HitsRaw);
+    const hasCycle3Input = cycle3TrialsRaw.trim() !== "" || cycle3HitsRaw.trim() !== "";
+    const hasCycle4Input = cycle4TrialsRaw.trim() !== "" || cycle4HitsRaw.trim() !== "";
+    const allCounts = [
+      beforeGames,
+      currentGames,
+      practiceLowerBells,
+      cycle3Trials,
+      cycle3Hits,
+      cycle4Trials,
+      cycle4Hits
+    ];
 
     if (
       (inputValues.currentGames ?? "").trim() === "" ||
@@ -291,7 +405,7 @@ export default function Kabaneri2Page() {
     }
 
     if (allCounts.some((value) => value < 0 || !Number.isInteger(value))) {
-      setErrorMessage("G数と下段ベルは0以上の整数で入力してください。");
+      setErrorMessage("G数、下段ベル、周期の分母・分子は0以上の整数で入力してください。");
       return;
     }
 
@@ -307,13 +421,40 @@ export default function Kabaneri2Page() {
       return;
     }
 
+    if (hasCycle3Input && cycle3Trials <= 0) {
+      setErrorMessage("3周期目の分母には1以上の試行回数を入力してください。");
+      return;
+    }
+
+    if (hasCycle4Input && cycle4Trials <= 0) {
+      setErrorMessage("4周期目の分母には1以上の試行回数を入力してください。");
+      return;
+    }
+
+    if (cycle3Hits > cycle3Trials) {
+      setErrorMessage("3周期目の分子は分母以下にしてください。");
+      return;
+    }
+
+    if (cycle4Hits > cycle4Trials) {
+      setErrorMessage("4周期目の分子は分母以下にしてください。");
+      return;
+    }
+
     const logRows = settings.map((setting) => ({
       label: setting.label,
-      logValue: calculateLogBinomialProbability(
-        practiceLowerBells,
-        practiceGames,
-        1 / setting.lowerBellDenominator
-      )
+      logValue:
+        calculateLogBinomialProbability(
+          practiceLowerBells,
+          practiceGames,
+          1 / setting.lowerBellDenominator
+        ) +
+        (hasCycle3Input
+          ? calculateLogBinomialProbability(cycle3Hits, cycle3Trials, setting.cycle3Rate)
+          : 0) +
+        (hasCycle4Input
+          ? calculateLogBinomialProbability(cycle4Hits, cycle4Trials, setting.cycle4Rate)
+          : 0)
     }));
     const maxLogValue = Math.max(...logRows.map((row) => row.logValue));
     const scaledRows = logRows.map((row) => ({
@@ -346,6 +487,17 @@ export default function Kabaneri2Page() {
       (sum, setting, index) => sum + setting.payout * probabilities[index],
       0
     );
+    const lowerBellProbabilities = calculateSettingProbabilities(
+      practiceLowerBells,
+      practiceGames,
+      (setting) => 1 / setting.lowerBellDenominator
+    );
+    const cycle3Probabilities = hasCycle3Input
+      ? calculateSettingProbabilities(cycle3Hits, cycle3Trials, (setting) => setting.cycle3Rate)
+      : null;
+    const cycle4Probabilities = hasCycle4Input
+      ? calculateSettingProbabilities(cycle4Hits, cycle4Trials, (setting) => setting.cycle4Rate)
+      : null;
 
     setEstimateResult({
       practiceGames,
@@ -364,7 +516,31 @@ export default function Kabaneri2Page() {
       })),
       totalPayoutText: `${totalExpectedPayout.toFixed(2)}%`,
       totalExpectationText: formatYen(totalExpectedYen),
-      hourlyText: formatHourlyYen((totalExpectedYen * 700) / practiceGames)
+      hourlyText: formatHourlyYen((totalExpectedYen * 700) / practiceGames),
+      detailColumns: [
+        {
+          label: "下段ベル",
+          summaryText: `${practiceLowerBells}回 (${formatMeasuredRate(
+            practiceLowerBells,
+            practiceGames
+          )})`,
+          values: lowerBellProbabilities.map(formatPercent)
+        },
+        {
+          label: "3周期目",
+          summaryText: hasCycle3Input ? formatCycleSummary(cycle3Hits, cycle3Trials) : "未入力",
+          values: cycle3Probabilities
+            ? cycle3Probabilities.map(formatPercent)
+            : settings.map(() => "-")
+        },
+        {
+          label: "4周期目",
+          summaryText: hasCycle4Input ? formatCycleSummary(cycle4Hits, cycle4Trials) : "未入力",
+          values: cycle4Probabilities
+            ? cycle4Probabilities.map(formatPercent)
+            : settings.map(() => "-")
+        }
+      ]
     });
   };
 
@@ -380,31 +556,80 @@ export default function Kabaneri2Page() {
             <section className="input-group" key={group.title}>
               <div className="group-title-row">
                 <p className="group-title">【{group.title}】</p>
+                {"note" in group ? <p className="group-note">{group.note}</p> : null}
               </div>
-              <div className={`input-row input-row-${Math.min(group.fields.length, 3)}`}>
-                {group.fields.map((field) => (
-                  <div className="input-field-wrap" key={field.key}>
-                    <label className="input-field">
-                      <span className="input-label">{field.label}</span>
-                      <span className="input-control">
-                        <input
-                          className={`number-input${field.widthClass ? ` ${field.widthClass}` : ""}`}
-                          type="number"
-                          inputMode={field.key === "exchangeRate" ? "decimal" : "numeric"}
-                          min="0"
-                          step={field.key === "exchangeRate" ? "0.1" : "1"}
-                          value={inputValues[field.key] ?? ""}
-                          onChange={(event) => handleInputChange(field.key, event.currentTarget.value)}
-                        />
-                        {field.unit ? <span className="input-unit">{field.unit}</span> : null}
-                        {liveFieldTexts[field.key] ? (
-                          <span className="input-live-text">{liveFieldTexts[field.key]}</span>
-                        ) : null}
-                      </span>
-                    </label>
-                  </div>
-                ))}
-              </div>
+              {"fields" in group ? (
+                <div className={`input-row input-row-${Math.min(group.fields.length, 3)}`}>
+                  {group.fields.map((field) => (
+                    <div className="input-field-wrap" key={field.key}>
+                      <label className="input-field">
+                        <span className="input-label">{field.label}</span>
+                        <span className="input-control">
+                          <input
+                            className={`number-input${field.widthClass ? ` ${field.widthClass}` : ""}`}
+                            type="number"
+                            inputMode={field.key === "exchangeRate" ? "decimal" : "numeric"}
+                            min="0"
+                            step={field.key === "exchangeRate" ? "0.1" : "1"}
+                            value={inputValues[field.key] ?? ""}
+                            onChange={(event) =>
+                              handleInputChange(field.key, event.currentTarget.value)
+                            }
+                          />
+                          {field.unit ? <span className="input-unit">{field.unit}</span> : null}
+                          {liveFieldTexts[field.key] ? (
+                            <span className="input-live-text">{liveFieldTexts[field.key]}</span>
+                          ) : null}
+                        </span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="piece-input-group">
+                  {group.rows.map((row) => (
+                    <div className="piece-input-row piece-input-row-tight" key={row.label}>
+                      <p className="piece-input-label">{row.label}</p>
+                      <label className="input-field">
+                        <span className="input-label">分母</span>
+                        <span className="input-control">
+                          <input
+                            aria-label={`${row.label}の分母（試行回数）`}
+                            className="number-input number-input-piece number-input-piece-tight"
+                            type="number"
+                            inputMode="numeric"
+                            min="0"
+                            step="1"
+                            value={inputValues[row.trialKey] ?? ""}
+                            onChange={(event) =>
+                              handleInputChange(row.trialKey, event.currentTarget.value)
+                            }
+                          />
+                          <span className="input-unit">回</span>
+                        </span>
+                      </label>
+                      <label className="input-field">
+                        <span className="input-label">分子</span>
+                        <span className="input-control">
+                          <input
+                            aria-label={`${row.label}の分子（当選回数）`}
+                            className="number-input number-input-piece number-input-piece-tight"
+                            type="number"
+                            inputMode="numeric"
+                            min="0"
+                            step="1"
+                            value={inputValues[row.hitKey] ?? ""}
+                            onChange={(event) =>
+                              handleInputChange(row.hitKey, event.currentTarget.value)
+                            }
+                          />
+                          <span className="input-unit">回</span>
+                        </span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              )}
             </section>
           ))}
           <SaveSlotControls {...saveSlots} />
@@ -486,6 +711,36 @@ export default function Kabaneri2Page() {
                   </div>
                 </div>
               </div>
+              <div className="result-subgroup">
+                <h3 className="result-section-title">各項目ごとの推測値</h3>
+                <div className="table-wrap table-wrap-tight">
+                  <table className="data-table data-table-compact">
+                    <thead>
+                      <tr>
+                        <th>設定</th>
+                        {estimateResult.detailColumns.map((column) => (
+                          <th key={`detail-head-${column.label}`}>
+                            <div className="table-head-main">{column.label}</div>
+                            <div className="table-head-sub">{column.summaryText}</div>
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {settings.map((setting, settingIndex) => (
+                        <tr key={`detail-${setting.label}`}>
+                          <th scope="row">{setting.label}</th>
+                          {estimateResult.detailColumns.map((column) => (
+                            <td key={`detail-${setting.label}-${column.label}`}>
+                              {column.values[settingIndex]}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </>
           ) : (
             <p className="result-placeholder">推測ボタンを押すとここに結果が出ます。</p>
@@ -501,6 +756,8 @@ export default function Kabaneri2Page() {
                   <tr>
                     <th>設定</th>
                     <th>下段ベル</th>
+                    <th>3周期目</th>
+                    <th>4周期目</th>
                     <th>機械割</th>
                   </tr>
                 </thead>
@@ -509,6 +766,8 @@ export default function Kabaneri2Page() {
                     <tr key={`spec-${setting.label}`}>
                       <th scope="row">{setting.label}</th>
                       <td>1/{setting.lowerBellDenominator.toFixed(1)}</td>
+                      <td>{(setting.cycle3Rate * 100).toFixed(1)}%</td>
+                      <td>{(setting.cycle4Rate * 100).toFixed(1)}%</td>
                       <td>{setting.payout.toFixed(1)}%</td>
                     </tr>
                   ))}
