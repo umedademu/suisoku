@@ -144,6 +144,7 @@ type InputField = {
 type StandardInputGroup = {
   title: string;
   fields: InputField[];
+  rowClass?: string;
 };
 
 type CycleInputRow = {
@@ -242,12 +243,20 @@ type EstimateResult = {
 
 const inputGroups: InputGroup[] = [
   {
-    title: "開始前",
-    fields: [{ key: "beforeGames", label: "G数" }]
-  },
-  {
-    title: "現在",
-    fields: [{ key: "currentGames", label: "G数" }]
+    title: "G数",
+    rowClass: "kabaneri-games-row",
+    fields: [
+      {
+        key: "beforeGames",
+        label: "開始前G数",
+        widthClass: "number-input-compact"
+      },
+      {
+        key: "currentGames",
+        label: "現在G数",
+        widthClass: "number-input-compact"
+      }
+    ]
   },
   {
     title: "小役",
@@ -1163,7 +1172,9 @@ export default function Kabaneri2Page() {
                   onDelete={handleCharacterHistoryDelete}
                 />
               ) : "fields" in group ? (
-                <div className={`input-row input-row-${Math.min(group.fields.length, 3)}`}>
+                <div
+                  className={`input-row input-row-${Math.min(group.fields.length, 3)}${group.rowClass ? ` ${group.rowClass}` : ""}`}
+                >
                   {group.fields.map((field) => (
                     <div className="input-field-wrap" key={field.key}>
                       <label className="input-field">

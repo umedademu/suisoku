@@ -345,6 +345,12 @@ a {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.input-row.kabaneri-games-row {
+  grid-template-columns: repeat(2, max-content);
+  justify-content: start;
+  gap: 12px;
+}
+
 .input-row-3 {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
