@@ -1360,9 +1360,14 @@ export default function Kabaneri2Page() {
                           role="status"
                         >
                           <span className="character-point-summary-label">平均到達率</span>
-                          <strong className="character-point-summary-value">
-                            {totalPointProgress.percentageText}
-                          </strong>
+                          <span className="character-point-summary-value-row">
+                            <strong className="character-point-summary-value">
+                              {totalPointProgress.percentageText}
+                            </strong>
+                            <span className="character-point-summary-detail">
+                              （履歴:{totalPointProgress.historyCount}）
+                            </span>
+                          </span>
                         </div>
                         <div
                           aria-label={`${group.character}の発光率 ${lightRatePercentageText} ${lightRate.numerator}/${lightRate.denominator}`}
