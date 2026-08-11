@@ -72,6 +72,13 @@ type CycleInputGroup = {
   rows: CycleInputRow[];
 };
 
+const CHARACTER_STANDARD_POINTS = {
+  無名: 108,
+  生駒: 106
+} as const;
+
+type KabaneriCharacter = keyof typeof CHARACTER_STANDARD_POINTS;
+
 type CharacterPointButton = {
   key: string;
   label: string;
@@ -82,7 +89,7 @@ type CharacterPointButton = {
 
 type CharacterPointGroup = {
   title: string;
-  character: "無名" | "生駒";
+  character: KabaneriCharacter;
   pointKey: "mumeiPoints" | "ikomaPoints";
   standardPoints: 108 | 106;
   noLightCountKey: "mumeiNoLightCount" | "ikomaNoLightCount";
@@ -91,7 +98,24 @@ type CharacterPointGroup = {
   pointButtons: CharacterPointButton[];
 };
 
-type InputGroup = StandardInputGroup | CycleInputGroup | CharacterPointGroup;
+type CharacterHistoryGroup = {
+  title: string;
+  history: true;
+};
+
+type CharacterPointHistoryEntry = {
+  character: KabaneriCharacter;
+  points: number;
+  noLightCount: number;
+  withLightCount: number;
+  recordedAt: number;
+};
+
+type InputGroup =
+  | StandardInputGroup
+  | CycleInputGroup
+  | CharacterPointGroup
+  | CharacterHistoryGroup;
 
 type DetailColumn = {
   label: string;
@@ -204,6 +228,10 @@ const inputGroups: InputGroup[] = [
     ]
   },
   {
+    title: "CZ当選履歴",
+    history: true
+  },
+  {
     title: "店情報",
     fields: [
       {
@@ -242,6 +270,7 @@ const initialValues: Record<string, string> = {
   ikomaPoints: "0",
   ikomaNoLightCount: "0",
   ikomaWithLightCount: "0",
+  characterPointHistory: "[]",
   medalRent: "46",
   exchangeRate: "5.0",
   cashInvestment: ""
@@ -371,11 +400,143 @@ function formatCycleSummary(hits: number, trials: number) {
   return `${hits}/${trials} (${((hits / trials) * 100).toFixed(1)}%)`;
 }
 
+function toNonNegativeInteger(value: unknown) {
+  const numberValue = Number(value);
+
+  return Number.isFinite(numberValue) ? Math.max(0, Math.trunc(numberValue)) : 0;
+}
+
+function parseCharacterPointHistory(value: string) {
+  try {
+    const parsed = JSON.parse(value) as unknown;
+
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+
+    return parsed
+      .flatMap<CharacterPointHistoryEntry>((item) => {
+        if (typeof item !== "object" || item === null || Array.isArray(item)) {
+          return [];
+        }
+
+        const entry = item as Record<string, unknown>;
+
+        if (entry.character !== "無名" && entry.character !== "生駒") {
+          return [];
+        }
+
+        const recordedAt = Number(entry.recordedAt);
+
+        return [
+          {
+            character: entry.character,
+            points: toNonNegativeInteger(entry.points),
+            noLightCount: toNonNegativeInteger(entry.noLightCount),
+            withLightCount: toNonNegativeInteger(entry.withLightCount),
+            recordedAt: Number.isFinite(recordedAt) ? recordedAt : 0
+          }
+        ];
+      })
+      .sort((first, second) => second.recordedAt - first.recordedAt);
+  } catch {
+    return [];
+  }
+}
+
+function calculateCharacterPointProgress(points: number, standardPoints: number) {
+  const percentage = Math.min(120, (points / standardPoints) * 100);
+  const roundedPercentage = Math.round(percentage * 10) / 10;
+
+  return {
+    points,
+    percentageText: `${Number.isInteger(roundedPercentage) ? roundedPercentage.toFixed(0) : roundedPercentage.toFixed(1)}%`
+  };
+}
+
+function calculateCharacterLightRate(noLightCount: number, withLightCount: number) {
+  const denominator = noLightCount + withLightCount;
+
+  return {
+    numerator: withLightCount,
+    denominator,
+    percentageText:
+      denominator > 0 ? `${((withLightCount / denominator) * 100).toFixed(1)}%` : "算出前"
+  };
+}
+
+function mergeKabaneriInputValues(
+  slotValues: Array<Record<string, string>>,
+  defaultMergedValues: Record<string, string>
+) {
+  const mergedHistory = slotValues
+    .flatMap((values) => parseCharacterPointHistory(values.characterPointHistory ?? "[]"))
+    .sort((first, second) => second.recordedAt - first.recordedAt);
+
+  return {
+    ...defaultMergedValues,
+    characterPointHistory: JSON.stringify(mergedHistory)
+  };
+}
+
+function CharacterCzHistory({ history }: { history: CharacterPointHistoryEntry[] }) {
+  if (history.length === 0) {
+    return <p className="character-cz-history-empty">当選履歴はまだありません。</p>;
+  }
+
+  return (
+    <div className="table-wrap character-cz-history-wrap">
+      <table className="data-table data-table-compact character-cz-history-table">
+        <thead>
+          <tr>
+            <th scope="col">回</th>
+            <th scope="col">当選CZ</th>
+            <th scope="col">獲得pt</th>
+            <th scope="col">発光</th>
+          </tr>
+        </thead>
+        <tbody>
+          {history.map((entry, index) => {
+            const pointProgress = calculateCharacterPointProgress(
+              entry.points,
+              CHARACTER_STANDARD_POINTS[entry.character]
+            );
+            const lightRate = calculateCharacterLightRate(
+              entry.noLightCount,
+              entry.withLightCount
+            );
+
+            return (
+              <tr key={`${entry.recordedAt}-${entry.character}-${index}`}>
+                <th scope="row">{history.length - index}</th>
+                <td>{entry.character}CZ</td>
+                <td>
+                  <strong className="character-cz-history-main">{entry.points}pt</strong>
+                  <span className="character-cz-history-sub">{pointProgress.percentageText}</span>
+                </td>
+                <td>
+                  <strong className="character-cz-history-main">
+                    {lightRate.numerator}/{lightRate.denominator}
+                  </strong>
+                  <span className="character-cz-history-sub">{lightRate.percentageText}</span>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 export default function Kabaneri2Page() {
   const [inputValues, setInputValues] = useState<Record<string, string>>(initialValues);
   const [estimateResult, setEstimateResult] = useState<EstimateResult | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [hasLoadedSavedValues, setHasLoadedSavedValues] = useState(false);
+  const characterPointHistory = parseCharacterPointHistory(
+    inputValues.characterPointHistory ?? "[]"
+  );
 
   const resetResults = () => {
     setEstimateResult(null);
@@ -387,6 +548,7 @@ export default function Kabaneri2Page() {
     inputValues,
     initialValues,
     isReady: hasLoadedSavedValues,
+    mergeValues: mergeKabaneriInputValues,
     onLoad: (nextValues) => {
       setInputValues(nextValues);
       resetResults();
@@ -443,30 +605,34 @@ export default function Kabaneri2Page() {
     Math.max(0, Math.trunc(toNumber(inputValues[pointKey] ?? "0")));
   const getCharacterPointProgress = (group: CharacterPointGroup) => {
     const points = getCharacterPoints(group.pointKey);
-    const percentage = Math.min(120, (points / group.standardPoints) * 100);
-    const roundedPercentage = Math.round(percentage * 10) / 10;
 
-    return {
-      points,
-      percentageText: `${Number.isInteger(roundedPercentage) ? roundedPercentage.toFixed(0) : roundedPercentage.toFixed(1)}%`
-    };
+    return calculateCharacterPointProgress(points, group.standardPoints);
   };
   const getCharacterLightRate = (group: CharacterPointGroup) => {
-    const noLightCount = Math.max(
+    const currentNoLightCount = Math.max(
       0,
       Math.trunc(toNumber(inputValues[group.noLightCountKey] ?? "0"))
     );
-    const withLightCount = Math.max(
+    const currentWithLightCount = Math.max(
       0,
       Math.trunc(toNumber(inputValues[group.withLightCountKey] ?? "0"))
     );
-    const totalCount = noLightCount + withLightCount;
+    const historyCounts = characterPointHistory.reduce(
+      (totals, entry) => {
+        if (entry.character === group.character) {
+          totals.noLightCount += entry.noLightCount;
+          totals.withLightCount += entry.withLightCount;
+        }
 
-    return {
-      numerator: withLightCount,
-      denominator: totalCount,
-      percentageText: totalCount > 0 ? `${((withLightCount / totalCount) * 100).toFixed(1)}%` : "算出前"
-    };
+        return totals;
+      },
+      { noLightCount: 0, withLightCount: 0 }
+    );
+
+    return calculateCharacterLightRate(
+      historyCounts.noLightCount + currentNoLightCount,
+      historyCounts.withLightCount + currentWithLightCount
+    );
   };
 
   const handleInputChange = (key: string, value: string) => {
@@ -502,6 +668,35 @@ export default function Kabaneri2Page() {
       }
 
       return nextValues;
+    });
+  };
+
+  const handleCharacterCzWin = (group: CharacterPointGroup) => {
+    setInputValues((current) => {
+      const historyEntry: CharacterPointHistoryEntry = {
+        character: group.character,
+        points: Math.max(0, Math.trunc(toNumber(current[group.pointKey] ?? "0"))),
+        noLightCount: Math.max(
+          0,
+          Math.trunc(toNumber(current[group.noLightCountKey] ?? "0"))
+        ),
+        withLightCount: Math.max(
+          0,
+          Math.trunc(toNumber(current[group.withLightCountKey] ?? "0"))
+        ),
+        recordedAt: Date.now()
+      };
+      const currentHistory = parseCharacterPointHistory(
+        current.characterPointHistory ?? "[]"
+      );
+
+      return {
+        ...current,
+        [group.pointKey]: "0",
+        [group.noLightCountKey]: "0",
+        [group.withLightCountKey]: "0",
+        characterPointHistory: JSON.stringify([historyEntry, ...currentHistory])
+      };
     });
   };
 
@@ -694,7 +889,9 @@ export default function Kabaneri2Page() {
                 <p className="group-title">【{group.title}】</p>
                 {"note" in group ? <p className="group-note">{group.note}</p> : null}
               </div>
-              {"fields" in group ? (
+              {"history" in group ? (
+                <CharacterCzHistory history={characterPointHistory} />
+              ) : "fields" in group ? (
                 <div className={`input-row input-row-${Math.min(group.fields.length, 3)}`}>
                   {group.fields.map((field) => (
                     <div className="input-field-wrap" key={field.key}>
@@ -839,6 +1036,13 @@ export default function Kabaneri2Page() {
                       </button>
                     ))}
                   </div>
+                  <button
+                    className={`character-cz-win-button character-cz-win-button-${group.theme}`}
+                    type="button"
+                    onClick={() => handleCharacterCzWin(group)}
+                  >
+                    {group.character}CZ当選
+                  </button>
                 </div>
               )}
             </section>

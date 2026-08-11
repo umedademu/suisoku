@@ -22,6 +22,7 @@ type UseSaveSlotsOptions<TValues extends Record<string, unknown>, TMode extends 
   initialInputMode?: TMode;
   isValidInputValue?: (key: string, value: unknown) => boolean;
   isValidMode?: (value: unknown) => value is TMode;
+  mergeValues?: (slotValues: TValues[], defaultMergedValues: TValues) => TValues;
   onLoad: (nextValues: TValues) => void;
   onLoadMode?: (nextMode: TMode) => void;
 };
@@ -267,6 +268,7 @@ export function useSaveSlots<TValues extends Record<string, unknown>, TMode exte
   initialInputMode,
   isValidInputValue = (_key, value) => typeof value === "string",
   isValidMode,
+  mergeValues,
   onLoad,
   onLoadMode
 }: UseSaveSlotsOptions<TValues, TMode>) {
@@ -368,7 +370,15 @@ export function useSaveSlots<TValues extends Record<string, unknown>, TMode exte
       return;
     }
 
-    onLoad(mergeInputValues(initialValues, normalizedSlots));
+    const defaultMergedValues = mergeInputValues(initialValues, normalizedSlots);
+    const mergedValues = mergeValues
+      ? mergeValues(
+          normalizedSlots.map((slot) => slot.values),
+          defaultMergedValues
+        )
+      : defaultMergedValues;
+
+    onLoad(mergedValues);
     applyInputMode(normalizedSlots);
     setMessage(`${normalizedSlots.map((slot) => `保存${slot.slot}`).join("、")}を合算しました。`);
   };

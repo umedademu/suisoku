@@ -605,6 +605,51 @@ a {
   gap: 7px;
 }
 
+.character-cz-win-button {
+  min-height: 46px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  color: #ffffff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 800;
+  transition:
+    transform 0.15s ease,
+    filter 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.character-cz-win-button-red {
+  border-color: #6e1c28;
+  background: linear-gradient(135deg, #9f3340, #651a26);
+  box-shadow: 0 4px 11px rgba(101, 26, 38, 0.25);
+}
+
+.character-cz-win-button-green {
+  border-color: #1a5926;
+  background: linear-gradient(135deg, #347d3e, #185423);
+  box-shadow: 0 4px 11px rgba(24, 84, 35, 0.24);
+}
+
+.character-cz-win-button:hover {
+  filter: brightness(1.07);
+  transform: translateY(-1px);
+}
+
+.character-cz-win-button:active {
+  transform: translateY(1px);
+}
+
+.character-cz-win-button:focus-visible {
+  outline: 3px solid rgba(112, 47, 47, 0.24);
+  outline-offset: 2px;
+}
+
+.character-cz-win-button-green:focus-visible {
+  outline-color: rgba(40, 121, 52, 0.28);
+}
+
 .character-point-button {
   display: grid;
   grid-template-columns: minmax(0, 1fr) max-content;
@@ -700,6 +745,53 @@ a {
 .character-point-button-points {
   font-size: 0.92rem;
   white-space: nowrap;
+}
+
+.character-cz-history-empty {
+  margin: 0;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.58);
+  color: var(--muted);
+  padding: 14px;
+  text-align: center;
+}
+
+.character-cz-history-wrap {
+  margin-top: 0;
+}
+
+.character-cz-history-table {
+  min-width: 480px;
+  table-layout: fixed;
+}
+
+.character-cz-history-table th:first-child {
+  width: 12%;
+}
+
+.character-cz-history-table th:nth-child(2) {
+  width: 28%;
+}
+
+.character-cz-history-table th:nth-child(3),
+.character-cz-history-table th:nth-child(4) {
+  width: 30%;
+}
+
+.character-cz-history-main,
+.character-cz-history-sub {
+  display: block;
+}
+
+.character-cz-history-main {
+  font-size: 0.86rem;
+}
+
+.character-cz-history-sub {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 0.68rem;
 }
 
 .number-input:focus {
