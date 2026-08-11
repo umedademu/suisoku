@@ -637,16 +637,22 @@ function calculateCharacterLightRate(noLightCount: number, withLightCount: numbe
 }
 
 const MYSLOT_VOICE_CATEGORIES = [
-  { key: "female", label: "女性ボイス", rangeLabel: "No.1〜8" },
+  { key: "female", label: "女性ボイス", rangeLabel: "No.1・2・4〜8" },
+  { key: "no3", label: "No.3", rangeLabel: "" },
   { key: "male", label: "男性ボイス", rangeLabel: "No.9〜16" },
   { key: "no17", label: "No.17", rangeLabel: "" },
   { key: "no18", label: "No.18", rangeLabel: "" },
-  { key: "no19", label: "No.19", rangeLabel: "" }
+  { key: "no19", label: "No.19", rangeLabel: "" },
+  { key: "no20", label: "No.20 ボイス無し", rangeLabel: "" }
 ] as const;
 
 type MyslotVoiceCategoryKey = (typeof MYSLOT_VOICE_CATEGORIES)[number]["key"];
 
 function getMyslotVoiceCategoryKey(voiceNumber: number): MyslotVoiceCategoryKey | null {
+  if (voiceNumber === 3) {
+    return "no3";
+  }
+
   if (voiceNumber >= 1 && voiceNumber <= 8) {
     return "female";
   }
@@ -665,6 +671,10 @@ function getMyslotVoiceCategoryKey(voiceNumber: number): MyslotVoiceCategoryKey 
 
   if (voiceNumber === 19) {
     return "no19";
+  }
+
+  if (voiceNumber === 20) {
+    return "no20";
   }
 
   return null;
@@ -713,10 +723,12 @@ function parseMyslotVoiceSummary(value: string) {
 
   const counts: Record<MyslotVoiceCategoryKey, number> = {
     female: 0,
+    no3: 0,
     male: 0,
     no17: 0,
     no18: 0,
-    no19: 0
+    no19: 0,
+    no20: 0
   };
   let recognizedRowCount = 0;
 
@@ -791,7 +803,7 @@ function MyslotVoiceInput({
         onChange={(event) => onChange(event.currentTarget.value)}
       />
       <p className="myslot-voice-help">
-        No.1〜8を女性、No.9〜16を男性、No.17〜19を個別に集計します。
+        No.1・2・4〜8を女性、No.9〜16を男性、No.3とNo.17〜20を個別に集計します。
       </p>
       <div className="myslot-voice-summary-heading">
         <p className="myslot-voice-summary-title">集計結果</p>
