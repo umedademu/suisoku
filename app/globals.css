@@ -641,6 +641,27 @@ a {
   padding: 10px;
 }
 
+.kabaneri-input-layout {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 8px;
+  row-gap: 12px;
+  min-width: 0;
+}
+
+.kabaneri-input-layout > .input-group:not(.character-point-column) {
+  grid-column: 1 / -1;
+}
+
+.character-point-column {
+  min-width: 0;
+}
+
+.character-point-column .character-point-summary,
+.character-point-column .character-point-button-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .light-rate-estimation-toggle {
   display: flex;
   align-items: center;
@@ -2358,6 +2379,34 @@ a {
 
   .character-point-summary {
     gap: 3px;
+  }
+
+  .character-point-column .character-point-panel {
+    gap: 6px;
+    padding: 6px;
+  }
+
+  .character-point-column .character-point-control {
+    grid-template-columns: 30px minmax(0, 1fr);
+    gap: 4px;
+  }
+
+  .character-point-column .character-point-minus-button,
+  .character-point-column .character-point-button {
+    min-height: 50px;
+  }
+
+  .character-point-column .character-point-button {
+    gap: 3px;
+    padding: 7px 5px;
+  }
+
+  .character-point-column .character-point-button-name {
+    font-size: 0.66rem;
+  }
+
+  .character-point-column .character-point-button-points {
+    font-size: 0.76rem;
   }
 
   .character-point-summary-item {

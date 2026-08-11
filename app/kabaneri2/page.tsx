@@ -344,18 +344,18 @@ const inputGroups: InputGroup[] = [
         countKey: "mumeiNoLightCount"
       },
       {
-        key: "unknown-light",
-        label: "発光不明",
-        points: 1,
-        tone: "coral",
-        countKey: "mumeiUnknownLightCount"
-      },
-      {
         key: "with-light",
         label: "発光あり",
         points: 15,
         tone: "crimson",
         countKey: "mumeiWithLightCount"
+      },
+      {
+        key: "unknown-light",
+        label: "発光不明",
+        points: 1,
+        tone: "coral",
+        countKey: "mumeiUnknownLightCount"
       },
       {
         key: "high-probability",
@@ -383,18 +383,18 @@ const inputGroups: InputGroup[] = [
         countKey: "ikomaNoLightCount"
       },
       {
-        key: "unknown-light",
-        label: "発光不明",
-        points: 1,
-        tone: "leaf",
-        countKey: "ikomaUnknownLightCount"
-      },
-      {
         key: "with-light",
         label: "発光あり",
         points: 15,
         tone: "deep",
         countKey: "ikomaWithLightCount"
+      },
+      {
+        key: "unknown-light",
+        label: "発光不明",
+        points: 1,
+        tone: "leaf",
+        countKey: "ikomaUnknownLightCount"
       },
       {
         key: "high-probability",
@@ -2168,8 +2168,12 @@ export default function Kabaneri2Page() {
         </a>
         <h1 className="title">カバネリ2</h1>
         <form className="input-form" onSubmit={handleEstimate}>
-          {inputGroups.map((group) => (
-            <section className="input-group" key={group.title}>
+          <div className="kabaneri-input-layout">
+            {inputGroups.map((group) => (
+              <section
+                className={`input-group${"pointButtons" in group ? " character-point-column" : ""}`}
+                key={group.title}
+              >
               {"hideTitle" in group && group.hideTitle ? null : (
                 <div className="group-title-row">
                   <p className="group-title">【{group.title}】</p>
@@ -2444,8 +2448,9 @@ export default function Kabaneri2Page() {
                   </button>
                 </div>
               )}
-            </section>
-          ))}
+              </section>
+            ))}
+          </div>
           <SaveSlotControls {...saveSlots} />
           <div className="action-row">
             <button className="clear-button" type="button" onClick={saveSlots.onClearCurrentData}>
