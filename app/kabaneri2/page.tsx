@@ -11,6 +11,8 @@ const settings = [
     cycle4Rate: 0.336,
     mumeiCzPointReachRate: 84.7,
     ikomaCzPointReachRate: 84.7,
+    voiceFemaleRate: 0.45,
+    characterFemaleRate: 0.4,
     bonusInitialDenominator: 254.2,
     stDenominator: 422.5,
     payout: 97.5
@@ -22,6 +24,8 @@ const settings = [
     cycle4Rate: 0.352,
     mumeiCzPointReachRate: 84.7,
     ikomaCzPointReachRate: 84.7,
+    voiceFemaleRate: 0.55,
+    characterFemaleRate: 0.6,
     bonusInitialDenominator: 242.3,
     stDenominator: 405.9,
     payout: 98.5
@@ -33,6 +37,8 @@ const settings = [
     cycle4Rate: 0.363,
     mumeiCzPointReachRate: 84.7,
     ikomaCzPointReachRate: 84.7,
+    voiceFemaleRate: 0.45,
+    characterFemaleRate: 0.4,
     bonusInitialDenominator: 239.6,
     stDenominator: 398.7,
     payout: 100.8
@@ -44,6 +50,8 @@ const settings = [
     cycle4Rate: 0.402,
     mumeiCzPointReachRate: 71.8,
     ikomaCzPointReachRate: 71.8,
+    voiceFemaleRate: 0.55,
+    characterFemaleRate: 0.6,
     bonusInitialDenominator: 214.0,
     stDenominator: 357.2,
     payout: 106.0
@@ -55,6 +63,8 @@ const settings = [
     cycle4Rate: 0.434,
     mumeiCzPointReachRate: 62.6,
     ikomaCzPointReachRate: 62.6,
+    voiceFemaleRate: 0.45,
+    characterFemaleRate: 0.4,
     bonusInitialDenominator: 203.2,
     stDenominator: 332.6,
     payout: 111.0
@@ -66,6 +76,8 @@ const settings = [
     cycle4Rate: 0.469,
     mumeiCzPointReachRate: 62.6,
     ikomaCzPointReachRate: 62.6,
+    voiceFemaleRate: 0.55,
+    characterFemaleRate: 0.6,
     bonusInitialDenominator: 195.1,
     stDenominator: 318.5,
     payout: 114.9
@@ -129,6 +141,32 @@ const specGroups: Array<{ title: string; columns: SpecColumn[] }> = [
       {
         label: "出現率",
         format: (setting) => `1/${setting.lowerBellDenominator.toFixed(1)}`
+      }
+    ]
+  },
+  {
+    title: "サンド目停止ボイス",
+    columns: [
+      {
+        label: "女性",
+        format: (setting) => `${(setting.voiceFemaleRate * 100).toFixed(1)}%`
+      },
+      {
+        label: "男性",
+        format: (setting) => `${((1 - setting.voiceFemaleRate) * 100).toFixed(1)}%`
+      }
+    ]
+  },
+  {
+    title: "キャラ紹介",
+    columns: [
+      {
+        label: "女性",
+        format: (setting) => `${(setting.characterFemaleRate * 100).toFixed(1)}%`
+      },
+      {
+        label: "男性",
+        format: (setting) => `${((1 - setting.characterFemaleRate) * 100).toFixed(1)}%`
       }
     ]
   }
@@ -564,6 +602,13 @@ function getCharacterPointReachProbability(
 
 function formatCycleSummary(hits: number, trials: number) {
   return `${hits}/${trials} (${((hits / trials) * 100).toFixed(1)}%)`;
+}
+
+function formatGenderSummary(femaleCount: number, totalCount: number) {
+  return `女性${femaleCount}回 / 男女計${totalCount}回 (${(
+    (femaleCount / totalCount) *
+    100
+  ).toFixed(1)}%)`;
 }
 
 function toNonNegativeInteger(value: unknown) {
@@ -1355,6 +1400,22 @@ export default function Kabaneri2Page() {
     const cycle4Hits = toNumber(cycle4HitsRaw);
     const hasCycle3Input = cycle3TrialsRaw.trim() !== "" || cycle3HitsRaw.trim() !== "";
     const hasCycle4Input = cycle4TrialsRaw.trim() !== "" || cycle4HitsRaw.trim() !== "";
+    const myslotCharacterSummary = parseMyslotCharacterSummary(inputValues.myslotText ?? "");
+    const myslotVoiceSummary = parseMyslotVoiceSummary(inputValues.myslotText ?? "");
+    const femaleCharacterCount =
+      myslotCharacterSummary.categories.find((category) => category.key === "femaleCharacter")
+        ?.count ?? 0;
+    const maleCharacterCount =
+      myslotCharacterSummary.categories.find((category) => category.key === "maleCharacter")
+        ?.count ?? 0;
+    const characterGenderTotal = femaleCharacterCount + maleCharacterCount;
+    const hasCharacterGenderInput = characterGenderTotal > 0;
+    const femaleVoiceCount =
+      myslotVoiceSummary.categories.find((category) => category.key === "female")?.count ?? 0;
+    const maleVoiceCount =
+      myslotVoiceSummary.categories.find((category) => category.key === "male")?.count ?? 0;
+    const voiceGenderTotal = femaleVoiceCount + maleVoiceCount;
+    const hasVoiceGenderInput = voiceGenderTotal > 0;
     const characterPointObservations = characterPointGroups.map((group) => {
       const totalPointProgress = getCharacterTotalPointProgress(group);
       const likelihoodTrialCount = totalPointProgress.historyCount * 100;
@@ -1422,10 +1483,12 @@ export default function Kabaneri2Page() {
       !hasLowerBellInput &&
       !hasCycle3Input &&
       !hasCycle4Input &&
+      !hasVoiceGenderInput &&
+      !hasCharacterGenderInput &&
       !characterPointObservations.some((observation) => observation.hasInput)
     ) {
       setErrorMessage(
-        "推測に使うCZ当選履歴、周期当選、またはG数と下段ベルを入力してください。"
+        "推測に使うCZ当選履歴、マイスロ、周期当選、またはG数と下段ベルを入力してください。"
       );
       return;
     }
@@ -1445,6 +1508,20 @@ export default function Kabaneri2Page() {
           : 0) +
         (hasCycle4Input
           ? calculateLogBinomialProbability(cycle4Hits, cycle4Trials, setting.cycle4Rate)
+          : 0) +
+        (hasVoiceGenderInput
+          ? calculateLogBinomialProbability(
+              femaleVoiceCount,
+              voiceGenderTotal,
+              setting.voiceFemaleRate
+            )
+          : 0) +
+        (hasCharacterGenderInput
+          ? calculateLogBinomialProbability(
+              femaleCharacterCount,
+              characterGenderTotal,
+              setting.characterFemaleRate
+            )
           : 0) +
         characterPointObservations.reduce(
           (logValue, observation) =>
@@ -1504,6 +1581,20 @@ export default function Kabaneri2Page() {
       : null;
     const cycle4Probabilities = hasCycle4Input
       ? calculateSettingProbabilities(cycle4Hits, cycle4Trials, (setting) => setting.cycle4Rate)
+      : null;
+    const voiceGenderProbabilities = hasVoiceGenderInput
+      ? calculateSettingProbabilities(
+          femaleVoiceCount,
+          voiceGenderTotal,
+          (setting) => setting.voiceFemaleRate
+        )
+      : null;
+    const characterGenderProbabilities = hasCharacterGenderInput
+      ? calculateSettingProbabilities(
+          femaleCharacterCount,
+          characterGenderTotal,
+          (setting) => setting.characterFemaleRate
+        )
       : null;
     const characterPointDetailColumns = characterPointObservations.map<DetailColumn>(
       (observation) => ({
@@ -1573,6 +1664,24 @@ export default function Kabaneri2Page() {
           summaryText: hasCycle4Input ? formatCycleSummary(cycle4Hits, cycle4Trials) : "未入力",
           values: cycle4Probabilities
             ? cycle4Probabilities.map(formatPercent)
+            : settings.map(() => "-")
+        },
+        {
+          label: "サンド目停止ボイス",
+          summaryText: hasVoiceGenderInput
+            ? formatGenderSummary(femaleVoiceCount, voiceGenderTotal)
+            : "未入力",
+          values: voiceGenderProbabilities
+            ? voiceGenderProbabilities.map(formatPercent)
+            : settings.map(() => "-")
+        },
+        {
+          label: "キャラ紹介",
+          summaryText: hasCharacterGenderInput
+            ? formatGenderSummary(femaleCharacterCount, characterGenderTotal)
+            : "未入力",
+          values: characterGenderProbabilities
+            ? characterGenderProbabilities.map(formatPercent)
             : settings.map(() => "-")
         },
         ...characterPointDetailColumns
