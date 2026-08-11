@@ -332,6 +332,107 @@ a {
   min-width: 0;
 }
 
+.myslot-voice-panel {
+  display: grid;
+  gap: 7px;
+}
+
+.myslot-textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 180px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.74rem;
+  line-height: 1.5;
+  padding: 9px 10px;
+  resize: vertical;
+}
+
+.myslot-textarea:focus {
+  border-color: var(--accent);
+  outline: 2px solid rgba(197, 75, 44, 0.28);
+}
+
+.myslot-voice-help,
+.myslot-voice-message {
+  margin: 0;
+  color: rgba(29, 29, 27, 0.72);
+  font-size: 0.64rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.myslot-voice-summary-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.myslot-voice-summary-title,
+.myslot-voice-total {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.myslot-voice-total {
+  color: rgba(29, 29, 27, 0.76);
+}
+
+.myslot-voice-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+  gap: 4px;
+}
+
+.myslot-voice-summary-item {
+  display: grid;
+  place-items: center;
+  gap: 4px;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.62);
+  padding: 7px 3px;
+  text-align: center;
+}
+
+.myslot-voice-summary-label {
+  font-size: 0.64rem;
+  font-weight: 800;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.myslot-voice-summary-value-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.myslot-voice-summary-value {
+  font-size: 0.86rem;
+  line-height: 1;
+}
+
+.myslot-voice-summary-percentage {
+  color: var(--muted);
+  font-size: 0.54rem;
+  font-weight: 700;
+}
+
+.myslot-voice-message.is-error {
+  color: #a13535;
+}
+
 .input-row {
   display: grid;
   gap: 4px;
@@ -2093,6 +2194,31 @@ a {
   .group-note {
     white-space: normal;
     text-align: right;
+  }
+
+  .myslot-textarea {
+    min-height: 150px;
+  }
+
+  .myslot-voice-summary-grid {
+    gap: 2px;
+  }
+
+  .myslot-voice-summary-item {
+    gap: 3px;
+    padding: 6px 2px;
+  }
+
+  .myslot-voice-summary-label {
+    font-size: 0.56rem;
+  }
+
+  .myslot-voice-summary-value {
+    font-size: 0.74rem;
+  }
+
+  .myslot-voice-summary-percentage {
+    font-size: 0.48rem;
   }
 
   .input-unit,

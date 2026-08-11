@@ -201,6 +201,12 @@ type CharacterHistoryGroup = {
   history: true;
 };
 
+type MySlotInputGroup = {
+  title: string;
+  note: string;
+  myslot: true;
+};
+
 type CharacterPointHistoryEntry = {
   character: KabaneriCharacter;
   points: number;
@@ -213,7 +219,8 @@ type InputGroup =
   | StandardInputGroup
   | CycleInputGroup
   | CharacterPointGroup
-  | CharacterHistoryGroup;
+  | CharacterHistoryGroup
+  | MySlotInputGroup;
 
 type DetailColumn = {
   label: string;
@@ -361,6 +368,11 @@ const inputGroups: InputGroup[] = [
     ]
   },
   {
+    title: "マイスロ入力欄",
+    note: "サンド目停止時ボイスを自動集計",
+    myslot: true
+  },
+  {
     title: "CZ当選履歴",
     history: true
   },
@@ -412,6 +424,7 @@ const initialValues: Record<string, string> = {
   ikomaWithLightCount: "0",
   ikomaHighProbabilityCount: "0",
   characterPointHistory: "[]",
+  myslotText: "",
   medalRent: "46",
   exchangeRate: "5.0",
   cashInvestment: ""
@@ -623,6 +636,196 @@ function calculateCharacterLightRate(noLightCount: number, withLightCount: numbe
   };
 }
 
+const MYSLOT_VOICE_CATEGORIES = [
+  { key: "female", label: "女性ボイス", rangeLabel: "No.1〜8" },
+  { key: "male", label: "男性ボイス", rangeLabel: "No.9〜16" },
+  { key: "no17", label: "No.17", rangeLabel: "" },
+  { key: "no18", label: "No.18", rangeLabel: "" },
+  { key: "no19", label: "No.19", rangeLabel: "" }
+] as const;
+
+type MyslotVoiceCategoryKey = (typeof MYSLOT_VOICE_CATEGORIES)[number]["key"];
+
+function getMyslotVoiceCategoryKey(voiceNumber: number): MyslotVoiceCategoryKey | null {
+  if (voiceNumber >= 1 && voiceNumber <= 8) {
+    return "female";
+  }
+
+  if (voiceNumber >= 9 && voiceNumber <= 16) {
+    return "male";
+  }
+
+  if (voiceNumber === 17) {
+    return "no17";
+  }
+
+  if (voiceNumber === 18) {
+    return "no18";
+  }
+
+  if (voiceNumber === 19) {
+    return "no19";
+  }
+
+  return null;
+}
+
+function parseMyslotVoiceSummary(value: string) {
+  const normalizedValue = value.normalize("NFKC").replace(/\r\n?/g, "\n");
+  const sectionMarker = "サンド目停止時ボイス";
+  const sections: string[] = [];
+  let currentSectionLines: string[] | null = null;
+
+  for (const line of normalizedValue.split("\n")) {
+    const markerIndex = line.indexOf(sectionMarker);
+
+    if (markerIndex >= 0) {
+      if (currentSectionLines !== null) {
+        sections.push(currentSectionLines.join("\n"));
+      }
+
+      currentSectionLines = [];
+      const remainder = line.slice(markerIndex + sectionMarker.length).trim();
+
+      if (remainder !== "") {
+        currentSectionLines.push(remainder);
+      }
+
+      continue;
+    }
+
+    if (currentSectionLines === null) {
+      continue;
+    }
+
+    if (line.includes("<実戦データ") || line.includes("ココマデ")) {
+      sections.push(currentSectionLines.join("\n"));
+      currentSectionLines = null;
+      continue;
+    }
+
+    currentSectionLines.push(line);
+  }
+
+  if (currentSectionLines !== null) {
+    sections.push(currentSectionLines.join("\n"));
+  }
+
+  const counts: Record<MyslotVoiceCategoryKey, number> = {
+    female: 0,
+    male: 0,
+    no17: 0,
+    no18: 0,
+    no19: 0
+  };
+  let recognizedRowCount = 0;
+
+  sections.forEach((section) => {
+    const voiceEntries = section.matchAll(
+      /No\.?\s*(\d{1,2})(?!\d)([\s\S]*?)(?=No\.?\s*\d{1,2}(?!\d)|$)/gi
+    );
+
+    for (const entry of voiceEntries) {
+      const categoryKey = getMyslotVoiceCategoryKey(Number(entry[1]));
+      const countMatches = Array.from(entry[2].matchAll(/([\d,]+)\s*回/g));
+      const countMatch = countMatches[countMatches.length - 1];
+
+      if (categoryKey === null || !countMatch) {
+        continue;
+      }
+
+      const count = Number(countMatch[1].replace(/,/g, ""));
+
+      if (!Number.isFinite(count)) {
+        continue;
+      }
+
+      counts[categoryKey] += Math.max(0, Math.trunc(count));
+      recognizedRowCount += 1;
+    }
+  });
+
+  const totalCount = Object.values(counts).reduce((sum, count) => sum + count, 0);
+
+  return {
+    foundSection: sections.length > 0,
+    recognizedRowCount,
+    totalCount,
+    categories: MYSLOT_VOICE_CATEGORIES.map((category) => {
+      const count = counts[category.key];
+
+      return {
+        ...category,
+        count,
+        percentageText: totalCount > 0 ? `${((count / totalCount) * 100).toFixed(1)}%` : "0.0%"
+      };
+    })
+  };
+}
+
+function MyslotVoiceInput({
+  value,
+  onChange
+}: {
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const summary = parseMyslotVoiceSummary(value);
+  const statusText =
+    value.trim() === ""
+      ? "マイスロの表示内容を貼り付けると自動で集計します。"
+      : !summary.foundSection
+        ? "「サンド目停止時ボイス」が見つかりません。貼り付け範囲を確認してください。"
+        : summary.recognizedRowCount === 0
+          ? "サンド目停止時ボイスの回数が見つかりませんでした。"
+          : `サンド目停止時ボイスを合計${summary.totalCount}回分読み取りました。`;
+
+  return (
+    <div className="myslot-voice-panel">
+      <textarea
+        aria-label="マイスロ入力欄"
+        className="myslot-textarea"
+        placeholder="マイスロの表示内容を貼り付けてください"
+        spellCheck={false}
+        value={value}
+        onChange={(event) => onChange(event.currentTarget.value)}
+      />
+      <p className="myslot-voice-help">
+        No.1〜8を女性、No.9〜16を男性、No.17〜19を個別に集計します。
+      </p>
+      <div className="myslot-voice-summary-heading">
+        <p className="myslot-voice-summary-title">集計結果</p>
+        <p className="myslot-voice-total">全体 {summary.totalCount}回</p>
+      </div>
+      <div className="myslot-voice-summary-grid">
+        {summary.categories.map((category) => (
+          <div
+            aria-label={`${category.label}${category.rangeLabel ? ` ${category.rangeLabel}` : ""} ${category.count}回 全体の${category.percentageText}`}
+            className="myslot-voice-summary-item"
+            key={category.key}
+            role="status"
+          >
+            <span className="myslot-voice-summary-label">{category.label}</span>
+            <span className="myslot-voice-summary-value-row">
+              <strong className="myslot-voice-summary-value">{category.count}回</strong>
+              <span className="myslot-voice-summary-percentage">
+                ({category.percentageText})
+              </span>
+            </span>
+          </div>
+        ))}
+      </div>
+      <p
+        aria-live="polite"
+        className={`myslot-voice-message${value.trim() !== "" && (!summary.foundSection || summary.recognizedRowCount === 0) ? " is-error" : ""}`}
+        role="status"
+      >
+        {statusText}
+      </p>
+    </div>
+  );
+}
+
 function mergeKabaneriInputValues(
   slotValues: Array<Record<string, string>>,
   defaultMergedValues: Record<string, string>
@@ -630,10 +833,15 @@ function mergeKabaneriInputValues(
   const mergedHistory = slotValues
     .flatMap((values) => parseCharacterPointHistory(values.characterPointHistory ?? "[]"))
     .sort((first, second) => second.recordedAt - first.recordedAt);
+  const mergedMyslotText = slotValues
+    .map((values) => values.myslotText?.trim() ?? "")
+    .filter((value) => value !== "")
+    .join("\n\n");
 
   return {
     ...defaultMergedValues,
-    characterPointHistory: JSON.stringify(mergedHistory)
+    characterPointHistory: JSON.stringify(mergedHistory),
+    myslotText: mergedMyslotText
   };
 }
 
@@ -1218,7 +1426,12 @@ export default function Kabaneri2Page() {
                   {"note" in group ? <p className="group-note">{group.note}</p> : null}
                 </div>
               )}
-              {"history" in group ? (
+              {"myslot" in group ? (
+                <MyslotVoiceInput
+                  value={inputValues.myslotText ?? ""}
+                  onChange={(value) => handleInputChange("myslotText", value)}
+                />
+              ) : "history" in group ? (
                 <CharacterCzHistory
                   history={characterPointHistory}
                   onDelete={handleCharacterHistoryDelete}
