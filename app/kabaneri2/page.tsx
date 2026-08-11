@@ -841,6 +841,16 @@ export default function Kabaneri2Page() {
     resetResults();
   };
 
+  const handleCycleInputStep = (key: string, step: -1 | 1) => {
+    const currentValue = Math.max(0, Math.floor(toNumber(inputValues[key] ?? "")));
+
+    if (step === -1 && currentValue === 0) {
+      return;
+    }
+
+    handleInputChange(key, String(currentValue + step));
+  };
+
   const handleCharacterPointIncrement = (
     group: CharacterPointGroup,
     button: CharacterPointButton
@@ -1207,11 +1217,22 @@ export default function Kabaneri2Page() {
               ) : "rows" in group ? (
                 <div className="piece-input-group">
                   {group.rows.map((row) => (
-                    <div className="piece-input-row piece-input-row-tight" key={row.label}>
+                    <div
+                      className="piece-input-row piece-input-row-tight cycle-input-row-with-buttons"
+                      key={row.label}
+                    >
                       <p className="piece-input-label">{row.label}</p>
-                      <label className="input-field">
+                      <div className="input-field">
                         <span className="input-label">分母</span>
                         <span className="input-control">
+                          <button
+                            aria-label={`${row.label}の分母を1減らす`}
+                            className="cycle-step-button"
+                            type="button"
+                            onClick={() => handleCycleInputStep(row.trialKey, -1)}
+                          >
+                            −
+                          </button>
                           <input
                             aria-label={`${row.label}の分母（試行回数）`}
                             className="number-input number-input-piece number-input-piece-tight"
@@ -1224,12 +1245,28 @@ export default function Kabaneri2Page() {
                               handleInputChange(row.trialKey, event.currentTarget.value)
                             }
                           />
+                          <button
+                            aria-label={`${row.label}の分母を1増やす`}
+                            className="cycle-step-button"
+                            type="button"
+                            onClick={() => handleCycleInputStep(row.trialKey, 1)}
+                          >
+                            ＋
+                          </button>
                           <span className="input-unit">回</span>
                         </span>
-                      </label>
-                      <label className="input-field">
+                      </div>
+                      <div className="input-field">
                         <span className="input-label">分子</span>
                         <span className="input-control">
+                          <button
+                            aria-label={`${row.label}の分子を1減らす`}
+                            className="cycle-step-button"
+                            type="button"
+                            onClick={() => handleCycleInputStep(row.hitKey, -1)}
+                          >
+                            −
+                          </button>
                           <input
                             aria-label={`${row.label}の分子（当選回数）`}
                             className="number-input number-input-piece number-input-piece-tight"
@@ -1242,9 +1279,17 @@ export default function Kabaneri2Page() {
                               handleInputChange(row.hitKey, event.currentTarget.value)
                             }
                           />
+                          <button
+                            aria-label={`${row.label}の分子を1増やす`}
+                            className="cycle-step-button"
+                            type="button"
+                            onClick={() => handleCycleInputStep(row.hitKey, 1)}
+                          >
+                            ＋
+                          </button>
                           <span className="input-unit">回</span>
                         </span>
-                      </label>
+                      </div>
                     </div>
                   ))}
                 </div>
