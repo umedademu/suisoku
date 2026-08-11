@@ -1367,6 +1367,131 @@ function CharacterCzHistory({
   );
 }
 
+function CharacterPointColumn({
+  group,
+  pointProgress,
+  totalPointProgress,
+  lightRate,
+  getButtonCount,
+  onIncrement,
+  onDecrement,
+  specialButtonLabel,
+  specialButtonTone,
+  onSpecialIncrement
+}: {
+  group: CharacterPointGroup;
+  pointProgress: ReturnType<typeof calculateCharacterPointProgress>;
+  totalPointProgress: {
+    percentageText: string;
+    historyCount: number;
+  };
+  lightRate: ReturnType<typeof calculateCharacterLightRate>;
+  getButtonCount: (countKey: CharacterPointCountKey) => number;
+  onIncrement: (button: CharacterPointButton) => void;
+  onDecrement: (button: CharacterPointButton) => void;
+  specialButtonLabel: "無名&カバネ" | "カバネ&生駒";
+  specialButtonTone: "red-green" | "blue-green";
+  onSpecialIncrement: () => void;
+}) {
+  const lightRatePercentageText =
+    lightRate.denominator > 0 ? lightRate.percentageText : "0%";
+
+  return (
+    <div className="character-point-column">
+      <div className="group-title-row">
+        <p className="group-title">【{group.title}】</p>
+      </div>
+      <div className={`character-point-panel character-point-panel-${group.theme}`}>
+        <div className="character-point-summary">
+          <div
+            aria-label={`${group.character}の現在のpt ${pointProgress.points}pt 到達率${pointProgress.percentageText}`}
+            aria-live="polite"
+            className="character-point-summary-item"
+            role="status"
+          >
+            <span className="character-point-summary-label">現在のpt</span>
+            <span className="character-point-summary-value-row">
+              <strong className="character-point-summary-value">{pointProgress.points}</strong>
+              <span className="character-point-summary-unit">pt</span>
+              <span className="character-point-summary-detail">
+                （{pointProgress.percentageText}）
+              </span>
+            </span>
+          </div>
+          <div
+            aria-label={`${group.character}の平均到達率 ${totalPointProgress.percentageText} 履歴${totalPointProgress.historyCount}件`}
+            aria-live="polite"
+            className="character-point-summary-item character-point-summary-item-average"
+            role="status"
+          >
+            <span className="character-point-summary-label">平均到達率</span>
+            <span className="character-point-summary-value-row">
+              <strong className="character-point-summary-value">
+                {totalPointProgress.percentageText}
+              </strong>
+              <span className="character-point-summary-detail">
+                （履歴:{totalPointProgress.historyCount}）
+              </span>
+            </span>
+          </div>
+          <div
+            aria-label={`${group.character}の発光率 ${lightRatePercentageText} ${lightRate.numerator}/${lightRate.denominator}`}
+            aria-live="polite"
+            className="character-point-summary-item"
+            role="status"
+          >
+            <span className="character-point-summary-label">発光率</span>
+            <span className="character-point-summary-value-row">
+              <strong className="character-point-summary-value">
+                {lightRatePercentageText}
+              </strong>
+              <span className="character-point-summary-detail">
+                （{lightRate.numerator}/{lightRate.denominator}）
+              </span>
+            </span>
+          </div>
+        </div>
+        <div className="character-point-button-grid">
+          {group.pointButtons.map((button) => {
+            const buttonCount = getButtonCount(button.countKey);
+
+            return (
+              <div className="character-point-control" key={button.key}>
+                <button
+                  aria-label={`${group.character} ${button.label} 1回取り消し`}
+                  className="character-point-minus-button"
+                  disabled={buttonCount <= 0}
+                  type="button"
+                  onClick={() => onDecrement(button)}
+                >
+                  −
+                </button>
+                <button
+                  aria-label={`${group.character} ${button.label} ${button.points}pt加算`}
+                  className={`character-point-button character-point-button-${button.tone}`}
+                  type="button"
+                  onClick={() => onIncrement(button)}
+                >
+                  <span className="character-point-button-name">{button.label}</span>
+                  <span className="character-point-button-points">+{button.points}pt</span>
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      <button
+        aria-label={`${specialButtonLabel} ${group.character}に15pt加算`}
+        className={`character-special-point-button character-special-point-button-${specialButtonTone}`}
+        type="button"
+        onClick={onSpecialIncrement}
+      >
+        {specialButtonLabel}
+      </button>
+    </div>
+  );
+}
+
 export default function Kabaneri2Page() {
   const [inputValues, setInputValues] = useState<Record<string, string>>(initialValues);
   const [estimateResult, setEstimateResult] = useState<EstimateResult | null>(null);
@@ -1558,6 +1683,23 @@ export default function Kabaneri2Page() {
         [button.countKey]: String(buttonCount - 1)
       };
     });
+  };
+
+  const handleSpecialPointIncrement = (
+    mumeiPointIncrement: number,
+    ikomaPointIncrement: number
+  ) => {
+    setInputValues((current) => ({
+      ...current,
+      mumeiPoints: String(
+        Math.max(0, Math.trunc(toNumber(current.mumeiPoints ?? "0"))) +
+          mumeiPointIncrement
+      ),
+      ikomaPoints: String(
+        Math.max(0, Math.trunc(toNumber(current.ikomaPoints ?? "0"))) +
+          ikomaPointIncrement
+      )
+    }));
   };
 
   const handleCharacterCzWin = (group: CharacterPointGroup) => {
@@ -2169,7 +2311,67 @@ export default function Kabaneri2Page() {
         <h1 className="title">カバネリ2</h1>
         <form className="input-form" onSubmit={handleEstimate}>
           <div className="kabaneri-input-layout">
-            {inputGroups.map((group) => (
+            <section className="input-group character-points-group">
+              <div className="character-point-columns-grid">
+                {characterPointGroups.map((group) => {
+                  const lightRate = getCharacterLightRate(group);
+                  const pointProgress = getCharacterPointProgress(group);
+                  const totalPointProgress = getCharacterTotalPointProgress(group);
+                  const isMumei = group.character === "無名";
+
+                  return (
+                    <CharacterPointColumn
+                      getButtonCount={getCharacterButtonCount}
+                      group={group}
+                      key={group.character}
+                      lightRate={lightRate}
+                      onDecrement={(button) =>
+                        handleCharacterPointDecrement(group, button)
+                      }
+                      onIncrement={(button) =>
+                        handleCharacterPointIncrement(group, button)
+                      }
+                      onSpecialIncrement={() =>
+                        handleSpecialPointIncrement(isMumei ? 15 : 0, isMumei ? 0 : 15)
+                      }
+                      pointProgress={pointProgress}
+                      specialButtonLabel={isMumei ? "無名&カバネ" : "カバネ&生駒"}
+                      specialButtonTone={isMumei ? "red-green" : "blue-green"}
+                      totalPointProgress={totalPointProgress}
+                    />
+                  );
+                })}
+                <button
+                  aria-label="無名&生駒 生駒に15pt加算"
+                  className="character-special-point-button character-special-point-button-red-green character-shared-point-button"
+                  type="button"
+                  onClick={() => handleSpecialPointIncrement(0, 15)}
+                >
+                  無名&生駒
+                </button>
+                <button
+                  aria-label="オールスター目 無名と生駒に30ptずつ加算"
+                  className="character-special-point-button character-special-point-button-all-star character-shared-point-button"
+                  type="button"
+                  onClick={() => handleSpecialPointIncrement(30, 30)}
+                >
+                  オールスター目
+                </button>
+                <div className="character-cz-win-row">
+                  {characterPointGroups.map((group) => (
+                    <button
+                      className={`character-cz-win-button character-cz-win-button-${group.theme}`}
+                      key={group.character}
+                      type="button"
+                      onClick={() => handleCharacterCzWin(group)}
+                    >
+                      {group.character}CZ当選
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </section>
+            {inputGroups.filter((group) => !("pointButtons" in group)).map((group) => (
               <section
                 className={`input-group${"pointButtons" in group ? " character-point-column" : ""}`}
                 key={group.title}
@@ -2344,110 +2546,7 @@ export default function Kabaneri2Page() {
                     </div>
                   ))}
                 </div>
-              ) : (
-                <div
-                  className={`character-point-panel character-point-panel-${group.theme}`}
-                >
-                  {(() => {
-                    const lightRate = getCharacterLightRate(group);
-                    const lightRatePercentageText =
-                      lightRate.denominator > 0 ? lightRate.percentageText : "0%";
-                    const pointProgress = getCharacterPointProgress(group);
-                    const totalPointProgress = getCharacterTotalPointProgress(group);
-
-                    return (
-                      <div className="character-point-summary">
-                        <div
-                          aria-label={`${group.character}の現在のpt ${pointProgress.points}pt 到達率${pointProgress.percentageText}`}
-                          aria-live="polite"
-                          className="character-point-summary-item"
-                          role="status"
-                        >
-                          <span className="character-point-summary-label">現在のpt</span>
-                          <span className="character-point-summary-value-row">
-                            <strong className="character-point-summary-value">
-                              {pointProgress.points}
-                            </strong>
-                            <span className="character-point-summary-unit">pt</span>
-                            <span className="character-point-summary-detail">
-                              （{pointProgress.percentageText}）
-                            </span>
-                          </span>
-                        </div>
-                        <div
-                          aria-label={`${group.character}の平均到達率 ${totalPointProgress.percentageText} 履歴${totalPointProgress.historyCount}件`}
-                          aria-live="polite"
-                          className="character-point-summary-item character-point-summary-item-average"
-                          role="status"
-                        >
-                          <span className="character-point-summary-label">平均到達率</span>
-                          <span className="character-point-summary-value-row">
-                            <strong className="character-point-summary-value">
-                              {totalPointProgress.percentageText}
-                            </strong>
-                            <span className="character-point-summary-detail">
-                              （履歴:{totalPointProgress.historyCount}）
-                            </span>
-                          </span>
-                        </div>
-                        <div
-                          aria-label={`${group.character}の発光率 ${lightRatePercentageText} ${lightRate.numerator}/${lightRate.denominator}`}
-                          aria-live="polite"
-                          className="character-point-summary-item"
-                          role="status"
-                        >
-                          <span className="character-point-summary-label">発光率</span>
-                          <span className="character-point-summary-value-row">
-                            <strong className="character-point-summary-value">
-                              {lightRatePercentageText}
-                            </strong>
-                            <span className="character-point-summary-detail">
-                              （{lightRate.numerator}/{lightRate.denominator}）
-                            </span>
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })()}
-                  <div className="character-point-button-grid">
-                    {group.pointButtons.map((button) => {
-                      const buttonCount = getCharacterButtonCount(button.countKey);
-
-                      return (
-                        <div className="character-point-control" key={button.key}>
-                          <button
-                            aria-label={`${group.character} ${button.label} 1回取り消し`}
-                            className="character-point-minus-button"
-                            disabled={buttonCount <= 0}
-                            type="button"
-                            onClick={() => handleCharacterPointDecrement(group, button)}
-                          >
-                            −
-                          </button>
-                          <button
-                            aria-label={`${group.character} ${button.label} ${button.points}pt加算`}
-                            className={`character-point-button character-point-button-${button.tone}`}
-                            type="button"
-                            onClick={() => handleCharacterPointIncrement(group, button)}
-                          >
-                            <span className="character-point-button-name">{button.label}</span>
-                            <span className="character-point-button-points">
-                              +{button.points}pt
-                            </span>
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <button
-                    className={`character-cz-win-button character-cz-win-button-${group.theme}`}
-                    type="button"
-                    onClick={() => handleCharacterCzWin(group)}
-                  >
-                    {group.character}CZ当選
-                  </button>
-                </div>
-              )}
+              ) : null}
               </section>
             ))}
           </div>
