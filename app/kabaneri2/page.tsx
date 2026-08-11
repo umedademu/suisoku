@@ -1792,6 +1792,9 @@ export default function Kabaneri2Page() {
       (sum, setting, index) => sum + setting.payout * probabilities[index],
       0
     );
+    const expectedHourlyYen = hasPracticeGames
+      ? (totalExpectedYen * 700) / practiceGames
+      : 700 * 3 * yenPerMedal * (totalExpectedPayout / 100 - 1);
     const lowerBellProbabilities = hasLowerBellInput
       ? calculateSettingProbabilities(
           practiceLowerBells,
@@ -1898,9 +1901,7 @@ export default function Kabaneri2Page() {
       })),
       totalPayoutText: `${totalExpectedPayout.toFixed(2)}%`,
       totalExpectationText: hasPracticeGames ? formatYen(totalExpectedYen) : "-",
-      hourlyText: hasPracticeGames
-        ? formatHourlyYen((totalExpectedYen * 700) / practiceGames)
-        : "-",
+      hourlyText: formatHourlyYen(expectedHourlyYen),
       detailColumns: [
         {
           label: "下段ベル",
