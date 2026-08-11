@@ -77,12 +77,15 @@ type CharacterPointButton = {
   label: string;
   points: 1 | 15;
   tone: string;
+  lightRateResult?: "no-light" | "with-light";
 };
 
 type CharacterPointGroup = {
   title: string;
   character: "無名" | "生駒";
   pointKey: "mumeiPoints" | "ikomaPoints";
+  noLightCountKey: "mumeiNoLightCount" | "ikomaNoLightCount";
+  withLightCountKey: "mumeiWithLightCount" | "ikomaWithLightCount";
   theme: "red" | "green";
   pointButtons: CharacterPointButton[];
 };
@@ -149,11 +152,25 @@ const inputGroups: InputGroup[] = [
     title: "無名pt",
     character: "無名",
     pointKey: "mumeiPoints",
+    noLightCountKey: "mumeiNoLightCount",
+    withLightCountKey: "mumeiWithLightCount",
     theme: "red",
     pointButtons: [
-      { key: "no-light", label: "発光なし", points: 1, tone: "rose" },
+      {
+        key: "no-light",
+        label: "発光なし",
+        points: 1,
+        tone: "rose",
+        lightRateResult: "no-light"
+      },
       { key: "unknown-light", label: "発光不明", points: 1, tone: "coral" },
-      { key: "with-light", label: "発光あり", points: 15, tone: "crimson" },
+      {
+        key: "with-light",
+        label: "発光あり",
+        points: 15,
+        tone: "crimson",
+        lightRateResult: "with-light"
+      },
       { key: "high-probability", label: "高確率", points: 15, tone: "wine" }
     ]
   },
@@ -161,11 +178,25 @@ const inputGroups: InputGroup[] = [
     title: "生駒pt",
     character: "生駒",
     pointKey: "ikomaPoints",
+    noLightCountKey: "ikomaNoLightCount",
+    withLightCountKey: "ikomaWithLightCount",
     theme: "green",
     pointButtons: [
-      { key: "no-light", label: "発光なし", points: 1, tone: "soft" },
+      {
+        key: "no-light",
+        label: "発光なし",
+        points: 1,
+        tone: "soft",
+        lightRateResult: "no-light"
+      },
       { key: "unknown-light", label: "発光不明", points: 1, tone: "leaf" },
-      { key: "with-light", label: "発光あり", points: 15, tone: "deep" },
+      {
+        key: "with-light",
+        label: "発光あり",
+        points: 15,
+        tone: "deep",
+        lightRateResult: "with-light"
+      },
       { key: "high-probability", label: "高確率", points: 15, tone: "forest" }
     ]
   },
@@ -203,7 +234,11 @@ const initialValues: Record<string, string> = {
   cycle4Trials: "",
   cycle4Hits: "",
   mumeiPoints: "0",
+  mumeiNoLightCount: "0",
+  mumeiWithLightCount: "0",
   ikomaPoints: "0",
+  ikomaNoLightCount: "0",
+  ikomaWithLightCount: "0",
   medalRent: "46",
   exchangeRate: "5.0",
   cashInvestment: ""
@@ -403,6 +438,23 @@ export default function Kabaneri2Page() {
   };
   const getCharacterPoints = (pointKey: CharacterPointGroup["pointKey"]) =>
     Math.max(0, Math.trunc(toNumber(inputValues[pointKey] ?? "0")));
+  const getCharacterLightRate = (group: CharacterPointGroup) => {
+    const noLightCount = Math.max(
+      0,
+      Math.trunc(toNumber(inputValues[group.noLightCountKey] ?? "0"))
+    );
+    const withLightCount = Math.max(
+      0,
+      Math.trunc(toNumber(inputValues[group.withLightCountKey] ?? "0"))
+    );
+    const totalCount = noLightCount + withLightCount;
+
+    return {
+      numerator: withLightCount,
+      denominator: totalCount,
+      percentageText: totalCount > 0 ? `${((withLightCount / totalCount) * 100).toFixed(1)}%` : "算出前"
+    };
+  };
 
   const handleInputChange = (key: string, value: string) => {
     setInputValues((current) => ({
@@ -413,15 +465,31 @@ export default function Kabaneri2Page() {
   };
 
   const handleCharacterPointIncrement = (
-    pointKey: CharacterPointGroup["pointKey"],
-    points: 1 | 15
+    group: CharacterPointGroup,
+    button: CharacterPointButton
   ) => {
-    setInputValues((current) => ({
-      ...current,
-      [pointKey]: String(
-        Math.max(0, Math.trunc(toNumber(current[pointKey] ?? "0"))) + points
-      )
-    }));
+    setInputValues((current) => {
+      const nextValues = {
+        ...current,
+        [group.pointKey]: String(
+          Math.max(0, Math.trunc(toNumber(current[group.pointKey] ?? "0"))) + button.points
+        )
+      };
+
+      if (button.lightRateResult === "no-light") {
+        nextValues[group.noLightCountKey] = String(
+          Math.max(0, Math.trunc(toNumber(current[group.noLightCountKey] ?? "0"))) + 1
+        );
+      }
+
+      if (button.lightRateResult === "with-light") {
+        nextValues[group.withLightCountKey] = String(
+          Math.max(0, Math.trunc(toNumber(current[group.withLightCountKey] ?? "0"))) + 1
+        );
+      }
+
+      return nextValues;
+    });
   };
 
   const handleEstimate = (event: React.FormEvent<HTMLFormElement>) => {
@@ -688,6 +756,26 @@ export default function Kabaneri2Page() {
                 <div
                   className={`character-point-panel character-point-panel-${group.theme}`}
                 >
+                  {(() => {
+                    const lightRate = getCharacterLightRate(group);
+
+                    return (
+                      <div
+                        aria-label={`${group.character}の発光率 ${lightRate.numerator}/${lightRate.denominator} ${lightRate.percentageText}`}
+                        aria-live="polite"
+                        className="character-light-rate"
+                        role="status"
+                      >
+                        <span className="character-light-rate-label">発光率</span>
+                        <strong className="character-light-rate-value">
+                          {lightRate.numerator}/{lightRate.denominator}
+                        </strong>
+                        <span className="character-light-rate-percentage">
+                          （{lightRate.percentageText}）
+                        </span>
+                      </div>
+                    );
+                  })()}
                   <div
                     aria-label={`現在の${group.character}pt ${getCharacterPoints(group.pointKey)}pt`}
                     aria-live="polite"
@@ -708,7 +796,7 @@ export default function Kabaneri2Page() {
                         key={button.key}
                         type="button"
                         onClick={() =>
-                          handleCharacterPointIncrement(group.pointKey, button.points)
+                          handleCharacterPointIncrement(group, button)
                         }
                       >
                         <span className="character-point-button-name">
