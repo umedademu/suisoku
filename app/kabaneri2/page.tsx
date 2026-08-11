@@ -257,6 +257,7 @@ type CharacterPointButton = {
 type CharacterSpecialPointCountKey =
   | "mumeiKabaneSpecialCount"
   | "kabaneIkomaSpecialCount"
+  | "mumeiIkomaMumeiSpecialCount"
   | "mumeiIkomaSpecialCount"
   | "allStarMumeiSpecialCount"
   | "allStarIkomaSpecialCount";
@@ -299,8 +300,9 @@ const CHARACTER_SPECIAL_POINT_BUTTONS: Record<
     label: "無名&生駒",
     points: 15,
     tone: "red-green",
-    mumeiPointIncrement: 0,
+    mumeiPointIncrement: 15,
     ikomaPointIncrement: 15,
+    mumeiCountKey: "mumeiIkomaMumeiSpecialCount",
     ikomaCountKey: "mumeiIkomaSpecialCount"
   },
   allStar: {
@@ -566,6 +568,7 @@ const initialValues: Record<string, string> = {
   ikomaHighProbabilityCount: "0",
   mumeiKabaneSpecialCount: "0",
   kabaneIkomaSpecialCount: "0",
+  mumeiIkomaMumeiSpecialCount: "0",
   mumeiIkomaSpecialCount: "0",
   allStarMumeiSpecialCount: "0",
   allStarIkomaSpecialCount: "0",
@@ -1910,6 +1913,7 @@ export default function Kabaneri2Page() {
 
       if (group.character === "無名") {
         nextValues.mumeiKabaneSpecialCount = "0";
+        nextValues.mumeiIkomaMumeiSpecialCount = "0";
         nextValues.allStarMumeiSpecialCount = "0";
       } else {
         nextValues.kabaneIkomaSpecialCount = "0";
