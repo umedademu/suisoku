@@ -1388,7 +1388,7 @@ export default function Kabaneri2Page() {
                             type="button"
                             onClick={() => handleCharacterPointDecrement(group, button)}
                           >
-                            −1
+                            −
                           </button>
                           <button
                             aria-label={`${group.character} ${button.label} ${button.points}pt加算`}
