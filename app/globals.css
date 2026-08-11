@@ -482,6 +482,118 @@ a {
   flex-wrap: nowrap;
 }
 
+.ikoma-point-panel {
+  display: grid;
+  gap: 8px;
+  border: 1px solid rgba(42, 112, 51, 0.24);
+  border-radius: 14px;
+  background: rgba(235, 247, 230, 0.76);
+  padding: 10px;
+}
+
+.ikoma-point-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 6px;
+  min-height: 48px;
+  border: 1px solid rgba(42, 112, 51, 0.22);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.84);
+  color: #205d2a;
+  padding: 7px 12px;
+}
+
+.ikoma-point-total-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.ikoma-point-total-value {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.ikoma-point-total-unit {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.ikoma-point-button-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.ikoma-point-button {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  gap: 6px;
+  align-items: center;
+  min-height: 58px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  padding: 10px 12px;
+  text-align: left;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.22);
+  transition:
+    transform 0.15s ease,
+    filter 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.ikoma-point-button:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+}
+
+.ikoma-point-button:active {
+  transform: translateY(1px);
+}
+
+.ikoma-point-button:focus-visible {
+  outline: 3px solid rgba(40, 121, 52, 0.28);
+  outline-offset: 2px;
+}
+
+.ikoma-point-button-soft {
+  border-color: #4c8f44;
+  background: linear-gradient(135deg, #6baa5e, #448a3f);
+  box-shadow: 0 4px 10px rgba(68, 138, 63, 0.2);
+}
+
+.ikoma-point-button-leaf {
+  border-color: #337c39;
+  background: linear-gradient(135deg, #559b4a, #2f7935);
+  box-shadow: 0 4px 10px rgba(47, 121, 53, 0.2);
+}
+
+.ikoma-point-button-deep {
+  border-color: #246d30;
+  background: linear-gradient(135deg, #3f8e46, #22682d);
+  box-shadow: 0 4px 10px rgba(34, 104, 45, 0.22);
+}
+
+.ikoma-point-button-forest {
+  border-color: #1c5b27;
+  background: linear-gradient(135deg, #307a3b, #195625);
+  box-shadow: 0 4px 10px rgba(25, 86, 37, 0.24);
+}
+
+.ikoma-point-button-name {
+  font-size: 0.78rem;
+  line-height: 1.25;
+}
+
+.ikoma-point-button-points {
+  font-size: 0.92rem;
+  white-space: nowrap;
+}
+
 .number-input:focus {
   outline: 2px solid rgba(197, 75, 44, 0.28);
   border-color: var(--accent);

@@ -72,7 +72,19 @@ type CycleInputGroup = {
   rows: CycleInputRow[];
 };
 
-type InputGroup = StandardInputGroup | CycleInputGroup;
+type IkomaPointButton = {
+  key: string;
+  label: string;
+  points: 1 | 15;
+  tone: string;
+};
+
+type IkomaPointGroup = {
+  title: string;
+  pointButtons: IkomaPointButton[];
+};
+
+type InputGroup = StandardInputGroup | CycleInputGroup | IkomaPointGroup;
 
 type DetailColumn = {
   label: string;
@@ -131,6 +143,15 @@ const inputGroups: InputGroup[] = [
     ]
   },
   {
+    title: "生駒pt",
+    pointButtons: [
+      { key: "no-light", label: "発光なし", points: 1, tone: "soft" },
+      { key: "unknown-light", label: "発光不明", points: 1, tone: "leaf" },
+      { key: "with-light", label: "発光あり", points: 15, tone: "deep" },
+      { key: "high-probability", label: "高確率", points: 15, tone: "forest" }
+    ]
+  },
+  {
     title: "店情報",
     fields: [
       {
@@ -163,6 +184,7 @@ const initialValues: Record<string, string> = {
   cycle3Hits: "",
   cycle4Trials: "",
   cycle4Hits: "",
+  ikomaPoints: "0",
   medalRent: "46",
   exchangeRate: "5.0",
   cashInvestment: ""
@@ -360,6 +382,7 @@ export default function Kabaneri2Page() {
     cashInvestment:
       cashInvestmentValue > 0 && liveCashGapLoss > 0 ? formatLossYen(liveCashGapLoss) : ""
   };
+  const ikomaPoints = Math.max(0, Math.trunc(toNumber(inputValues.ikomaPoints ?? "0")));
 
   const handleInputChange = (key: string, value: string) => {
     setInputValues((current) => ({
@@ -367,6 +390,15 @@ export default function Kabaneri2Page() {
       [key]: value
     }));
     resetResults();
+  };
+
+  const handleIkomaPointIncrement = (points: 1 | 15) => {
+    setInputValues((current) => ({
+      ...current,
+      ikomaPoints: String(
+        Math.max(0, Math.trunc(toNumber(current.ikomaPoints ?? "0"))) + points
+      )
+    }));
   };
 
   const handleEstimate = (event: React.FormEvent<HTMLFormElement>) => {
@@ -585,7 +617,7 @@ export default function Kabaneri2Page() {
                     </div>
                   ))}
                 </div>
-              ) : (
+              ) : "rows" in group ? (
                 <div className="piece-input-group">
                   {group.rows.map((row) => (
                     <div className="piece-input-row piece-input-row-tight" key={row.label}>
@@ -628,6 +660,33 @@ export default function Kabaneri2Page() {
                       </label>
                     </div>
                   ))}
+                </div>
+              ) : (
+                <div className="ikoma-point-panel">
+                  <div
+                    aria-label={`現在の生駒pt ${ikomaPoints}pt`}
+                    aria-live="polite"
+                    className="ikoma-point-total"
+                    role="status"
+                  >
+                    <span className="ikoma-point-total-label">現在の合計</span>
+                    <strong className="ikoma-point-total-value">{ikomaPoints}</strong>
+                    <span className="ikoma-point-total-unit">pt</span>
+                  </div>
+                  <div className="ikoma-point-button-grid">
+                    {group.pointButtons.map((button) => (
+                      <button
+                        aria-label={`生駒 ${button.label} ${button.points}pt加算`}
+                        className={`ikoma-point-button ikoma-point-button-${button.tone}`}
+                        key={button.key}
+                        type="button"
+                        onClick={() => handleIkomaPointIncrement(button.points)}
+                      >
+                        <span className="ikoma-point-button-name">生駒 {button.label}</span>
+                        <span className="ikoma-point-button-points">+{button.points}pt</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
             </section>
