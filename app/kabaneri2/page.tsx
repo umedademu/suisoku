@@ -9,6 +9,8 @@ const settings = [
     lowerBellDenominator: 121.1,
     cycle3Rate: 0.184,
     cycle4Rate: 0.336,
+    mumeiCzPointReachRate: 84.7,
+    ikomaCzPointReachRate: 84.7,
     payout: 97.5
   },
   {
@@ -16,6 +18,8 @@ const settings = [
     lowerBellDenominator: 114.4,
     cycle3Rate: 0.238,
     cycle4Rate: 0.352,
+    mumeiCzPointReachRate: 84.7,
+    ikomaCzPointReachRate: 84.7,
     payout: 98.5
   },
   {
@@ -23,6 +27,8 @@ const settings = [
     lowerBellDenominator: 112.8,
     cycle3Rate: 0.211,
     cycle4Rate: 0.363,
+    mumeiCzPointReachRate: 84.7,
+    ikomaCzPointReachRate: 84.7,
     payout: 100.8
   },
   {
@@ -30,6 +36,8 @@ const settings = [
     lowerBellDenominator: 106.2,
     cycle3Rate: 0.285,
     cycle4Rate: 0.402,
+    mumeiCzPointReachRate: 71.8,
+    ikomaCzPointReachRate: 71.8,
     payout: 106.0
   },
   {
@@ -37,6 +45,8 @@ const settings = [
     lowerBellDenominator: 104.2,
     cycle3Rate: 0.324,
     cycle4Rate: 0.434,
+    mumeiCzPointReachRate: 62.6,
+    ikomaCzPointReachRate: 62.6,
     payout: 111.0
   },
   {
@@ -44,6 +54,8 @@ const settings = [
     lowerBellDenominator: 99.1,
     cycle3Rate: 0.371,
     cycle4Rate: 0.469,
+    mumeiCzPointReachRate: 62.6,
+    ikomaCzPointReachRate: 62.6,
     payout: 114.9
   }
 ] as const;
@@ -1325,11 +1337,16 @@ export default function Kabaneri2Page() {
               <table className="data-table data-table-compact">
                 <thead>
                   <tr>
-                    <th>設定</th>
-                    <th>下段ベル</th>
-                    <th>3周期目</th>
-                    <th>4周期目</th>
-                    <th>機械割</th>
+                    <th rowSpan={2}>設定</th>
+                    <th rowSpan={2}>下段ベル</th>
+                    <th rowSpan={2}>3周期目</th>
+                    <th rowSpan={2}>4周期目</th>
+                    <th colSpan={2}>pt到達率</th>
+                    <th rowSpan={2}>機械割</th>
+                  </tr>
+                  <tr>
+                    <th>無名CZ</th>
+                    <th>生駒CZ</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1339,6 +1356,8 @@ export default function Kabaneri2Page() {
                       <td>1/{setting.lowerBellDenominator.toFixed(1)}</td>
                       <td>{(setting.cycle3Rate * 100).toFixed(1)}%</td>
                       <td>{(setting.cycle4Rate * 100).toFixed(1)}%</td>
+                      <td>{setting.mumeiCzPointReachRate.toFixed(1)}%</td>
+                      <td>{setting.ikomaCzPointReachRate.toFixed(1)}%</td>
                       <td>{setting.payout.toFixed(1)}%</td>
                     </tr>
                   ))}
