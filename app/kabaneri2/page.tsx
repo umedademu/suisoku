@@ -276,6 +276,11 @@ type MySlotInputGroup = {
   myslot: true;
 };
 
+type LightRateEstimationGroup = {
+  title: string;
+  lightRateEstimation: true;
+};
+
 type CharacterPointHistoryEntry = {
   character: KabaneriCharacter;
   points: number;
@@ -289,7 +294,8 @@ type InputGroup =
   | CycleInputGroup
   | CharacterPointGroup
   | CharacterHistoryGroup
-  | MySlotInputGroup;
+  | MySlotInputGroup
+  | LightRateEstimationGroup;
 
 type DetailColumn = {
   label: string;
@@ -400,6 +406,10 @@ const inputGroups: InputGroup[] = [
     ]
   },
   {
+    title: "発光率推測",
+    lightRateEstimation: true
+  },
+  {
     title: "小役",
     hideTitle: true,
     rowClass: "kabaneri-games-row",
@@ -493,6 +503,7 @@ const initialValues: Record<string, string> = {
   ikomaUnknownLightCount: "0",
   ikomaWithLightCount: "0",
   ikomaHighProbabilityCount: "0",
+  useCharacterLightRate: "0",
   characterPointHistory: "[]",
   myslotText: "",
   medalRent: "46",
@@ -1270,6 +1281,11 @@ function mergeKabaneriInputValues(
 
   return {
     ...defaultMergedValues,
+    useCharacterLightRate: slotValues.some(
+      (values) => values.useCharacterLightRate === "1"
+    )
+      ? "1"
+      : "0",
     characterPointHistory: JSON.stringify(mergedHistory),
     myslotText: mergedMyslotText
   };
@@ -1359,6 +1375,7 @@ export default function Kabaneri2Page() {
   const characterPointHistory = parseCharacterPointHistory(
     inputValues.characterPointHistory ?? "[]"
   );
+  const useCharacterLightRate = inputValues.useCharacterLightRate === "1";
 
   const resetResults = () => {
     setEstimateResult(null);
@@ -1704,6 +1721,9 @@ export default function Kabaneri2Page() {
         hasInput: lightRate.denominator > 0
       };
     });
+    const hasCharacterLightInput = characterLightObservations.some(
+      (observation) => observation.hasInput
+    );
     const allCounts = [
       beforeGames,
       currentGames,
@@ -1763,11 +1783,13 @@ export default function Kabaneri2Page() {
       !hasVoiceGenderInput &&
       !hasCharacterConfirmationInput &&
       !hasCharacterGenderInput &&
-      !characterLightObservations.some((observation) => observation.hasInput) &&
+      !(useCharacterLightRate && hasCharacterLightInput) &&
       !characterPointObservations.some((observation) => observation.hasInput)
     ) {
       setErrorMessage(
-        "推測に使うpt・発光カウント、CZ当選履歴、マイスロ、周期当選、またはG数と下段ベルを入力してください。"
+        hasCharacterLightInput && !useCharacterLightRate
+          ? "発光率を推測に使う場合は、「発光率を推測に使用」をONにしてください。"
+          : "推測に使うpt・発光カウント、CZ当選履歴、マイスロ、周期当選、またはG数と下段ベルを入力してください。"
       );
       return;
     }
@@ -1841,18 +1863,20 @@ export default function Kabaneri2Page() {
               : 0),
           0
         ) +
-        characterLightObservations.reduce(
-          (logValue, observation) =>
-            logValue +
-            (observation.hasInput
-              ? calculateLogBinomialProbability(
-                  observation.numerator,
-                  observation.denominator,
-                  setting.characterLightRate
-                )
-              : 0),
-          0
-        )
+        (useCharacterLightRate
+          ? characterLightObservations.reduce(
+              (logValue, observation) =>
+                logValue +
+                (observation.hasInput
+                  ? calculateLogBinomialProbability(
+                      observation.numerator,
+                      observation.denominator,
+                      setting.characterLightRate
+                    )
+                  : 0),
+              0
+            )
+          : 0)
     }));
     const maxLogValue = Math.max(...logRows.map((row) => row.logValue));
     const scaledRows = logRows.map((row) => ({
@@ -1995,7 +2019,7 @@ export default function Kabaneri2Page() {
       (observation) => ({
         label: `${observation.character} 発光率`,
         summaryText: observation.hasInput
-          ? `${observation.numerator}/${observation.denominator} (${observation.percentageText})`
+          ? `${observation.numerator}/${observation.denominator} (${observation.percentageText}) / 推測${useCharacterLightRate ? "ON" : "OFF"}`
           : "未集計",
         values: observation.hasInput
           ? calculateSettingProbabilities(
@@ -2157,6 +2181,29 @@ export default function Kabaneri2Page() {
                   value={inputValues.myslotText ?? ""}
                   onChange={(value) => handleInputChange("myslotText", value)}
                 />
+              ) : "lightRateEstimation" in group ? (
+                <label className="light-rate-estimation-toggle">
+                  <input
+                    aria-label="発光率を推測に使用"
+                    checked={useCharacterLightRate}
+                    className="light-rate-estimation-input"
+                    role="switch"
+                    type="checkbox"
+                    onChange={(event) =>
+                      handleInputChange(
+                        "useCharacterLightRate",
+                        event.currentTarget.checked ? "1" : "0"
+                      )
+                    }
+                  />
+                  <span aria-hidden="true" className="light-rate-estimation-track" />
+                  <span className="light-rate-estimation-label">
+                    発光率を推測に使用
+                  </span>
+                  <strong className="light-rate-estimation-state">
+                    {useCharacterLightRate ? "ON" : "OFF"}
+                  </strong>
+                </label>
               ) : "history" in group ? (
                 <CharacterCzHistory
                   history={characterPointHistory}

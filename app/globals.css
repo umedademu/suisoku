@@ -641,6 +641,77 @@ a {
   padding: 10px;
 }
 
+.light-rate-estimation-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  max-width: 100%;
+  border: 1px solid rgba(143, 47, 24, 0.2);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.78);
+  cursor: pointer;
+  padding: 7px 12px;
+}
+
+.light-rate-estimation-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.light-rate-estimation-track {
+  position: relative;
+  width: 42px;
+  min-width: 42px;
+  height: 24px;
+  border-radius: 999px;
+  background: #d8d2cd;
+  transition: background-color 0.18s ease;
+}
+
+.light-rate-estimation-track::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 1px 4px rgba(63, 36, 23, 0.22);
+  transition: transform 0.18s ease;
+}
+
+.light-rate-estimation-input:checked + .light-rate-estimation-track {
+  background: #a83f34;
+}
+
+.light-rate-estimation-input:checked + .light-rate-estimation-track::after {
+  transform: translateX(18px);
+}
+
+.light-rate-estimation-input:focus-visible + .light-rate-estimation-track {
+  outline: 3px solid rgba(197, 75, 44, 0.24);
+  outline-offset: 2px;
+}
+
+.light-rate-estimation-label,
+.light-rate-estimation-state {
+  font-size: 0.78rem;
+  line-height: 1.1;
+}
+
+.light-rate-estimation-label {
+  font-weight: 700;
+}
+
+.light-rate-estimation-state {
+  color: #8f2f18;
+}
+
 .character-point-panel-green {
   border: 1px solid rgba(42, 112, 51, 0.24);
   background: rgba(235, 247, 230, 0.76);
