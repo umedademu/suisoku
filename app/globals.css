@@ -482,50 +482,66 @@ a {
   flex-wrap: nowrap;
 }
 
-.ikoma-point-panel {
+.character-point-panel {
   display: grid;
   gap: 8px;
-  border: 1px solid rgba(42, 112, 51, 0.24);
   border-radius: 14px;
-  background: rgba(235, 247, 230, 0.76);
   padding: 10px;
 }
 
-.ikoma-point-total {
+.character-point-panel-green {
+  border: 1px solid rgba(42, 112, 51, 0.24);
+  background: rgba(235, 247, 230, 0.76);
+}
+
+.character-point-panel-red {
+  border: 1px solid rgba(151, 50, 50, 0.25);
+  background: rgba(252, 235, 232, 0.78);
+}
+
+.character-point-total {
   display: flex;
   align-items: baseline;
   justify-content: center;
   gap: 6px;
   min-height: 48px;
-  border: 1px solid rgba(42, 112, 51, 0.22);
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.84);
-  color: #205d2a;
   padding: 7px 12px;
 }
 
-.ikoma-point-total-label {
+.character-point-panel-green .character-point-total {
+  border: 1px solid rgba(42, 112, 51, 0.22);
+  color: #205d2a;
+}
+
+.character-point-panel-red .character-point-total {
+  border: 1px solid rgba(151, 50, 50, 0.22);
+  color: #842626;
+}
+
+.character-point-total-label {
   font-size: 0.8rem;
   font-weight: 700;
 }
 
-.ikoma-point-total-value {
+.character-point-total-value {
   font-size: 1.8rem;
   line-height: 1;
 }
 
-.ikoma-point-total-unit {
+.character-point-total-unit {
   font-size: 0.9rem;
   font-weight: 700;
 }
 
-.ikoma-point-button-grid {
+.character-point-button-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 7px;
 }
 
-.ikoma-point-button {
+.character-point-button {
   display: grid;
   grid-template-columns: minmax(0, 1fr) max-content;
   gap: 6px;
@@ -546,50 +562,78 @@ a {
     box-shadow 0.15s ease;
 }
 
-.ikoma-point-button:hover {
+.character-point-button:hover {
   filter: brightness(1.06);
   transform: translateY(-1px);
 }
 
-.ikoma-point-button:active {
+.character-point-button:active {
   transform: translateY(1px);
 }
 
-.ikoma-point-button:focus-visible {
-  outline: 3px solid rgba(40, 121, 52, 0.28);
+.character-point-button:focus-visible {
+  outline: 3px solid rgba(112, 47, 47, 0.24);
   outline-offset: 2px;
 }
 
-.ikoma-point-button-soft {
+.character-point-panel-green .character-point-button:focus-visible {
+  outline: 3px solid rgba(40, 121, 52, 0.28);
+}
+
+.character-point-button-soft {
   border-color: #4c8f44;
   background: linear-gradient(135deg, #6baa5e, #448a3f);
   box-shadow: 0 4px 10px rgba(68, 138, 63, 0.2);
 }
 
-.ikoma-point-button-leaf {
+.character-point-button-leaf {
   border-color: #337c39;
   background: linear-gradient(135deg, #559b4a, #2f7935);
   box-shadow: 0 4px 10px rgba(47, 121, 53, 0.2);
 }
 
-.ikoma-point-button-deep {
+.character-point-button-deep {
   border-color: #246d30;
   background: linear-gradient(135deg, #3f8e46, #22682d);
   box-shadow: 0 4px 10px rgba(34, 104, 45, 0.22);
 }
 
-.ikoma-point-button-forest {
+.character-point-button-forest {
   border-color: #1c5b27;
   background: linear-gradient(135deg, #307a3b, #195625);
   box-shadow: 0 4px 10px rgba(25, 86, 37, 0.24);
 }
 
-.ikoma-point-button-name {
+.character-point-button-rose {
+  border-color: #b85b5b;
+  background: linear-gradient(135deg, #d47771, #ad4747);
+  box-shadow: 0 4px 10px rgba(173, 71, 71, 0.2);
+}
+
+.character-point-button-coral {
+  border-color: #aa4141;
+  background: linear-gradient(135deg, #c95d57, #9b3438);
+  box-shadow: 0 4px 10px rgba(155, 52, 56, 0.21);
+}
+
+.character-point-button-crimson {
+  border-color: #922f37;
+  background: linear-gradient(135deg, #b94449, #82252f);
+  box-shadow: 0 4px 10px rgba(130, 37, 47, 0.23);
+}
+
+.character-point-button-wine {
+  border-color: #75232e;
+  background: linear-gradient(135deg, #96323d, #681b27);
+  box-shadow: 0 4px 10px rgba(104, 27, 39, 0.25);
+}
+
+.character-point-button-name {
   font-size: 0.78rem;
   line-height: 1.25;
 }
 
-.ikoma-point-button-points {
+.character-point-button-points {
   font-size: 0.92rem;
   white-space: nowrap;
 }

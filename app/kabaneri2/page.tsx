@@ -72,19 +72,22 @@ type CycleInputGroup = {
   rows: CycleInputRow[];
 };
 
-type IkomaPointButton = {
+type CharacterPointButton = {
   key: string;
   label: string;
   points: 1 | 15;
   tone: string;
 };
 
-type IkomaPointGroup = {
+type CharacterPointGroup = {
   title: string;
-  pointButtons: IkomaPointButton[];
+  character: "無名" | "生駒";
+  pointKey: "mumeiPoints" | "ikomaPoints";
+  theme: "red" | "green";
+  pointButtons: CharacterPointButton[];
 };
 
-type InputGroup = StandardInputGroup | CycleInputGroup | IkomaPointGroup;
+type InputGroup = StandardInputGroup | CycleInputGroup | CharacterPointGroup;
 
 type DetailColumn = {
   label: string;
@@ -143,7 +146,22 @@ const inputGroups: InputGroup[] = [
     ]
   },
   {
+    title: "無名pt",
+    character: "無名",
+    pointKey: "mumeiPoints",
+    theme: "red",
+    pointButtons: [
+      { key: "no-light", label: "発光なし", points: 1, tone: "rose" },
+      { key: "unknown-light", label: "発光不明", points: 1, tone: "coral" },
+      { key: "with-light", label: "発光あり", points: 15, tone: "crimson" },
+      { key: "high-probability", label: "高確率", points: 15, tone: "wine" }
+    ]
+  },
+  {
     title: "生駒pt",
+    character: "生駒",
+    pointKey: "ikomaPoints",
+    theme: "green",
     pointButtons: [
       { key: "no-light", label: "発光なし", points: 1, tone: "soft" },
       { key: "unknown-light", label: "発光不明", points: 1, tone: "leaf" },
@@ -184,6 +202,7 @@ const initialValues: Record<string, string> = {
   cycle3Hits: "",
   cycle4Trials: "",
   cycle4Hits: "",
+  mumeiPoints: "0",
   ikomaPoints: "0",
   medalRent: "46",
   exchangeRate: "5.0",
@@ -382,7 +401,8 @@ export default function Kabaneri2Page() {
     cashInvestment:
       cashInvestmentValue > 0 && liveCashGapLoss > 0 ? formatLossYen(liveCashGapLoss) : ""
   };
-  const ikomaPoints = Math.max(0, Math.trunc(toNumber(inputValues.ikomaPoints ?? "0")));
+  const getCharacterPoints = (pointKey: CharacterPointGroup["pointKey"]) =>
+    Math.max(0, Math.trunc(toNumber(inputValues[pointKey] ?? "0")));
 
   const handleInputChange = (key: string, value: string) => {
     setInputValues((current) => ({
@@ -392,11 +412,14 @@ export default function Kabaneri2Page() {
     resetResults();
   };
 
-  const handleIkomaPointIncrement = (points: 1 | 15) => {
+  const handleCharacterPointIncrement = (
+    pointKey: CharacterPointGroup["pointKey"],
+    points: 1 | 15
+  ) => {
     setInputValues((current) => ({
       ...current,
-      ikomaPoints: String(
-        Math.max(0, Math.trunc(toNumber(current.ikomaPoints ?? "0"))) + points
+      [pointKey]: String(
+        Math.max(0, Math.trunc(toNumber(current[pointKey] ?? "0"))) + points
       )
     }));
   };
@@ -662,28 +685,36 @@ export default function Kabaneri2Page() {
                   ))}
                 </div>
               ) : (
-                <div className="ikoma-point-panel">
+                <div
+                  className={`character-point-panel character-point-panel-${group.theme}`}
+                >
                   <div
-                    aria-label={`現在の生駒pt ${ikomaPoints}pt`}
+                    aria-label={`現在の${group.character}pt ${getCharacterPoints(group.pointKey)}pt`}
                     aria-live="polite"
-                    className="ikoma-point-total"
+                    className="character-point-total"
                     role="status"
                   >
-                    <span className="ikoma-point-total-label">現在の合計</span>
-                    <strong className="ikoma-point-total-value">{ikomaPoints}</strong>
-                    <span className="ikoma-point-total-unit">pt</span>
+                    <span className="character-point-total-label">現在の合計</span>
+                    <strong className="character-point-total-value">
+                      {getCharacterPoints(group.pointKey)}
+                    </strong>
+                    <span className="character-point-total-unit">pt</span>
                   </div>
-                  <div className="ikoma-point-button-grid">
+                  <div className="character-point-button-grid">
                     {group.pointButtons.map((button) => (
                       <button
-                        aria-label={`生駒 ${button.label} ${button.points}pt加算`}
-                        className={`ikoma-point-button ikoma-point-button-${button.tone}`}
+                        aria-label={`${group.character} ${button.label} ${button.points}pt加算`}
+                        className={`character-point-button character-point-button-${button.tone}`}
                         key={button.key}
                         type="button"
-                        onClick={() => handleIkomaPointIncrement(button.points)}
+                        onClick={() =>
+                          handleCharacterPointIncrement(group.pointKey, button.points)
+                        }
                       >
-                        <span className="ikoma-point-button-name">生駒 {button.label}</span>
-                        <span className="ikoma-point-button-points">+{button.points}pt</span>
+                        <span className="character-point-button-name">
+                          {group.character} {button.label}
+                        </span>
+                        <span className="character-point-button-points">+{button.points}pt</span>
                       </button>
                     ))}
                   </div>
