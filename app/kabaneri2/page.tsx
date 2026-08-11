@@ -910,16 +910,23 @@ function parseMyslotItemLotterySummary(value: string) {
   ]);
   const entries = parseMyslotNumberedEntries(sections);
   const totalCount = entries.reduce((sum, entry) => sum + entry.count, 0);
-  const tsuranukiCylinderCount = entries.reduce(
-    (sum, entry) => (entry.number === 1 ? sum + entry.count : sum),
-    0
-  );
+  const getCount = (number: number) =>
+    entries.reduce(
+      (sum, entry) => (entry.number === number ? sum + entry.count : sum),
+      0
+    );
+  const tsuranukiCylinderCount = getCount(1);
 
   return {
     foundSection: sections.length > 0,
     recognizedRowCount: entries.length,
     totalCount,
     tsuranukiCylinderCount,
+    kurusuSwordCount: getCount(4),
+    mumeiKendamaCount: getCount(5),
+    smallLuckCount: getCount(8),
+    mediumLuckCount: getCount(9),
+    bigLuckCount: getCount(10),
     percentageText:
       totalCount > 0 ? `${((tsuranukiCylinderCount / totalCount) * 100).toFixed(1)}%` : "0.0%"
   };
@@ -1101,9 +1108,22 @@ function MyslotItemLotterySummaryBlock({
   summary: {
     totalCount: number;
     tsuranukiCylinderCount: number;
+    kurusuSwordCount: number;
+    mumeiKendamaCount: number;
+    smallLuckCount: number;
+    mediumLuckCount: number;
+    bigLuckCount: number;
     percentageText: string;
   };
 }) {
+  const hintItems = [
+    { key: "kurusu-sword", label: "来栖の刀", count: summary.kurusuSwordCount },
+    { key: "mumei-kendama", label: "無名のけん玉", count: summary.mumeiKendamaCount },
+    { key: "small-luck", label: "小吉", count: summary.smallLuckCount },
+    { key: "medium-luck", label: "中吉", count: summary.mediumLuckCount },
+    { key: "big-luck", label: "大吉", count: summary.bigLuckCount }
+  ];
+
   return (
     <div className="myslot-summary-block" data-myslot-summary="item-lottery">
       <div className="myslot-voice-summary-heading">
@@ -1126,6 +1146,17 @@ function MyslotItemLotterySummaryBlock({
             </span>
           </span>
         </div>
+        {hintItems.map((item) => (
+          <div
+            aria-label={`アイテムくじ ${item.label} ${item.count}回`}
+            className="myslot-voice-summary-item"
+            key={item.key}
+            role="status"
+          >
+            <span className="myslot-voice-summary-label">{item.label}</span>
+            <strong className="myslot-voice-summary-value">{item.count}回</strong>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -1574,8 +1605,27 @@ export default function Kabaneri2Page() {
     const trophyMinimumSetting = myslotTrophySummary.minimumSetting;
     const hasTrophyInput = trophyMinimumSetting > 0;
     const tsuranukiCylinderCount = myslotItemLotterySummary.tsuranukiCylinderCount;
+    const kurusuSwordCount = myslotItemLotterySummary.kurusuSwordCount;
+    const mumeiKendamaCount = myslotItemLotterySummary.mumeiKendamaCount;
+    const smallLuckCount = myslotItemLotterySummary.smallLuckCount;
+    const mediumLuckCount = myslotItemLotterySummary.mediumLuckCount;
+    const bigLuckCount = myslotItemLotterySummary.bigLuckCount;
     const itemLotteryTotal = myslotItemLotterySummary.totalCount;
     const hasItemLotteryInput = itemLotteryTotal > 0;
+    const hasItemLotteryConfirmationInput =
+      kurusuSwordCount > 0 ||
+      mumeiKendamaCount > 0 ||
+      smallLuckCount > 0 ||
+      mediumLuckCount > 0 ||
+      bigLuckCount > 0;
+    const isItemLotterySettingAllowed = (settingNumber: number) => {
+      if (kurusuSwordCount > 0 && settingNumber === 2) return false;
+      if (mumeiKendamaCount > 0 && settingNumber === 1) return false;
+      if (smallLuckCount > 0 && settingNumber < 2) return false;
+      if (mediumLuckCount > 0 && settingNumber < 4) return false;
+      if (bigLuckCount > 0 && settingNumber < 6) return false;
+      return true;
+    };
     const femaleCharacterCount =
       myslotCharacterSummary.categories.find((category) => category.key === "femaleCharacter")
         ?.count ?? 0;
@@ -1705,6 +1755,10 @@ export default function Kabaneri2Page() {
         (hasCharacterConfirmationInput && settingIndex + 1 < 4
           ? Number.NEGATIVE_INFINITY
           : 0) +
+        (hasItemLotteryConfirmationInput &&
+          !isItemLotterySettingAllowed(settingIndex + 1)
+          ? Number.NEGATIVE_INFINITY
+          : 0) +
         (hasLowerBellInput
           ? calculateLogBinomialProbability(
               practiceLowerBells,
@@ -1829,6 +1883,25 @@ export default function Kabaneri2Page() {
           (setting) => setting.tsuranukiCylinderRate
         )
       : null;
+    const itemLotteryAllowedSettingCount = settings.filter((_setting, settingIndex) =>
+      isItemLotterySettingAllowed(settingIndex + 1)
+    ).length;
+    const itemLotteryConfirmationProbabilities = hasItemLotteryConfirmationInput
+      ? settings.map((_setting, settingIndex) =>
+          isItemLotterySettingAllowed(settingIndex + 1)
+            ? 1 / itemLotteryAllowedSettingCount
+            : 0
+        )
+      : null;
+    const itemLotteryConfirmationSummaryText = [
+      kurusuSwordCount > 0 ? `来栖の刀 ${kurusuSwordCount}回 (設定2否定)` : "",
+      mumeiKendamaCount > 0 ? `無名のけん玉 ${mumeiKendamaCount}回 (設定1否定)` : "",
+      smallLuckCount > 0 ? `小吉 ${smallLuckCount}回 (設定2以上確定)` : "",
+      mediumLuckCount > 0 ? `中吉 ${mediumLuckCount}回 (設定4以上確定)` : "",
+      bigLuckCount > 0 ? `大吉 ${bigLuckCount}回 (設定6確定)` : ""
+    ]
+      .filter((value) => value !== "")
+      .join("・");
     const voiceConfirmationProbabilities = hasVoiceConfirmationInput
       ? settings.map((_setting, settingIndex) =>
           settingIndex + 1 >= voiceConfirmationMinimumSetting
@@ -1945,6 +2018,15 @@ export default function Kabaneri2Page() {
             : "未入力",
           values: itemLotteryProbabilities
             ? itemLotteryProbabilities.map(formatPercent)
+            : settings.map(() => "-")
+        },
+        {
+          label: "アイテムくじ 確定示唆",
+          summaryText: hasItemLotteryConfirmationInput
+            ? itemLotteryConfirmationSummaryText
+            : "未集計",
+          values: itemLotteryConfirmationProbabilities
+            ? itemLotteryConfirmationProbabilities.map(formatPercent)
             : settings.map(() => "-")
         },
         {
