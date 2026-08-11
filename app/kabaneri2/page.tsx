@@ -84,6 +84,7 @@ type CharacterPointGroup = {
   title: string;
   character: "無名" | "生駒";
   pointKey: "mumeiPoints" | "ikomaPoints";
+  standardPoints: 108 | 106;
   noLightCountKey: "mumeiNoLightCount" | "ikomaNoLightCount";
   withLightCountKey: "mumeiWithLightCount" | "ikomaWithLightCount";
   theme: "red" | "green";
@@ -152,6 +153,7 @@ const inputGroups: InputGroup[] = [
     title: "無名pt",
     character: "無名",
     pointKey: "mumeiPoints",
+    standardPoints: 108,
     noLightCountKey: "mumeiNoLightCount",
     withLightCountKey: "mumeiWithLightCount",
     theme: "red",
@@ -178,6 +180,7 @@ const inputGroups: InputGroup[] = [
     title: "生駒pt",
     character: "生駒",
     pointKey: "ikomaPoints",
+    standardPoints: 106,
     noLightCountKey: "ikomaNoLightCount",
     withLightCountKey: "ikomaWithLightCount",
     theme: "green",
@@ -438,6 +441,16 @@ export default function Kabaneri2Page() {
   };
   const getCharacterPoints = (pointKey: CharacterPointGroup["pointKey"]) =>
     Math.max(0, Math.trunc(toNumber(inputValues[pointKey] ?? "0")));
+  const getCharacterPointProgress = (group: CharacterPointGroup) => {
+    const points = getCharacterPoints(group.pointKey);
+    const percentage = Math.min(120, (points / group.standardPoints) * 100);
+    const roundedPercentage = Math.round(percentage * 10) / 10;
+
+    return {
+      points,
+      percentageText: `${Number.isInteger(roundedPercentage) ? roundedPercentage.toFixed(0) : roundedPercentage.toFixed(1)}%`
+    };
+  };
   const getCharacterLightRate = (group: CharacterPointGroup) => {
     const noLightCount = Math.max(
       0,
@@ -788,6 +801,26 @@ export default function Kabaneri2Page() {
                     </strong>
                     <span className="character-point-total-unit">pt</span>
                   </div>
+                  {(() => {
+                    const pointProgress = getCharacterPointProgress(group);
+
+                    return (
+                      <div
+                        aria-label={`${group.character}の規定pt到達率 ${pointProgress.percentageText} 現在${pointProgress.points}pt 規定${group.standardPoints}pt`}
+                        aria-live="polite"
+                        className="character-point-progress"
+                        role="status"
+                      >
+                        <span className="character-point-progress-label">規定pt到達率</span>
+                        <strong className="character-point-progress-value">
+                          {pointProgress.percentageText}
+                        </strong>
+                        <span className="character-point-progress-detail">
+                          （{pointProgress.points}/{group.standardPoints}pt）
+                        </span>
+                      </div>
+                    );
+                  })()}
                   <div className="character-point-button-grid">
                     {group.pointButtons.map((button) => (
                       <button

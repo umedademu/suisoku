@@ -531,6 +531,38 @@ a {
   line-height: 1;
 }
 
+.character-point-progress {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 5px;
+  min-height: 38px;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.72);
+  padding: 6px 10px;
+}
+
+.character-point-panel-green .character-point-progress {
+  border: 1px solid rgba(42, 112, 51, 0.2);
+  color: #205d2a;
+}
+
+.character-point-panel-red .character-point-progress {
+  border: 1px solid rgba(151, 50, 50, 0.2);
+  color: #842626;
+}
+
+.character-point-progress-label,
+.character-point-progress-detail {
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.character-point-progress-value {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
 .character-point-total {
   display: flex;
   align-items: baseline;
