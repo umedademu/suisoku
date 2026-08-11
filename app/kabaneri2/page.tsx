@@ -2299,9 +2299,7 @@ export default function Kabaneri2Page() {
                             type="button"
                             onClick={() => handleCharacterPointIncrement(group, button)}
                           >
-                            <span className="character-point-button-name">
-                              {group.character} {button.label}
-                            </span>
+                            <span className="character-point-button-name">{button.label}</span>
                             <span className="character-point-button-points">
                               +{button.points}pt
                             </span>
