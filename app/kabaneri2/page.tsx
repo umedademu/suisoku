@@ -144,6 +144,7 @@ type InputField = {
 type StandardInputGroup = {
   title: string;
   fields: InputField[];
+  hideTitle?: boolean;
   rowClass?: string;
 };
 
@@ -259,26 +260,6 @@ const inputGroups: InputGroup[] = [
     ]
   },
   {
-    title: "小役",
-    fields: [{ key: "lowerBells", label: "下段ベル" }]
-  },
-  {
-    title: "周期当選",
-    note: "分母は試行回数、分子は当選回数",
-    rows: [
-      {
-        label: "3周期目",
-        trialKey: "cycle3Trials",
-        hitKey: "cycle3Hits"
-      },
-      {
-        label: "4周期目",
-        trialKey: "cycle4Trials",
-        hitKey: "cycle4Hits"
-      }
-    ]
-  },
-  {
     title: "無名pt",
     character: "無名",
     pointKey: "mumeiPoints",
@@ -353,6 +334,27 @@ const inputGroups: InputGroup[] = [
         points: 15,
         tone: "forest",
         countKey: "ikomaHighProbabilityCount"
+      }
+    ]
+  },
+  {
+    title: "小役",
+    hideTitle: true,
+    fields: [{ key: "lowerBells", label: "下段ベル" }]
+  },
+  {
+    title: "周期当選",
+    note: "分母は試行回数、分子は当選回数",
+    rows: [
+      {
+        label: "3周期目",
+        trialKey: "cycle3Trials",
+        hitKey: "cycle3Hits"
+      },
+      {
+        label: "4周期目",
+        trialKey: "cycle4Trials",
+        hitKey: "cycle4Hits"
       }
     ]
   },
@@ -1162,10 +1164,12 @@ export default function Kabaneri2Page() {
         <form className="input-form" onSubmit={handleEstimate}>
           {inputGroups.map((group) => (
             <section className="input-group" key={group.title}>
-              <div className="group-title-row">
-                <p className="group-title">【{group.title}】</p>
-                {"note" in group ? <p className="group-note">{group.note}</p> : null}
-              </div>
+              {"hideTitle" in group && group.hideTitle ? null : (
+                <div className="group-title-row">
+                  <p className="group-title">【{group.title}】</p>
+                  {"note" in group ? <p className="group-note">{group.note}</p> : null}
+                </div>
+              )}
               {"history" in group ? (
                 <CharacterCzHistory
                   history={characterPointHistory}
