@@ -583,13 +583,19 @@ function parseCharacterPointHistory(value: string) {
   }
 }
 
+function formatCharacterPointPercentage(percentage: number) {
+  const roundedPercentage = Math.round(percentage * 10) / 10;
+
+  return `${Number.isInteger(roundedPercentage) ? roundedPercentage.toFixed(0) : roundedPercentage.toFixed(1)}%`;
+}
+
 function calculateCharacterPointProgress(points: number, standardPoints: number) {
   const percentage = Math.min(120, (points / standardPoints) * 100);
-  const roundedPercentage = Math.round(percentage * 10) / 10;
 
   return {
     points,
-    percentageText: `${Number.isInteger(roundedPercentage) ? roundedPercentage.toFixed(0) : roundedPercentage.toFixed(1)}%`
+    percentage,
+    percentageText: formatCharacterPointPercentage(percentage)
   };
 }
 
@@ -768,23 +774,25 @@ export default function Kabaneri2Page() {
     return calculateCharacterPointProgress(points, group.standardPoints);
   };
   const getCharacterTotalPointProgress = (group: CharacterPointGroup) => {
-    const currentPoints = getCharacterPoints(group.pointKey);
     const historyEntries = characterPointHistory.filter(
       (entry) => entry.character === group.character
     );
-    const historyPoints = historyEntries.reduce((sum, entry) => sum + entry.points, 0);
-    const periodCount = historyEntries.length + (currentPoints > 0 ? 1 : 0);
-    const denominatorPoints = periodCount * group.standardPoints;
-    const totalPoints = historyPoints + currentPoints;
-    const pointProgress =
-      denominatorPoints > 0
-        ? calculateCharacterPointProgress(totalPoints, denominatorPoints)
-        : { points: 0, percentageText: "0%" };
+    const historyCount = historyEntries.length;
+    const percentage =
+      historyCount > 0
+        ? historyEntries.reduce(
+            (sum, entry) =>
+              sum +
+              calculateCharacterPointProgress(entry.points, group.standardPoints)
+                .percentage,
+            0
+          ) / historyCount
+        : 0;
 
     return {
-      ...pointProgress,
-      denominatorPoints,
-      periodCount
+      percentage,
+      percentageText: formatCharacterPointPercentage(percentage),
+      historyCount
     };
   };
   const getCharacterLightRate = (group: CharacterPointGroup) => {
@@ -837,7 +845,6 @@ export default function Kabaneri2Page() {
         )
       };
     });
-    resetResults();
   };
 
   const handleCharacterPointDecrement = (
@@ -865,7 +872,6 @@ export default function Kabaneri2Page() {
         [button.countKey]: String(buttonCount - 1)
       };
     });
-    resetResults();
   };
 
   const handleCharacterCzWin = (group: CharacterPointGroup) => {
@@ -937,15 +943,17 @@ export default function Kabaneri2Page() {
     const hasCycle4Input = cycle4TrialsRaw.trim() !== "" || cycle4HitsRaw.trim() !== "";
     const characterPointObservations = characterPointGroups.map((group) => {
       const totalPointProgress = getCharacterTotalPointProgress(group);
+      const likelihoodTrialCount = totalPointProgress.historyCount * 100;
 
       return {
         character: group.character,
         ...totalPointProgress,
-        likelihoodPoints: Math.min(
-          totalPointProgress.points,
-          totalPointProgress.denominatorPoints
+        likelihoodPoints: Math.round(
+          (Math.min(totalPointProgress.percentage, 100) / 100) *
+            likelihoodTrialCount
         ),
-        hasInput: totalPointProgress.denominatorPoints > 0
+        likelihoodTrialCount,
+        hasInput: totalPointProgress.historyCount > 0
       };
     });
     const allCounts = [
@@ -1023,7 +1031,7 @@ export default function Kabaneri2Page() {
             (observation.hasInput
               ? calculateLogBinomialProbability(
                   observation.likelihoodPoints,
-                  observation.denominatorPoints,
+                  observation.likelihoodTrialCount,
                   getCharacterPointReachProbability(setting, observation.character)
                 )
               : 0),
@@ -1076,12 +1084,12 @@ export default function Kabaneri2Page() {
       (observation) => ({
         label: `${observation.character} 合計pt到達率`,
         summaryText: observation.hasInput
-          ? `${observation.points}/${observation.denominatorPoints}pt (${observation.percentageText})`
+          ? `履歴${observation.historyCount}件の平均 (${observation.percentageText})`
           : "未集計",
         values: observation.hasInput
           ? calculateSettingProbabilities(
               observation.likelihoodPoints,
-              observation.denominatorPoints,
+              observation.likelihoodTrialCount,
               (setting) =>
                 getCharacterPointReachProbability(setting, observation.character)
             ).map(formatPercent)
@@ -1288,7 +1296,7 @@ export default function Kabaneri2Page() {
 
                     return (
                       <div
-                        aria-label={`${group.character}の合計の規定pt到達率 ${totalPointProgress.percentageText} 合計${totalPointProgress.points}pt 分母${totalPointProgress.denominatorPoints}pt ${totalPointProgress.periodCount}区間`}
+                        aria-label={`${group.character}の合計の規定pt到達率 ${totalPointProgress.percentageText} 履歴${totalPointProgress.historyCount}件の平均`}
                         aria-live="polite"
                         className="character-point-progress character-point-progress-total"
                         role="status"
@@ -1300,8 +1308,8 @@ export default function Kabaneri2Page() {
                           {totalPointProgress.percentageText}
                         </strong>
                         <span className="character-point-progress-detail">
-                          {totalPointProgress.denominatorPoints > 0
-                            ? `（${totalPointProgress.points}/${totalPointProgress.denominatorPoints}pt）`
+                          {totalPointProgress.historyCount > 0
+                            ? `（履歴${totalPointProgress.historyCount}件の平均）`
                             : "（集計前）"}
                         </span>
                       </div>
