@@ -608,6 +608,26 @@ export default function Kabaneri2Page() {
 
     return calculateCharacterPointProgress(points, group.standardPoints);
   };
+  const getCharacterTotalPointProgress = (group: CharacterPointGroup) => {
+    const currentPoints = getCharacterPoints(group.pointKey);
+    const historyEntries = characterPointHistory.filter(
+      (entry) => entry.character === group.character
+    );
+    const historyPoints = historyEntries.reduce((sum, entry) => sum + entry.points, 0);
+    const periodCount = historyEntries.length + (currentPoints > 0 ? 1 : 0);
+    const denominatorPoints = periodCount * group.standardPoints;
+    const totalPoints = historyPoints + currentPoints;
+    const pointProgress =
+      denominatorPoints > 0
+        ? calculateCharacterPointProgress(totalPoints, denominatorPoints)
+        : { points: 0, percentageText: "0%" };
+
+    return {
+      ...pointProgress,
+      denominatorPoints,
+      periodCount
+    };
+  };
   const getCharacterLightRate = (group: CharacterPointGroup) => {
     const currentNoLightCount = Math.max(
       0,
@@ -1003,17 +1023,43 @@ export default function Kabaneri2Page() {
 
                     return (
                       <div
-                        aria-label={`${group.character}の規定pt到達率 ${pointProgress.percentageText} 現在${pointProgress.points}pt 規定${group.standardPoints}pt`}
+                        aria-label={`${group.character}の現在の規定pt到達率 ${pointProgress.percentageText} 現在${pointProgress.points}pt 規定${group.standardPoints}pt`}
                         aria-live="polite"
                         className="character-point-progress"
                         role="status"
                       >
-                        <span className="character-point-progress-label">規定pt到達率</span>
+                        <span className="character-point-progress-label">
+                          現在の規定pt到達率
+                        </span>
                         <strong className="character-point-progress-value">
                           {pointProgress.percentageText}
                         </strong>
                         <span className="character-point-progress-detail">
                           （{pointProgress.points}/{group.standardPoints}pt）
+                        </span>
+                      </div>
+                    );
+                  })()}
+                  {(() => {
+                    const totalPointProgress = getCharacterTotalPointProgress(group);
+
+                    return (
+                      <div
+                        aria-label={`${group.character}の合計の規定pt到達率 ${totalPointProgress.percentageText} 合計${totalPointProgress.points}pt 分母${totalPointProgress.denominatorPoints}pt ${totalPointProgress.periodCount}区間`}
+                        aria-live="polite"
+                        className="character-point-progress character-point-progress-total"
+                        role="status"
+                      >
+                        <span className="character-point-progress-label">
+                          合計の規定pt到達率
+                        </span>
+                        <strong className="character-point-progress-value">
+                          {totalPointProgress.percentageText}
+                        </strong>
+                        <span className="character-point-progress-detail">
+                          {totalPointProgress.denominatorPoints > 0
+                            ? `（${totalPointProgress.points}/${totalPointProgress.denominatorPoints}pt）`
+                            : "（集計前）"}
                         </span>
                       </div>
                     );

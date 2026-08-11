@@ -563,6 +563,14 @@ a {
   line-height: 1;
 }
 
+.character-point-progress-total {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.character-point-progress-total .character-point-progress-value {
+  font-size: 1.35rem;
+}
+
 .character-point-total {
   display: flex;
   align-items: baseline;
