@@ -452,9 +452,13 @@ a {
 }
 
 .input-row.kabaneri-games-row {
-  grid-template-columns: repeat(2, max-content);
+  grid-template-columns: repeat(3, max-content);
   justify-content: start;
   gap: 12px;
+}
+
+.kabaneri-games-row .number-input {
+  max-width: 100%;
 }
 
 .input-row-3 {
@@ -2152,6 +2156,15 @@ a {
 
   .input-row-3 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .input-row.kabaneri-games-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+  }
+
+  .kabaneri-games-row .input-label {
+    font-size: 0.62rem;
   }
 
   .input-row-lamp {

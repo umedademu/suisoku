@@ -253,22 +253,6 @@ type EstimateResult = {
 
 const inputGroups: InputGroup[] = [
   {
-    title: "G数",
-    rowClass: "kabaneri-games-row",
-    fields: [
-      {
-        key: "beforeGames",
-        label: "開始前G数",
-        widthClass: "number-input-compact"
-      },
-      {
-        key: "currentGames",
-        label: "現在G数",
-        widthClass: "number-input-compact"
-      }
-    ]
-  },
-  {
     title: "無名pt",
     character: "無名",
     pointKey: "mumeiPoints",
@@ -349,7 +333,24 @@ const inputGroups: InputGroup[] = [
   {
     title: "小役",
     hideTitle: true,
-    fields: [{ key: "lowerBells", label: "下段ベル" }]
+    rowClass: "kabaneri-games-row",
+    fields: [
+      {
+        key: "beforeGames",
+        label: "開始G数",
+        widthClass: "number-input-compact"
+      },
+      {
+        key: "currentGames",
+        label: "現在G数",
+        widthClass: "number-input-compact"
+      },
+      {
+        key: "lowerBells",
+        label: "下段ベル",
+        widthClass: "number-input-compact"
+      }
+    ]
   },
   {
     title: "周期当選",
