@@ -366,6 +366,11 @@ a {
   line-height: 1.35;
 }
 
+.myslot-summary-block {
+  display: grid;
+  gap: 4px;
+}
+
 .myslot-voice-summary-heading {
   display: flex;
   align-items: baseline;

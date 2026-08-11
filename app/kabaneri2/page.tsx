@@ -369,7 +369,7 @@ const inputGroups: InputGroup[] = [
   },
   {
     title: "マイスロ入力欄",
-    note: "サンド目停止時ボイスを自動集計",
+    note: "キャラ紹介とボイスを自動集計",
     myslot: true
   },
   {
@@ -636,6 +636,14 @@ function calculateCharacterLightRate(noLightCount: number, withLightCount: numbe
   };
 }
 
+const MYSLOT_CHARACTER_CATEGORIES = [
+  { key: "femaleCharacter", label: "女性キャラ", rangeLabel: "No.1〜3" },
+  { key: "maleCharacter", label: "男性キャラ", rangeLabel: "No.4〜6" },
+  { key: "biba", label: "美馬", rangeLabel: "No.7" }
+] as const;
+
+type MyslotCharacterCategoryKey = (typeof MYSLOT_CHARACTER_CATEGORIES)[number]["key"];
+
 const MYSLOT_VOICE_CATEGORIES = [
   { key: "female", label: "女性ボイス", rangeLabel: "No.1・2・4〜8" },
   { key: "no3", label: "No.3", rangeLabel: "" },
@@ -647,6 +655,105 @@ const MYSLOT_VOICE_CATEGORIES = [
 ] as const;
 
 type MyslotVoiceCategoryKey = (typeof MYSLOT_VOICE_CATEGORIES)[number]["key"];
+
+type MyslotNumberedEntry = {
+  number: number;
+  count: number;
+};
+
+function extractMyslotSections(value: string, sectionMarker: string, endMarkers: string[]) {
+  const normalizedValue = value.normalize("NFKC").replace(/\r\n?/g, "\n");
+  const sections: string[] = [];
+  let currentSectionLines: string[] | null = null;
+
+  for (const line of normalizedValue.split("\n")) {
+    const markerIndex = line.indexOf(sectionMarker);
+
+    if (markerIndex >= 0) {
+      if (currentSectionLines !== null) {
+        sections.push(currentSectionLines.join("\n"));
+      }
+
+      currentSectionLines = [];
+      const remainder = line.slice(markerIndex + sectionMarker.length).trim();
+
+      if (remainder !== "") {
+        currentSectionLines.push(remainder);
+      }
+
+      continue;
+    }
+
+    if (currentSectionLines === null) {
+      continue;
+    }
+
+    if (endMarkers.some((endMarker) => line.includes(endMarker))) {
+      sections.push(currentSectionLines.join("\n"));
+      currentSectionLines = null;
+      continue;
+    }
+
+    currentSectionLines.push(line);
+  }
+
+  if (currentSectionLines !== null) {
+    sections.push(currentSectionLines.join("\n"));
+  }
+
+  return sections;
+}
+
+function parseMyslotNumberedEntries(sections: string[]) {
+  const entries: MyslotNumberedEntry[] = [];
+
+  sections.forEach((section) => {
+    const numberedItems = section.matchAll(
+      /No\.?\s*(\d{1,2})(?!\d)([\s\S]*?)(?=No\.?\s*\d{1,2}(?!\d)|$)/gi
+    );
+
+    for (const item of numberedItems) {
+      const countMatches = Array.from(item[2].matchAll(/([\d,]+)\s*回/g));
+      const countMatch = countMatches[countMatches.length - 1];
+
+      if (!countMatch) {
+        continue;
+      }
+
+      const number = Number(item[1]);
+      const count = Number(countMatch[1].replace(/,/g, ""));
+
+      if (!Number.isFinite(number) || !Number.isFinite(count)) {
+        continue;
+      }
+
+      entries.push({
+        number: Math.max(0, Math.trunc(number)),
+        count: Math.max(0, Math.trunc(count))
+      });
+    }
+  });
+
+  return entries;
+}
+
+function getMyslotCharacterCategoryKey(
+  characterNumber: number
+): MyslotCharacterCategoryKey | null {
+  if (characterNumber >= 1 && characterNumber <= 3) {
+    return "femaleCharacter";
+  }
+
+  if (characterNumber >= 4 && characterNumber <= 6) {
+    return "maleCharacter";
+  }
+
+  if (characterNumber === 7) {
+    return "biba";
+  }
+
+  return null;
+}
 
 function getMyslotVoiceCategoryKey(voiceNumber: number): MyslotVoiceCategoryKey | null {
   if (voiceNumber === 3) {
@@ -680,46 +787,57 @@ function getMyslotVoiceCategoryKey(voiceNumber: number): MyslotVoiceCategoryKey 
   return null;
 }
 
+function parseMyslotCharacterSummary(value: string) {
+  const sections = extractMyslotSections(value, "キャラ紹介", [
+    "アイテムくじ",
+    "KABANERI OF THE IRON FORTRESS 終了画面",
+    "サンド目停止時ボイス",
+    "<実戦データ",
+    "ココマデ"
+  ]);
+  const entries = parseMyslotNumberedEntries(sections);
+  const counts: Record<MyslotCharacterCategoryKey, number> = {
+    femaleCharacter: 0,
+    maleCharacter: 0,
+    biba: 0
+  };
+  let recognizedRowCount = 0;
+
+  entries.forEach((entry) => {
+    const categoryKey = getMyslotCharacterCategoryKey(entry.number);
+
+    if (categoryKey === null) {
+      return;
+    }
+
+    counts[categoryKey] += entry.count;
+    recognizedRowCount += 1;
+  });
+
+  const totalCount = Object.values(counts).reduce((sum, count) => sum + count, 0);
+
+  return {
+    foundSection: sections.length > 0,
+    recognizedRowCount,
+    totalCount,
+    categories: MYSLOT_CHARACTER_CATEGORIES.map((category) => {
+      const count = counts[category.key];
+
+      return {
+        ...category,
+        count,
+        percentageText: totalCount > 0 ? `${((count / totalCount) * 100).toFixed(1)}%` : "0.0%"
+      };
+    })
+  };
+}
+
 function parseMyslotVoiceSummary(value: string) {
-  const normalizedValue = value.normalize("NFKC").replace(/\r\n?/g, "\n");
-  const sectionMarker = "サンド目停止時ボイス";
-  const sections: string[] = [];
-  let currentSectionLines: string[] | null = null;
-
-  for (const line of normalizedValue.split("\n")) {
-    const markerIndex = line.indexOf(sectionMarker);
-
-    if (markerIndex >= 0) {
-      if (currentSectionLines !== null) {
-        sections.push(currentSectionLines.join("\n"));
-      }
-
-      currentSectionLines = [];
-      const remainder = line.slice(markerIndex + sectionMarker.length).trim();
-
-      if (remainder !== "") {
-        currentSectionLines.push(remainder);
-      }
-
-      continue;
-    }
-
-    if (currentSectionLines === null) {
-      continue;
-    }
-
-    if (line.includes("<実戦データ") || line.includes("ココマデ")) {
-      sections.push(currentSectionLines.join("\n"));
-      currentSectionLines = null;
-      continue;
-    }
-
-    currentSectionLines.push(line);
-  }
-
-  if (currentSectionLines !== null) {
-    sections.push(currentSectionLines.join("\n"));
-  }
+  const sections = extractMyslotSections(value, "サンド目停止時ボイス", [
+    "<実戦データ",
+    "ココマデ"
+  ]);
+  const entries = parseMyslotNumberedEntries(sections);
 
   const counts: Record<MyslotVoiceCategoryKey, number> = {
     female: 0,
@@ -732,29 +850,15 @@ function parseMyslotVoiceSummary(value: string) {
   };
   let recognizedRowCount = 0;
 
-  sections.forEach((section) => {
-    const voiceEntries = section.matchAll(
-      /No\.?\s*(\d{1,2})(?!\d)([\s\S]*?)(?=No\.?\s*\d{1,2}(?!\d)|$)/gi
-    );
+  entries.forEach((entry) => {
+    const categoryKey = getMyslotVoiceCategoryKey(entry.number);
 
-    for (const entry of voiceEntries) {
-      const categoryKey = getMyslotVoiceCategoryKey(Number(entry[1]));
-      const countMatches = Array.from(entry[2].matchAll(/([\d,]+)\s*回/g));
-      const countMatch = countMatches[countMatches.length - 1];
-
-      if (categoryKey === null || !countMatch) {
-        continue;
-      }
-
-      const count = Number(countMatch[1].replace(/,/g, ""));
-
-      if (!Number.isFinite(count)) {
-        continue;
-      }
-
-      counts[categoryKey] += Math.max(0, Math.trunc(count));
-      recognizedRowCount += 1;
+    if (categoryKey === null) {
+      return;
     }
+
+    counts[categoryKey] += entry.count;
+    recognizedRowCount += 1;
   });
 
   const totalCount = Object.values(counts).reduce((sum, count) => sum + count, 0);
@@ -775,44 +879,33 @@ function parseMyslotVoiceSummary(value: string) {
   };
 }
 
-function MyslotVoiceInput({
-  value,
-  onChange
+function MyslotSummaryBlock({
+  summaryKey,
+  title,
+  totalCount,
+  categories
 }: {
-  value: string;
-  onChange: (value: string) => void;
+  summaryKey: "character" | "voice";
+  title: string;
+  totalCount: number;
+  categories: Array<{
+    key: string;
+    label: string;
+    rangeLabel: string;
+    count: number;
+    percentageText: string;
+  }>;
 }) {
-  const summary = parseMyslotVoiceSummary(value);
-  const statusText =
-    value.trim() === ""
-      ? "マイスロの表示内容を貼り付けると自動で集計します。"
-      : !summary.foundSection
-        ? "「サンド目停止時ボイス」が見つかりません。貼り付け範囲を確認してください。"
-        : summary.recognizedRowCount === 0
-          ? "サンド目停止時ボイスの回数が見つかりませんでした。"
-          : `サンド目停止時ボイスを合計${summary.totalCount}回分読み取りました。`;
-
   return (
-    <div className="myslot-voice-panel">
-      <textarea
-        aria-label="マイスロ入力欄"
-        className="myslot-textarea"
-        placeholder="マイスロの表示内容を貼り付けてください"
-        spellCheck={false}
-        value={value}
-        onChange={(event) => onChange(event.currentTarget.value)}
-      />
-      <p className="myslot-voice-help">
-        No.1・2・4〜8を女性、No.9〜16を男性、No.3とNo.17〜20を個別に集計します。
-      </p>
+    <div className="myslot-summary-block" data-myslot-summary={summaryKey}>
       <div className="myslot-voice-summary-heading">
-        <p className="myslot-voice-summary-title">集計結果</p>
-        <p className="myslot-voice-total">全体 {summary.totalCount}回</p>
+        <p className="myslot-voice-summary-title">{title}</p>
+        <p className="myslot-voice-total">全体 {totalCount}回</p>
       </div>
       <div className="myslot-voice-summary-grid">
-        {summary.categories.map((category) => (
+        {categories.map((category) => (
           <div
-            aria-label={`${category.label}${category.rangeLabel ? ` ${category.rangeLabel}` : ""} ${category.count}回 全体の${category.percentageText}`}
+            aria-label={`${title} ${category.label}${category.rangeLabel ? ` ${category.rangeLabel}` : ""} ${category.count}回 全体の${category.percentageText}`}
             className="myslot-voice-summary-item"
             key={category.key}
             role="status"
@@ -827,13 +920,75 @@ function MyslotVoiceInput({
           </div>
         ))}
       </div>
-      <p
-        aria-live="polite"
-        className={`myslot-voice-message${value.trim() !== "" && (!summary.foundSection || summary.recognizedRowCount === 0) ? " is-error" : ""}`}
-        role="status"
-      >
-        {statusText}
+    </div>
+  );
+}
+
+function MyslotInput({
+  value,
+  onChange
+}: {
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const characterSummary = parseMyslotCharacterSummary(value);
+  const voiceSummary = parseMyslotVoiceSummary(value);
+  const isEmpty = value.trim() === "";
+  const summaryStatuses = [
+    { label: "キャラ紹介", summary: characterSummary },
+    { label: "サンド目停止時ボイス", summary: voiceSummary }
+  ];
+
+  return (
+    <div className="myslot-voice-panel">
+      <textarea
+        aria-label="マイスロ入力欄"
+        className="myslot-textarea"
+        placeholder="マイスロの表示内容を貼り付けてください"
+        spellCheck={false}
+        value={value}
+        onChange={(event) => onChange(event.currentTarget.value)}
+      />
+      <p className="myslot-voice-help">
+        キャラ紹介はNo.1〜3を女性、No.4〜6を男性、No.7を美馬として集計します。ボイスはNo.1・2・4〜8を女性、No.9〜16を男性、No.3とNo.17〜20を個別に集計します。
       </p>
+      <MyslotSummaryBlock
+        summaryKey="character"
+        title="キャラ紹介"
+        totalCount={characterSummary.totalCount}
+        categories={characterSummary.categories}
+      />
+      <MyslotSummaryBlock
+        summaryKey="voice"
+        title="サンド目停止時ボイス"
+        totalCount={voiceSummary.totalCount}
+        categories={voiceSummary.categories}
+      />
+      {isEmpty ? (
+        <p aria-live="polite" className="myslot-voice-message" role="status">
+          マイスロの表示内容を貼り付けると自動で集計します。
+        </p>
+      ) : (
+        summaryStatuses.map(({ label, summary }) => {
+          const hasError = !summary.foundSection || summary.recognizedRowCount === 0;
+          const statusText = !summary.foundSection
+            ? `「${label}」が見つかりません。貼り付け範囲を確認してください。`
+            : summary.recognizedRowCount === 0
+              ? `${label}の回数が見つかりませんでした。`
+              : `${label}を合計${summary.totalCount}回分読み取りました。`;
+
+          return (
+            <p
+              aria-live="polite"
+              className={`myslot-voice-message${hasError ? " is-error" : ""}`}
+              key={label}
+              role="status"
+            >
+              {statusText}
+            </p>
+          );
+        })
+      )}
     </div>
   );
 }
@@ -1439,7 +1594,7 @@ export default function Kabaneri2Page() {
                 </div>
               )}
               {"myslot" in group ? (
-                <MyslotVoiceInput
+                <MyslotInput
                   value={inputValues.myslotText ?? ""}
                   onChange={(value) => handleInputChange("myslotText", value)}
                 />
