@@ -11,6 +11,8 @@ const settings = [
     cycle4Rate: 0.336,
     mumeiCzPointReachRate: 84.7,
     ikomaCzPointReachRate: 84.7,
+    bonusInitialDenominator: 254.2,
+    stDenominator: 422.5,
     payout: 97.5
   },
   {
@@ -20,6 +22,8 @@ const settings = [
     cycle4Rate: 0.352,
     mumeiCzPointReachRate: 84.7,
     ikomaCzPointReachRate: 84.7,
+    bonusInitialDenominator: 242.3,
+    stDenominator: 405.9,
     payout: 98.5
   },
   {
@@ -29,6 +33,8 @@ const settings = [
     cycle4Rate: 0.363,
     mumeiCzPointReachRate: 84.7,
     ikomaCzPointReachRate: 84.7,
+    bonusInitialDenominator: 239.6,
+    stDenominator: 398.7,
     payout: 100.8
   },
   {
@@ -38,6 +44,8 @@ const settings = [
     cycle4Rate: 0.402,
     mumeiCzPointReachRate: 71.8,
     ikomaCzPointReachRate: 71.8,
+    bonusInitialDenominator: 214.0,
+    stDenominator: 357.2,
     payout: 106.0
   },
   {
@@ -47,6 +55,8 @@ const settings = [
     cycle4Rate: 0.434,
     mumeiCzPointReachRate: 62.6,
     ikomaCzPointReachRate: 62.6,
+    bonusInitialDenominator: 203.2,
+    stDenominator: 332.6,
     payout: 111.0
   },
   {
@@ -56,9 +66,73 @@ const settings = [
     cycle4Rate: 0.469,
     mumeiCzPointReachRate: 62.6,
     ikomaCzPointReachRate: 62.6,
+    bonusInitialDenominator: 195.1,
+    stDenominator: 318.5,
     payout: 114.9
   }
 ] as const;
+
+type KabaneriSetting = (typeof settings)[number];
+
+type SpecColumn = {
+  label: string;
+  format: (setting: KabaneriSetting) => string;
+};
+
+const specGroups: Array<{ title: string; columns: SpecColumn[] }> = [
+  {
+    title: "機械割",
+    columns: [
+      {
+        label: "ボーナス初当たり",
+        format: (setting) => `1/${setting.bonusInitialDenominator.toFixed(1)}`
+      },
+      {
+        label: "ST確率",
+        format: (setting) => `1/${setting.stDenominator.toFixed(1)}`
+      },
+      {
+        label: "機械割",
+        format: (setting) => `${setting.payout.toFixed(1)}%`
+      }
+    ]
+  },
+  {
+    title: "pt到達率",
+    columns: [
+      {
+        label: "無名CZ",
+        format: (setting) => `${setting.mumeiCzPointReachRate.toFixed(1)}%`
+      },
+      {
+        label: "生駒CZ",
+        format: (setting) => `${setting.ikomaCzPointReachRate.toFixed(1)}%`
+      }
+    ]
+  },
+  {
+    title: "周期別当選率",
+    columns: [
+      {
+        label: "3周期目",
+        format: (setting) => `${(setting.cycle3Rate * 100).toFixed(1)}%`
+      },
+      {
+        label: "4周期目",
+        format: (setting) => `${(setting.cycle4Rate * 100).toFixed(1)}%`
+      }
+    ]
+  },
+  {
+    title: "下段ベル",
+    columns: [
+      {
+        label: "出現率",
+        format: (setting) => `1/${setting.lowerBellDenominator.toFixed(1)}`
+      }
+    ]
+  }
+];
 
 type InputField = {
   key: string;
@@ -1392,40 +1466,35 @@ export default function Kabaneri2Page() {
         </section>
 
         <section className="spec-group-wrap">
-          <section className="spec-group">
-            <h2 className="spec-title">【設定別数値】</h2>
-            <div className="table-wrap">
-              <table className="data-table data-table-compact">
-                <thead>
-                  <tr>
-                    <th rowSpan={2}>設定</th>
-                    <th rowSpan={2}>下段ベル</th>
-                    <th rowSpan={2}>3周期目</th>
-                    <th rowSpan={2}>4周期目</th>
-                    <th colSpan={2}>pt到達率</th>
-                    <th rowSpan={2}>機械割</th>
-                  </tr>
-                  <tr>
-                    <th>無名CZ</th>
-                    <th>生駒CZ</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {settings.map((setting) => (
-                    <tr key={`spec-${setting.label}`}>
-                      <th scope="row">{setting.label}</th>
-                      <td>1/{setting.lowerBellDenominator.toFixed(1)}</td>
-                      <td>{(setting.cycle3Rate * 100).toFixed(1)}%</td>
-                      <td>{(setting.cycle4Rate * 100).toFixed(1)}%</td>
-                      <td>{setting.mumeiCzPointReachRate.toFixed(1)}%</td>
-                      <td>{setting.ikomaCzPointReachRate.toFixed(1)}%</td>
-                      <td>{setting.payout.toFixed(1)}%</td>
+          {specGroups.map((group) => (
+            <section className="spec-group" key={group.title}>
+              <h2 className="spec-title">【{group.title}】</h2>
+              <div className="table-wrap">
+                <table className="data-table data-table-compact">
+                  <thead>
+                    <tr>
+                      <th>設定</th>
+                      {group.columns.map((column) => (
+                        <th key={`${group.title}-${column.label}`}>{column.label}</th>
+                      ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
+                  </thead>
+                  <tbody>
+                    {settings.map((setting) => (
+                      <tr key={`${group.title}-${setting.label}`}>
+                        <th scope="row">{setting.label}</th>
+                        {group.columns.map((column) => (
+                          <td key={`${setting.label}-${column.label}`}>
+                            {column.format(setting)}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          ))}
         </section>
       </div>
     </main>
