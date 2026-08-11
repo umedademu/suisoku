@@ -404,7 +404,7 @@ const inputGroups: InputGroup[] = [
   },
   {
     title: "周期当選",
-    note: "分母は試行回数、分子は当選回数",
+    note: "試行回数と当選回数を入力",
     rows: [
       {
         label: "3周期目",
@@ -1687,7 +1687,7 @@ export default function Kabaneri2Page() {
     ];
 
     if (allCounts.some((value) => value < 0 || !Number.isInteger(value))) {
-      setErrorMessage("G数、下段ベル、周期の分母・分子は0以上の整数で入力してください。");
+      setErrorMessage("G数、下段ベル、周期の試行・当選は0以上の整数で入力してください。");
       return;
     }
 
@@ -1705,22 +1705,22 @@ export default function Kabaneri2Page() {
     }
 
     if (hasCycle3Input && cycle3Trials <= 0) {
-      setErrorMessage("3周期目の分母には1以上の試行回数を入力してください。");
+      setErrorMessage("3周期目の試行には1以上を入力してください。");
       return;
     }
 
     if (hasCycle4Input && cycle4Trials <= 0) {
-      setErrorMessage("4周期目の分母には1以上の試行回数を入力してください。");
+      setErrorMessage("4周期目の試行には1以上を入力してください。");
       return;
     }
 
     if (cycle3Hits > cycle3Trials) {
-      setErrorMessage("3周期目の分子は分母以下にしてください。");
+      setErrorMessage("3周期目の当選は試行以下にしてください。");
       return;
     }
 
     if (cycle4Hits > cycle4Trials) {
-      setErrorMessage("4周期目の分子は分母以下にしてください。");
+      setErrorMessage("4周期目の当選は試行以下にしてください。");
       return;
     }
 
@@ -2143,10 +2143,10 @@ export default function Kabaneri2Page() {
                     >
                       <p className="piece-input-label">{row.label}</p>
                       <div className="input-field">
-                        <span className="input-label">分母</span>
+                        <span className="input-label">試行</span>
                         <span className="input-control">
                           <button
-                            aria-label={`${row.label}の分母を1減らす`}
+                            aria-label={`${row.label}の試行を1減らす`}
                             className="cycle-step-button"
                             type="button"
                             onClick={() => handleCycleInputStep(row.trialKey, -1)}
@@ -2154,7 +2154,7 @@ export default function Kabaneri2Page() {
                             −
                           </button>
                           <input
-                            aria-label={`${row.label}の分母（試行回数）`}
+                            aria-label={`${row.label}の試行`}
                             className="number-input number-input-piece number-input-piece-tight"
                             type="number"
                             inputMode="numeric"
@@ -2166,7 +2166,7 @@ export default function Kabaneri2Page() {
                             }
                           />
                           <button
-                            aria-label={`${row.label}の分母を1増やす`}
+                            aria-label={`${row.label}の試行を1増やす`}
                             className="cycle-step-button"
                             type="button"
                             onClick={() => handleCycleInputStep(row.trialKey, 1)}
@@ -2177,10 +2177,10 @@ export default function Kabaneri2Page() {
                         </span>
                       </div>
                       <div className="input-field">
-                        <span className="input-label">分子</span>
+                        <span className="input-label">当選</span>
                         <span className="input-control">
                           <button
-                            aria-label={`${row.label}の分子を1減らす`}
+                            aria-label={`${row.label}の当選を1減らす`}
                             className="cycle-step-button"
                             type="button"
                             onClick={() => handleCycleInputStep(row.hitKey, -1)}
@@ -2188,7 +2188,7 @@ export default function Kabaneri2Page() {
                             −
                           </button>
                           <input
-                            aria-label={`${row.label}の分子（当選回数）`}
+                            aria-label={`${row.label}の当選`}
                             className="number-input number-input-piece number-input-piece-tight"
                             type="number"
                             inputMode="numeric"
@@ -2200,7 +2200,7 @@ export default function Kabaneri2Page() {
                             }
                           />
                           <button
-                            aria-label={`${row.label}の分子を1増やす`}
+                            aria-label={`${row.label}の当選を1増やす`}
                             className="cycle-step-button"
                             type="button"
                             onClick={() => handleCycleInputStep(row.hitKey, 1)}
