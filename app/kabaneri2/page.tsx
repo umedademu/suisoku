@@ -403,28 +403,28 @@ const inputGroups: InputGroup[] = [
         key: "no-light",
         label: "発光なし",
         points: 1,
-        tone: "rose",
+        tone: "crimson",
         countKey: "mumeiNoLightCount"
       },
       {
         key: "with-light",
         label: "発光あり",
         points: 15,
-        tone: "crimson",
+        tone: "rose",
         countKey: "mumeiWithLightCount"
       },
       {
         key: "unknown-light",
         label: "発光不明",
         points: 1,
-        tone: "coral",
+        tone: "wine",
         countKey: "mumeiUnknownLightCount"
       },
       {
         key: "high-probability",
         label: "高確率",
         points: 15,
-        tone: "wine",
+        tone: "coral",
         countKey: "mumeiHighProbabilityCount"
       }
     ]
@@ -442,28 +442,28 @@ const inputGroups: InputGroup[] = [
         key: "no-light",
         label: "発光なし",
         points: 1,
-        tone: "soft",
+        tone: "deep",
         countKey: "ikomaNoLightCount"
       },
       {
         key: "with-light",
         label: "発光あり",
         points: 15,
-        tone: "deep",
+        tone: "soft",
         countKey: "ikomaWithLightCount"
       },
       {
         key: "unknown-light",
         label: "発光不明",
         points: 1,
-        tone: "leaf",
+        tone: "forest",
         countKey: "ikomaUnknownLightCount"
       },
       {
         key: "high-probability",
         label: "高確率",
         points: 15,
-        tone: "forest",
+        tone: "leaf",
         countKey: "ikomaHighProbabilityCount"
       }
     ]
