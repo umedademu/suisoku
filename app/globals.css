@@ -827,9 +827,10 @@ a {
   margin-top: 0;
 }
 
-.character-cz-history-table {
+.data-table.character-cz-history-table {
   min-width: 560px;
   table-layout: fixed;
+  font-size: 0.68rem;
 }
 
 .character-cz-history-table th:first-child {
@@ -855,13 +856,13 @@ a {
 }
 
 .character-cz-history-main {
-  font-size: 0.86rem;
+  font-size: 0.72rem;
 }
 
 .character-cz-history-sub {
   margin-top: 2px;
   color: var(--muted);
-  font-size: 0.68rem;
+  font-size: 0.58rem;
 }
 
 .character-cz-history-delete-button {
@@ -871,7 +872,7 @@ a {
   color: #9a2f32;
   cursor: pointer;
   font: inherit;
-  font-size: 0.72rem;
+  font-size: 0.62rem;
   font-weight: 800;
   padding: 7px 10px;
   transition:
