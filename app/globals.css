@@ -634,8 +634,7 @@ a {
   touch-action: manipulation;
   transition:
     transform 0.15s ease,
-    filter 0.15s ease,
-    opacity 0.15s ease;
+    filter 0.15s ease;
 }
 
 .character-point-panel-red .character-point-minus-button {
@@ -668,8 +667,8 @@ a {
 
 .character-point-minus-button:disabled {
   cursor: default;
-  filter: grayscale(0.35);
-  opacity: 0.38;
+  filter: none;
+  opacity: 1;
 }
 
 .character-cz-win-button {
