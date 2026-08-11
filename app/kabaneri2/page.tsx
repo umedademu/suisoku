@@ -13,6 +13,7 @@ const settings = [
     ikomaCzPointReachRate: 84.7,
     voiceFemaleRate: 0.45,
     characterFemaleRate: 0.4,
+    tsuranukiCylinderRate: 0.3,
     bonusInitialDenominator: 254.2,
     stDenominator: 422.5,
     payout: 97.5
@@ -26,6 +27,7 @@ const settings = [
     ikomaCzPointReachRate: 84.7,
     voiceFemaleRate: 0.55,
     characterFemaleRate: 0.6,
+    tsuranukiCylinderRate: 0.3,
     bonusInitialDenominator: 242.3,
     stDenominator: 405.9,
     payout: 98.5
@@ -39,6 +41,7 @@ const settings = [
     ikomaCzPointReachRate: 84.7,
     voiceFemaleRate: 0.45,
     characterFemaleRate: 0.4,
+    tsuranukiCylinderRate: 0.3,
     bonusInitialDenominator: 239.6,
     stDenominator: 398.7,
     payout: 100.8
@@ -52,6 +55,7 @@ const settings = [
     ikomaCzPointReachRate: 71.8,
     voiceFemaleRate: 0.55,
     characterFemaleRate: 0.6,
+    tsuranukiCylinderRate: 0.2,
     bonusInitialDenominator: 214.0,
     stDenominator: 357.2,
     payout: 106.0
@@ -65,6 +69,7 @@ const settings = [
     ikomaCzPointReachRate: 62.6,
     voiceFemaleRate: 0.45,
     characterFemaleRate: 0.4,
+    tsuranukiCylinderRate: 0.3,
     bonusInitialDenominator: 203.2,
     stDenominator: 332.6,
     payout: 111.0
@@ -78,6 +83,7 @@ const settings = [
     ikomaCzPointReachRate: 62.6,
     voiceFemaleRate: 0.55,
     characterFemaleRate: 0.6,
+    tsuranukiCylinderRate: 0.3,
     bonusInitialDenominator: 195.1,
     stDenominator: 318.5,
     payout: 114.9
@@ -889,6 +895,30 @@ function parseMyslotTrophySummary(value: string) {
   };
 }
 
+function parseMyslotItemLotterySummary(value: string) {
+  const sections = extractMyslotSections(value, "アイテムくじ", [
+    "KABANERI OF THE IRON FORTRESS 終了画面",
+    "サンド目停止時ボイス",
+    "<実戦データ",
+    "ココマデ"
+  ]);
+  const entries = parseMyslotNumberedEntries(sections);
+  const totalCount = entries.reduce((sum, entry) => sum + entry.count, 0);
+  const tsuranukiCylinderCount = entries.reduce(
+    (sum, entry) => (entry.number === 1 ? sum + entry.count : sum),
+    0
+  );
+
+  return {
+    foundSection: sections.length > 0,
+    recognizedRowCount: entries.length,
+    totalCount,
+    tsuranukiCylinderCount,
+    percentageText:
+      totalCount > 0 ? `${((tsuranukiCylinderCount / totalCount) * 100).toFixed(1)}%` : "0.0%"
+  };
+}
+
 function parseMyslotCharacterSummary(value: string) {
   const sections = extractMyslotSections(value, "キャラ紹介", [
     "アイテムくじ",
@@ -1059,6 +1089,42 @@ function MyslotTrophySummaryBlock({
   );
 }
 
+function MyslotItemLotterySummaryBlock({
+  summary
+}: {
+  summary: {
+    totalCount: number;
+    tsuranukiCylinderCount: number;
+    percentageText: string;
+  };
+}) {
+  return (
+    <div className="myslot-summary-block" data-myslot-summary="item-lottery">
+      <div className="myslot-voice-summary-heading">
+        <p className="myslot-voice-summary-title">アイテムくじ</p>
+        <p className="myslot-voice-total">全体 {summary.totalCount}回</p>
+      </div>
+      <div className="myslot-voice-summary-grid">
+        <div
+          aria-label={`アイテムくじ ツラヌキ筒 ${summary.tsuranukiCylinderCount}回 全体の${summary.percentageText}`}
+          className="myslot-voice-summary-item"
+          role="status"
+        >
+          <span className="myslot-voice-summary-label">ツラヌキ筒</span>
+          <span className="myslot-voice-summary-value-row">
+            <strong className="myslot-voice-summary-value">
+              {summary.tsuranukiCylinderCount}回
+            </strong>
+            <span className="myslot-voice-summary-percentage">
+              ({summary.percentageText})
+            </span>
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function MyslotInput({
   value,
   onChange
@@ -1068,11 +1134,13 @@ function MyslotInput({
 }) {
   const trophySummary = parseMyslotTrophySummary(value);
   const characterSummary = parseMyslotCharacterSummary(value);
+  const itemLotterySummary = parseMyslotItemLotterySummary(value);
   const voiceSummary = parseMyslotVoiceSummary(value);
   const isEmpty = value.trim() === "";
   const summaryStatuses = [
     { label: "サミートロフィー", summary: trophySummary },
     { label: "キャラ紹介", summary: characterSummary },
+    { label: "アイテムくじ", summary: itemLotterySummary },
     { label: "サンド目停止時ボイス", summary: voiceSummary }
   ];
 
@@ -1087,7 +1155,7 @@ function MyslotInput({
         onChange={(event) => onChange(event.currentTarget.value)}
       />
       <p className="myslot-voice-help">
-        サミートロフィーは色別に獲得数を集計します。キャラ紹介はNo.1〜3を女性、No.4〜6を男性、No.7を美馬として集計します。ボイスはNo.1・2・4〜8を女性、No.9〜16を男性、No.3を無名特殊、No.17〜19を景行、No.20をボイス無し(56確)として集計します。
+        サミートロフィーは色別に獲得数を集計します。キャラ紹介はNo.1〜3を女性、No.4〜6を男性、No.7を美馬として集計します。アイテムくじはツラヌキ筒の回数と出現率を集計します。ボイスはNo.1・2・4〜8を女性、No.9〜16を男性、No.3を無名特殊、No.17〜19を景行、No.20をボイス無し(56確)として集計します。
       </p>
       <MyslotTrophySummaryBlock categories={trophySummary.categories} />
       <MyslotSummaryBlock
@@ -1096,6 +1164,7 @@ function MyslotInput({
         totalCount={characterSummary.totalCount}
         categories={characterSummary.categories}
       />
+      <MyslotItemLotterySummaryBlock summary={itemLotterySummary} />
       <MyslotSummaryBlock
         summaryKey="voice"
         title="サンド目停止時ボイス"
@@ -1493,8 +1562,14 @@ export default function Kabaneri2Page() {
     const myslotCharacterSummary = parseMyslotCharacterSummary(inputValues.myslotText ?? "");
     const myslotVoiceSummary = parseMyslotVoiceSummary(inputValues.myslotText ?? "");
     const myslotTrophySummary = parseMyslotTrophySummary(inputValues.myslotText ?? "");
+    const myslotItemLotterySummary = parseMyslotItemLotterySummary(
+      inputValues.myslotText ?? ""
+    );
     const trophyMinimumSetting = myslotTrophySummary.minimumSetting;
     const hasTrophyInput = trophyMinimumSetting > 0;
+    const tsuranukiCylinderCount = myslotItemLotterySummary.tsuranukiCylinderCount;
+    const itemLotteryTotal = myslotItemLotterySummary.totalCount;
+    const hasItemLotteryInput = itemLotteryTotal > 0;
     const femaleCharacterCount =
       myslotCharacterSummary.categories.find((category) => category.key === "femaleCharacter")
         ?.count ?? 0;
@@ -1577,6 +1652,7 @@ export default function Kabaneri2Page() {
       !hasCycle3Input &&
       !hasCycle4Input &&
       !hasTrophyInput &&
+      !hasItemLotteryInput &&
       !hasVoiceGenderInput &&
       !hasCharacterGenderInput &&
       !characterPointObservations.some((observation) => observation.hasInput)
@@ -1605,6 +1681,13 @@ export default function Kabaneri2Page() {
           : 0) +
         (hasCycle4Input
           ? calculateLogBinomialProbability(cycle4Hits, cycle4Trials, setting.cycle4Rate)
+          : 0) +
+        (hasItemLotteryInput
+          ? calculateLogBinomialProbability(
+              tsuranukiCylinderCount,
+              itemLotteryTotal,
+              setting.tsuranukiCylinderRate
+            )
           : 0) +
         (hasVoiceGenderInput
           ? calculateLogBinomialProbability(
@@ -1693,6 +1776,13 @@ export default function Kabaneri2Page() {
           (setting) => setting.characterFemaleRate
         )
       : null;
+    const itemLotteryProbabilities = hasItemLotteryInput
+      ? calculateSettingProbabilities(
+          tsuranukiCylinderCount,
+          itemLotteryTotal,
+          (setting) => setting.tsuranukiCylinderRate
+        )
+      : null;
     const trophyProbabilities = hasTrophyInput
       ? settings.map((_setting, settingIndex) =>
           settingIndex + 1 >= trophyMinimumSetting ? 1 / (7 - trophyMinimumSetting) : 0
@@ -1779,6 +1869,15 @@ export default function Kabaneri2Page() {
             : "未集計",
           values: trophyProbabilities
             ? trophyProbabilities.map(formatPercent)
+            : settings.map(() => "-")
+        },
+        {
+          label: "アイテムくじ ツラヌキ筒",
+          summaryText: hasItemLotteryInput
+            ? `${tsuranukiCylinderCount}/${itemLotteryTotal} (${myslotItemLotterySummary.percentageText})`
+            : "未入力",
+          values: itemLotteryProbabilities
+            ? itemLotteryProbabilities.map(formatPercent)
             : settings.map(() => "-")
         },
         {
