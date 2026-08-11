@@ -1470,7 +1470,7 @@ export default function Kabaneri2Page() {
     resetResults();
   };
 
-  const handleCycleInputStep = (key: string, step: -1 | 1) => {
+  const handleCountInputStep = (key: string, step: -1 | 1) => {
     const currentValue = Math.max(0, Math.floor(toNumber(inputValues[key] ?? "")));
 
     if (step === -1 && currentValue === 0) {
@@ -2111,10 +2111,23 @@ export default function Kabaneri2Page() {
                 >
                   {group.fields.map((field) => (
                     <div className="input-field-wrap" key={field.key}>
-                      <label className="input-field">
-                        <span className="input-label">{field.label}</span>
+                      <div className="input-field">
+                        <label className="input-label" htmlFor={`kabaneri2-${field.key}`}>
+                          {field.label}
+                        </label>
                         <span className="input-control">
+                          {field.key === "lowerBells" ? (
+                            <button
+                              aria-label="下段ベルを1減らす"
+                              className="cycle-step-button"
+                              type="button"
+                              onClick={() => handleCountInputStep(field.key, -1)}
+                            >
+                              −
+                            </button>
+                          ) : null}
                           <input
+                            id={`kabaneri2-${field.key}`}
                             className={`number-input${field.widthClass ? ` ${field.widthClass}` : ""}`}
                             type="number"
                             inputMode={field.key === "exchangeRate" ? "decimal" : "numeric"}
@@ -2125,12 +2138,22 @@ export default function Kabaneri2Page() {
                               handleInputChange(field.key, event.currentTarget.value)
                             }
                           />
+                          {field.key === "lowerBells" ? (
+                            <button
+                              aria-label="下段ベルを1増やす"
+                              className="cycle-step-button"
+                              type="button"
+                              onClick={() => handleCountInputStep(field.key, 1)}
+                            >
+                              ＋
+                            </button>
+                          ) : null}
                           {field.unit ? <span className="input-unit">{field.unit}</span> : null}
                           {liveFieldTexts[field.key] ? (
                             <span className="input-live-text">{liveFieldTexts[field.key]}</span>
                           ) : null}
                         </span>
-                      </label>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -2149,7 +2172,7 @@ export default function Kabaneri2Page() {
                             aria-label={`${row.label}の試行を1減らす`}
                             className="cycle-step-button"
                             type="button"
-                            onClick={() => handleCycleInputStep(row.trialKey, -1)}
+                            onClick={() => handleCountInputStep(row.trialKey, -1)}
                           >
                             −
                           </button>
@@ -2169,7 +2192,7 @@ export default function Kabaneri2Page() {
                             aria-label={`${row.label}の試行を1増やす`}
                             className="cycle-step-button"
                             type="button"
-                            onClick={() => handleCycleInputStep(row.trialKey, 1)}
+                            onClick={() => handleCountInputStep(row.trialKey, 1)}
                           >
                             ＋
                           </button>
@@ -2183,7 +2206,7 @@ export default function Kabaneri2Page() {
                             aria-label={`${row.label}の当選を1減らす`}
                             className="cycle-step-button"
                             type="button"
-                            onClick={() => handleCycleInputStep(row.hitKey, -1)}
+                            onClick={() => handleCountInputStep(row.hitKey, -1)}
                           >
                             −
                           </button>
@@ -2203,7 +2226,7 @@ export default function Kabaneri2Page() {
                             aria-label={`${row.label}の当選を1増やす`}
                             className="cycle-step-button"
                             type="button"
-                            onClick={() => handleCycleInputStep(row.hitKey, 1)}
+                            onClick={() => handleCountInputStep(row.hitKey, 1)}
                           >
                             ＋
                           </button>
