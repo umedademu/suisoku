@@ -79,12 +79,22 @@ const CHARACTER_STANDARD_POINTS = {
 
 type KabaneriCharacter = keyof typeof CHARACTER_STANDARD_POINTS;
 
+type CharacterPointCountKey =
+  | "mumeiNoLightCount"
+  | "mumeiUnknownLightCount"
+  | "mumeiWithLightCount"
+  | "mumeiHighProbabilityCount"
+  | "ikomaNoLightCount"
+  | "ikomaUnknownLightCount"
+  | "ikomaWithLightCount"
+  | "ikomaHighProbabilityCount";
+
 type CharacterPointButton = {
   key: string;
   label: string;
   points: 1 | 15;
   tone: string;
-  lightRateResult?: "no-light" | "with-light";
+  countKey: CharacterPointCountKey;
 };
 
 type CharacterPointGroup = {
@@ -187,17 +197,29 @@ const inputGroups: InputGroup[] = [
         label: "発光なし",
         points: 1,
         tone: "rose",
-        lightRateResult: "no-light"
+        countKey: "mumeiNoLightCount"
       },
-      { key: "unknown-light", label: "発光不明", points: 1, tone: "coral" },
+      {
+        key: "unknown-light",
+        label: "発光不明",
+        points: 1,
+        tone: "coral",
+        countKey: "mumeiUnknownLightCount"
+      },
       {
         key: "with-light",
         label: "発光あり",
         points: 15,
         tone: "crimson",
-        lightRateResult: "with-light"
+        countKey: "mumeiWithLightCount"
       },
-      { key: "high-probability", label: "高確率", points: 15, tone: "wine" }
+      {
+        key: "high-probability",
+        label: "高確率",
+        points: 15,
+        tone: "wine",
+        countKey: "mumeiHighProbabilityCount"
+      }
     ]
   },
   {
@@ -214,17 +236,29 @@ const inputGroups: InputGroup[] = [
         label: "発光なし",
         points: 1,
         tone: "soft",
-        lightRateResult: "no-light"
+        countKey: "ikomaNoLightCount"
       },
-      { key: "unknown-light", label: "発光不明", points: 1, tone: "leaf" },
+      {
+        key: "unknown-light",
+        label: "発光不明",
+        points: 1,
+        tone: "leaf",
+        countKey: "ikomaUnknownLightCount"
+      },
       {
         key: "with-light",
         label: "発光あり",
         points: 15,
         tone: "deep",
-        lightRateResult: "with-light"
+        countKey: "ikomaWithLightCount"
       },
-      { key: "high-probability", label: "高確率", points: 15, tone: "forest" }
+      {
+        key: "high-probability",
+        label: "高確率",
+        points: 15,
+        tone: "forest",
+        countKey: "ikomaHighProbabilityCount"
+      }
     ]
   },
   {
@@ -266,10 +300,14 @@ const initialValues: Record<string, string> = {
   cycle4Hits: "",
   mumeiPoints: "0",
   mumeiNoLightCount: "0",
+  mumeiUnknownLightCount: "0",
   mumeiWithLightCount: "0",
+  mumeiHighProbabilityCount: "0",
   ikomaPoints: "0",
   ikomaNoLightCount: "0",
+  ikomaUnknownLightCount: "0",
   ikomaWithLightCount: "0",
+  ikomaHighProbabilityCount: "0",
   characterPointHistory: "[]",
   medalRent: "46",
   exchangeRate: "5.0",
@@ -479,7 +517,13 @@ function mergeKabaneriInputValues(
   };
 }
 
-function CharacterCzHistory({ history }: { history: CharacterPointHistoryEntry[] }) {
+function CharacterCzHistory({
+  history,
+  onDelete
+}: {
+  history: CharacterPointHistoryEntry[];
+  onDelete: (index: number) => void;
+}) {
   if (history.length === 0) {
     return <p className="character-cz-history-empty">当選履歴はまだありません。</p>;
   }
@@ -493,6 +537,7 @@ function CharacterCzHistory({ history }: { history: CharacterPointHistoryEntry[]
             <th scope="col">当選CZ</th>
             <th scope="col">獲得pt</th>
             <th scope="col">発光</th>
+            <th scope="col">削除</th>
           </tr>
         </thead>
         <tbody>
@@ -505,10 +550,11 @@ function CharacterCzHistory({ history }: { history: CharacterPointHistoryEntry[]
               entry.noLightCount,
               entry.withLightCount
             );
+            const historyNumber = history.length - index;
 
             return (
               <tr key={`${entry.recordedAt}-${entry.character}-${index}`}>
-                <th scope="row">{history.length - index}</th>
+                <th scope="row">{historyNumber}</th>
                 <td>{entry.character}CZ</td>
                 <td>
                   <strong className="character-cz-history-main">{entry.points}pt</strong>
@@ -519,6 +565,16 @@ function CharacterCzHistory({ history }: { history: CharacterPointHistoryEntry[]
                     {lightRate.numerator}/{lightRate.denominator}
                   </strong>
                   <span className="character-cz-history-sub">{lightRate.percentageText}</span>
+                </td>
+                <td>
+                  <button
+                    aria-label={`${historyNumber}回目 ${entry.character}CZの履歴を削除`}
+                    className="character-cz-history-delete-button"
+                    type="button"
+                    onClick={() => onDelete(index)}
+                  >
+                    削除
+                  </button>
                 </td>
               </tr>
             );
@@ -603,6 +659,8 @@ export default function Kabaneri2Page() {
   };
   const getCharacterPoints = (pointKey: CharacterPointGroup["pointKey"]) =>
     Math.max(0, Math.trunc(toNumber(inputValues[pointKey] ?? "0")));
+  const getCharacterButtonCount = (countKey: CharacterPointCountKey) =>
+    Math.max(0, Math.trunc(toNumber(inputValues[countKey] ?? "0")));
   const getCharacterPointProgress = (group: CharacterPointGroup) => {
     const points = getCharacterPoints(group.pointKey);
 
@@ -668,26 +726,42 @@ export default function Kabaneri2Page() {
     button: CharacterPointButton
   ) => {
     setInputValues((current) => {
-      const nextValues = {
+      return {
         ...current,
         [group.pointKey]: String(
           Math.max(0, Math.trunc(toNumber(current[group.pointKey] ?? "0"))) + button.points
+        ),
+        [button.countKey]: String(
+          Math.max(0, Math.trunc(toNumber(current[button.countKey] ?? "0"))) + 1
         )
       };
+    });
+  };
 
-      if (button.lightRateResult === "no-light") {
-        nextValues[group.noLightCountKey] = String(
-          Math.max(0, Math.trunc(toNumber(current[group.noLightCountKey] ?? "0"))) + 1
-        );
+  const handleCharacterPointDecrement = (
+    group: CharacterPointGroup,
+    button: CharacterPointButton
+  ) => {
+    setInputValues((current) => {
+      const buttonCount = Math.max(
+        0,
+        Math.trunc(toNumber(current[button.countKey] ?? "0"))
+      );
+
+      if (buttonCount <= 0) {
+        return current;
       }
 
-      if (button.lightRateResult === "with-light") {
-        nextValues[group.withLightCountKey] = String(
-          Math.max(0, Math.trunc(toNumber(current[group.withLightCountKey] ?? "0"))) + 1
-        );
-      }
-
-      return nextValues;
+      return {
+        ...current,
+        [group.pointKey]: String(
+          Math.max(
+            0,
+            Math.trunc(toNumber(current[group.pointKey] ?? "0")) - button.points
+          )
+        ),
+        [button.countKey]: String(buttonCount - 1)
+      };
     });
   };
 
@@ -710,12 +784,31 @@ export default function Kabaneri2Page() {
         current.characterPointHistory ?? "[]"
       );
 
-      return {
+      const nextValues = {
         ...current,
         [group.pointKey]: "0",
-        [group.noLightCountKey]: "0",
-        [group.withLightCountKey]: "0",
         characterPointHistory: JSON.stringify([historyEntry, ...currentHistory])
+      };
+
+      group.pointButtons.forEach((button) => {
+        nextValues[button.countKey] = "0";
+      });
+
+      return nextValues;
+    });
+  };
+
+  const handleCharacterHistoryDelete = (index: number) => {
+    setInputValues((current) => {
+      const currentHistory = parseCharacterPointHistory(
+        current.characterPointHistory ?? "[]"
+      );
+
+      return {
+        ...current,
+        characterPointHistory: JSON.stringify(
+          currentHistory.filter((_entry, historyIndex) => historyIndex !== index)
+        )
       };
     });
   };
@@ -910,7 +1003,10 @@ export default function Kabaneri2Page() {
                 {"note" in group ? <p className="group-note">{group.note}</p> : null}
               </div>
               {"history" in group ? (
-                <CharacterCzHistory history={characterPointHistory} />
+                <CharacterCzHistory
+                  history={characterPointHistory}
+                  onDelete={handleCharacterHistoryDelete}
+                />
               ) : "fields" in group ? (
                 <div className={`input-row input-row-${Math.min(group.fields.length, 3)}`}>
                   {group.fields.map((field) => (
@@ -1065,22 +1161,36 @@ export default function Kabaneri2Page() {
                     );
                   })()}
                   <div className="character-point-button-grid">
-                    {group.pointButtons.map((button) => (
-                      <button
-                        aria-label={`${group.character} ${button.label} ${button.points}pt加算`}
-                        className={`character-point-button character-point-button-${button.tone}`}
-                        key={button.key}
-                        type="button"
-                        onClick={() =>
-                          handleCharacterPointIncrement(group, button)
-                        }
-                      >
-                        <span className="character-point-button-name">
-                          {group.character} {button.label}
-                        </span>
-                        <span className="character-point-button-points">+{button.points}pt</span>
-                      </button>
-                    ))}
+                    {group.pointButtons.map((button) => {
+                      const buttonCount = getCharacterButtonCount(button.countKey);
+
+                      return (
+                        <div className="character-point-control" key={button.key}>
+                          <button
+                            aria-label={`${group.character} ${button.label} 1回取り消し`}
+                            className="character-point-minus-button"
+                            disabled={buttonCount <= 0}
+                            type="button"
+                            onClick={() => handleCharacterPointDecrement(group, button)}
+                          >
+                            −1
+                          </button>
+                          <button
+                            aria-label={`${group.character} ${button.label} ${button.points}pt加算`}
+                            className={`character-point-button character-point-button-${button.tone}`}
+                            type="button"
+                            onClick={() => handleCharacterPointIncrement(group, button)}
+                          >
+                            <span className="character-point-button-name">
+                              {group.character} {button.label}
+                            </span>
+                            <span className="character-point-button-points">
+                              +{button.points}pt
+                            </span>
+                          </button>
+                        </div>
+                      );
+                    })}
                   </div>
                   <button
                     className={`character-cz-win-button character-cz-win-button-${group.theme}`}

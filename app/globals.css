@@ -613,6 +613,65 @@ a {
   gap: 7px;
 }
 
+.character-point-control {
+  display: grid;
+  grid-template-columns: clamp(42px, 8vw, 56px) minmax(0, 1fr);
+  gap: 6px;
+  min-width: 0;
+}
+
+.character-point-minus-button {
+  min-width: 0;
+  min-height: 58px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: #ffffff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 1.02rem;
+  font-weight: 800;
+  padding: 0 5px;
+  touch-action: manipulation;
+  transition:
+    transform 0.15s ease,
+    filter 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.character-point-panel-red .character-point-minus-button {
+  border-color: #7f3037;
+  background: linear-gradient(180deg, #a85358, #722832);
+}
+
+.character-point-panel-green .character-point-minus-button {
+  border-color: #2b6734;
+  background: linear-gradient(180deg, #4c8953, #285f31);
+}
+
+.character-point-minus-button:hover:not(:disabled) {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+.character-point-minus-button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.character-point-minus-button:focus-visible {
+  outline: 3px solid rgba(112, 47, 47, 0.24);
+  outline-offset: 2px;
+}
+
+.character-point-panel-green .character-point-minus-button:focus-visible {
+  outline-color: rgba(40, 121, 52, 0.28);
+}
+
+.character-point-minus-button:disabled {
+  cursor: default;
+  filter: grayscale(0.35);
+  opacity: 0.38;
+}
+
 .character-cz-win-button {
   min-height: 46px;
   border: 1px solid transparent;
@@ -770,21 +829,25 @@ a {
 }
 
 .character-cz-history-table {
-  min-width: 480px;
+  min-width: 560px;
   table-layout: fixed;
 }
 
 .character-cz-history-table th:first-child {
-  width: 12%;
+  width: 10%;
 }
 
 .character-cz-history-table th:nth-child(2) {
-  width: 28%;
+  width: 24%;
 }
 
 .character-cz-history-table th:nth-child(3),
 .character-cz-history-table th:nth-child(4) {
-  width: 30%;
+  width: 24%;
+}
+
+.character-cz-history-table th:nth-child(5) {
+  width: 18%;
 }
 
 .character-cz-history-main,
@@ -800,6 +863,35 @@ a {
   margin-top: 2px;
   color: var(--muted);
   font-size: 0.68rem;
+}
+
+.character-cz-history-delete-button {
+  border: 1px solid rgba(173, 56, 56, 0.34);
+  border-radius: 8px;
+  background: #fff4f2;
+  color: #9a2f32;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 7px 10px;
+  transition:
+    background-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.character-cz-history-delete-button:hover {
+  background: #ffe3df;
+  transform: translateY(-1px);
+}
+
+.character-cz-history-delete-button:active {
+  transform: translateY(1px);
+}
+
+.character-cz-history-delete-button:focus-visible {
+  outline: 3px solid rgba(173, 56, 56, 0.2);
+  outline-offset: 2px;
 }
 
 .number-input:focus {
