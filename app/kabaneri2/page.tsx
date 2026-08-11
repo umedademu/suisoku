@@ -302,6 +302,10 @@ const inputGroups: InputGroup[] = [
   }
 ];
 
+const characterPointGroups = inputGroups.filter(
+  (group): group is CharacterPointGroup => "pointButtons" in group
+);
+
 const initialValues: Record<string, string> = {
   beforeGames: "",
   currentGames: "",
@@ -444,6 +448,17 @@ function calculateSettingProbabilities(
   const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
 
   return weights.map((weight) => (totalWeight > 0 ? weight / totalWeight : 0));
+}
+
+function getCharacterPointReachProbability(
+  setting: (typeof settings)[number],
+  character: KabaneriCharacter
+) {
+  return (
+    (character === "無名"
+      ? setting.mumeiCzPointReachRate
+      : setting.ikomaCzPointReachRate) / 100
+  );
 }
 
 function formatCycleSummary(hits: number, trials: number) {
@@ -748,6 +763,7 @@ export default function Kabaneri2Page() {
         )
       };
     });
+    resetResults();
   };
 
   const handleCharacterPointDecrement = (
@@ -775,6 +791,7 @@ export default function Kabaneri2Page() {
         [button.countKey]: String(buttonCount - 1)
       };
     });
+    resetResults();
   };
 
   const handleCharacterCzWin = (group: CharacterPointGroup) => {
@@ -808,6 +825,7 @@ export default function Kabaneri2Page() {
 
       return nextValues;
     });
+    resetResults();
   };
 
   const handleCharacterHistoryDelete = (index: number) => {
@@ -823,6 +841,7 @@ export default function Kabaneri2Page() {
         )
       };
     });
+    resetResults();
   };
 
   const handleEstimate = (event: React.FormEvent<HTMLFormElement>) => {
@@ -842,6 +861,19 @@ export default function Kabaneri2Page() {
     const cycle4Hits = toNumber(cycle4HitsRaw);
     const hasCycle3Input = cycle3TrialsRaw.trim() !== "" || cycle3HitsRaw.trim() !== "";
     const hasCycle4Input = cycle4TrialsRaw.trim() !== "" || cycle4HitsRaw.trim() !== "";
+    const characterPointObservations = characterPointGroups.map((group) => {
+      const totalPointProgress = getCharacterTotalPointProgress(group);
+
+      return {
+        character: group.character,
+        ...totalPointProgress,
+        likelihoodPoints: Math.min(
+          totalPointProgress.points,
+          totalPointProgress.denominatorPoints
+        ),
+        hasInput: totalPointProgress.denominatorPoints > 0
+      };
+    });
     const allCounts = [
       beforeGames,
       currentGames,
@@ -910,7 +942,19 @@ export default function Kabaneri2Page() {
           : 0) +
         (hasCycle4Input
           ? calculateLogBinomialProbability(cycle4Hits, cycle4Trials, setting.cycle4Rate)
-          : 0)
+          : 0) +
+        characterPointObservations.reduce(
+          (logValue, observation) =>
+            logValue +
+            (observation.hasInput
+              ? calculateLogBinomialProbability(
+                  observation.likelihoodPoints,
+                  observation.denominatorPoints,
+                  getCharacterPointReachProbability(setting, observation.character)
+                )
+              : 0),
+          0
+        )
     }));
     const maxLogValue = Math.max(...logRows.map((row) => row.logValue));
     const scaledRows = logRows.map((row) => ({
@@ -954,6 +998,22 @@ export default function Kabaneri2Page() {
     const cycle4Probabilities = hasCycle4Input
       ? calculateSettingProbabilities(cycle4Hits, cycle4Trials, (setting) => setting.cycle4Rate)
       : null;
+    const characterPointDetailColumns = characterPointObservations.map<DetailColumn>(
+      (observation) => ({
+        label: `${observation.character} 合計pt到達率`,
+        summaryText: observation.hasInput
+          ? `${observation.points}/${observation.denominatorPoints}pt (${observation.percentageText})`
+          : "未集計",
+        values: observation.hasInput
+          ? calculateSettingProbabilities(
+              observation.likelihoodPoints,
+              observation.denominatorPoints,
+              (setting) =>
+                getCharacterPointReachProbability(setting, observation.character)
+            ).map(formatPercent)
+          : settings.map(() => "-")
+      })
+    );
 
     setEstimateResult({
       practiceGames,
@@ -995,7 +1055,8 @@ export default function Kabaneri2Page() {
           values: cycle4Probabilities
             ? cycle4Probabilities.map(formatPercent)
             : settings.map(() => "-")
-        }
+        },
+        ...characterPointDetailColumns
       ]
     });
   };
