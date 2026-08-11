@@ -2308,7 +2308,7 @@ export default function Kabaneri2Page() {
         <a className="top-page-link" href="/">
           トップページに戻る
         </a>
-        <h1 className="title">カバネリ2</h1>
+        <h1 className="title">Lカバネリ 海門決戦</h1>
         <form className="input-form" onSubmit={handleEstimate}>
           <div className="kabaneri-input-layout">
             <section className="input-group character-points-group">
