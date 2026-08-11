@@ -690,6 +690,16 @@ const MYSLOT_CHARACTER_CATEGORIES = [
 
 type MyslotCharacterCategoryKey = (typeof MYSLOT_CHARACTER_CATEGORIES)[number]["key"];
 
+const MYSLOT_TROPHY_CATEGORIES = [
+  { key: "bronze", label: "銅", minimumSetting: 2 },
+  { key: "silver", label: "銀", minimumSetting: 3 },
+  { key: "gold", label: "金", minimumSetting: 4 },
+  { key: "kirin", label: "キリン", minimumSetting: 5 },
+  { key: "rainbow", label: "虹", minimumSetting: 6 }
+] as const;
+
+type MyslotTrophyCategoryKey = (typeof MYSLOT_TROPHY_CATEGORIES)[number]["key"];
+
 const MYSLOT_VOICE_CATEGORIES = [
   { key: "female", label: "女性ボイス", rangeLabel: "No.1・2・4〜8" },
   { key: "male", label: "男性ボイス", rangeLabel: "No.9〜16" },
@@ -833,6 +843,52 @@ function getMyslotVoiceCategoryKey(voiceNumber: number): MyslotVoiceCategoryKey 
   return null;
 }
 
+function parseMyslotTrophySummary(value: string) {
+  const normalizedValue = value.normalize("NFKC").replace(/\r\n?/g, "\n");
+  const counts: Record<MyslotTrophyCategoryKey, number> = {
+    bronze: 0,
+    silver: 0,
+    gold: 0,
+    kirin: 0,
+    rainbow: 0
+  };
+  const trophyEntries = normalizedValue.matchAll(
+    /サミートロフィー\s*\(\s*(銅|銀|金|キリン|虹)\s*\)\s*([\d,]+)\s*獲得/g
+  );
+  let recognizedRowCount = 0;
+
+  for (const entry of trophyEntries) {
+    const category = MYSLOT_TROPHY_CATEGORIES.find((item) => item.label === entry[1]);
+    const count = Number(entry[2].replace(/,/g, ""));
+
+    if (!category || !Number.isFinite(count)) {
+      continue;
+    }
+
+    counts[category.key] += Math.max(0, Math.trunc(count));
+    recognizedRowCount += 1;
+  }
+
+  const categories = MYSLOT_TROPHY_CATEGORIES.map((category) => ({
+    ...category,
+    count: counts[category.key]
+  }));
+  const totalCount = categories.reduce((sum, category) => sum + category.count, 0);
+  const minimumSetting = categories.reduce(
+    (currentMinimum, category) =>
+      category.count > 0 ? Math.max(currentMinimum, category.minimumSetting) : currentMinimum,
+    0
+  );
+
+  return {
+    foundSection: normalizedValue.includes("サミートロフィー"),
+    recognizedRowCount,
+    totalCount,
+    minimumSetting,
+    categories
+  };
+}
+
 function parseMyslotCharacterSummary(value: string) {
   const sections = extractMyslotSections(value, "キャラ紹介", [
     "アイテムくじ",
@@ -972,6 +1028,37 @@ function MyslotSummaryBlock({
   );
 }
 
+function MyslotTrophySummaryBlock({
+  categories
+}: {
+  categories: Array<{
+    key: string;
+    label: string;
+    count: number;
+  }>;
+}) {
+  return (
+    <div className="myslot-summary-block" data-myslot-summary="trophy">
+      <div className="myslot-voice-summary-heading">
+        <p className="myslot-voice-summary-title">サミートロフィー</p>
+      </div>
+      <div className="myslot-voice-summary-grid">
+        {categories.map((category) => (
+          <div
+            aria-label={`サミートロフィー ${category.label} ${category.count}`}
+            className="myslot-voice-summary-item"
+            key={category.key}
+            role="status"
+          >
+            <span className="myslot-voice-summary-label">{category.label}</span>
+            <strong className="myslot-voice-summary-value">{category.count}</strong>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function MyslotInput({
   value,
   onChange
@@ -979,10 +1066,12 @@ function MyslotInput({
   value: string;
   onChange: (value: string) => void;
 }) {
+  const trophySummary = parseMyslotTrophySummary(value);
   const characterSummary = parseMyslotCharacterSummary(value);
   const voiceSummary = parseMyslotVoiceSummary(value);
   const isEmpty = value.trim() === "";
   const summaryStatuses = [
+    { label: "サミートロフィー", summary: trophySummary },
     { label: "キャラ紹介", summary: characterSummary },
     { label: "サンド目停止時ボイス", summary: voiceSummary }
   ];
@@ -998,8 +1087,9 @@ function MyslotInput({
         onChange={(event) => onChange(event.currentTarget.value)}
       />
       <p className="myslot-voice-help">
-        キャラ紹介はNo.1〜3を女性、No.4〜6を男性、No.7を美馬として集計します。ボイスはNo.1・2・4〜8を女性、No.9〜16を男性、No.3を無名特殊、No.17〜19を景行、No.20をボイス無し(56確)として集計します。
+        サミートロフィーは色別に獲得数を集計します。キャラ紹介はNo.1〜3を女性、No.4〜6を男性、No.7を美馬として集計します。ボイスはNo.1・2・4〜8を女性、No.9〜16を男性、No.3を無名特殊、No.17〜19を景行、No.20をボイス無し(56確)として集計します。
       </p>
+      <MyslotTrophySummaryBlock categories={trophySummary.categories} />
       <MyslotSummaryBlock
         summaryKey="character"
         title="キャラ紹介"
@@ -1402,6 +1492,9 @@ export default function Kabaneri2Page() {
     const hasCycle4Input = cycle4TrialsRaw.trim() !== "" || cycle4HitsRaw.trim() !== "";
     const myslotCharacterSummary = parseMyslotCharacterSummary(inputValues.myslotText ?? "");
     const myslotVoiceSummary = parseMyslotVoiceSummary(inputValues.myslotText ?? "");
+    const myslotTrophySummary = parseMyslotTrophySummary(inputValues.myslotText ?? "");
+    const trophyMinimumSetting = myslotTrophySummary.minimumSetting;
+    const hasTrophyInput = trophyMinimumSetting > 0;
     const femaleCharacterCount =
       myslotCharacterSummary.categories.find((category) => category.key === "femaleCharacter")
         ?.count ?? 0;
@@ -1483,6 +1576,7 @@ export default function Kabaneri2Page() {
       !hasLowerBellInput &&
       !hasCycle3Input &&
       !hasCycle4Input &&
+      !hasTrophyInput &&
       !hasVoiceGenderInput &&
       !hasCharacterGenderInput &&
       !characterPointObservations.some((observation) => observation.hasInput)
@@ -1493,9 +1587,12 @@ export default function Kabaneri2Page() {
       return;
     }
 
-    const logRows = settings.map((setting) => ({
+    const logRows = settings.map((setting, settingIndex) => ({
       label: setting.label,
       logValue:
+        (hasTrophyInput && settingIndex + 1 < trophyMinimumSetting
+          ? Number.NEGATIVE_INFINITY
+          : 0) +
         (hasLowerBellInput
           ? calculateLogBinomialProbability(
               practiceLowerBells,
@@ -1596,6 +1693,15 @@ export default function Kabaneri2Page() {
           (setting) => setting.characterFemaleRate
         )
       : null;
+    const trophyProbabilities = hasTrophyInput
+      ? settings.map((_setting, settingIndex) =>
+          settingIndex + 1 >= trophyMinimumSetting ? 1 / (7 - trophyMinimumSetting) : 0
+        )
+      : null;
+    const trophySummaryText = myslotTrophySummary.categories
+      .filter((category) => category.count > 0)
+      .map((category) => `${category.label}${category.count}`)
+      .join("・");
     const characterPointDetailColumns = characterPointObservations.map<DetailColumn>(
       (observation) => ({
         label: `${observation.character} 合計pt到達率`,
@@ -1664,6 +1770,15 @@ export default function Kabaneri2Page() {
           summaryText: hasCycle4Input ? formatCycleSummary(cycle4Hits, cycle4Trials) : "未入力",
           values: cycle4Probabilities
             ? cycle4Probabilities.map(formatPercent)
+            : settings.map(() => "-")
+        },
+        {
+          label: "サミートロフィー",
+          summaryText: hasTrophyInput
+            ? `${trophySummaryText} (${trophyMinimumSetting === 6 ? "設定6確定" : `設定${trophyMinimumSetting}以上確定`})`
+            : "未集計",
+          values: trophyProbabilities
+            ? trophyProbabilities.map(formatPercent)
             : settings.map(() => "-")
         },
         {
