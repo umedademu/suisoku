@@ -14,6 +14,7 @@ const settings = [
     voiceFemaleRate: 0.45,
     characterFemaleRate: 0.4,
     tsuranukiCylinderRate: 0.3,
+    kageyukiVoiceRate: 0.12,
     bonusInitialDenominator: 254.2,
     stDenominator: 422.5,
     payout: 97.5
@@ -28,6 +29,7 @@ const settings = [
     voiceFemaleRate: 0.55,
     characterFemaleRate: 0.6,
     tsuranukiCylinderRate: 0.3,
+    kageyukiVoiceRate: 0.12,
     bonusInitialDenominator: 242.3,
     stDenominator: 405.9,
     payout: 98.5
@@ -42,6 +44,7 @@ const settings = [
     voiceFemaleRate: 0.45,
     characterFemaleRate: 0.4,
     tsuranukiCylinderRate: 0.3,
+    kageyukiVoiceRate: 0.12,
     bonusInitialDenominator: 239.6,
     stDenominator: 398.7,
     payout: 100.8
@@ -56,6 +59,7 @@ const settings = [
     voiceFemaleRate: 0.55,
     characterFemaleRate: 0.6,
     tsuranukiCylinderRate: 0.2,
+    kageyukiVoiceRate: 0.19,
     bonusInitialDenominator: 214.0,
     stDenominator: 357.2,
     payout: 106.0
@@ -70,6 +74,7 @@ const settings = [
     voiceFemaleRate: 0.45,
     characterFemaleRate: 0.4,
     tsuranukiCylinderRate: 0.3,
+    kageyukiVoiceRate: 0.19,
     bonusInitialDenominator: 203.2,
     stDenominator: 332.6,
     payout: 111.0
@@ -84,6 +89,7 @@ const settings = [
     voiceFemaleRate: 0.55,
     characterFemaleRate: 0.6,
     tsuranukiCylinderRate: 0.3,
+    kageyukiVoiceRate: 0.19,
     bonusInitialDenominator: 195.1,
     stDenominator: 318.5,
     payout: 114.9
@@ -1593,6 +1599,18 @@ export default function Kabaneri2Page() {
       myslotVoiceSummary.categories.find((category) => category.key === "no20")?.count ?? 0;
     const voiceConfirmationMinimumSetting = no20VoiceCount > 0 ? 5 : no3VoiceCount > 0 ? 2 : 0;
     const hasVoiceConfirmationInput = voiceConfirmationMinimumSetting > 0;
+    const kageyukiVoiceCount = myslotVoiceSummary.categories.reduce(
+      (sum, category) =>
+        category.key === "no17" || category.key === "no18" || category.key === "no19"
+          ? sum + category.count
+          : sum,
+      0
+    );
+    const allVoiceCount = myslotVoiceSummary.totalCount;
+    const hasKageyukiVoiceInput = allVoiceCount > 0;
+    const kageyukiVoicePercentageText = hasKageyukiVoiceInput
+      ? `${((kageyukiVoiceCount / allVoiceCount) * 100).toFixed(1)}%`
+      : "0.0%";
     const characterPointObservations = characterPointGroups.map((group) => {
       const totalPointProgress = getCharacterTotalPointProgress(group);
       const likelihoodTrialCount = totalPointProgress.historyCount * 100;
@@ -1663,6 +1681,7 @@ export default function Kabaneri2Page() {
       !hasTrophyInput &&
       !hasItemLotteryInput &&
       !hasVoiceConfirmationInput &&
+      !hasKageyukiVoiceInput &&
       !hasVoiceGenderInput &&
       !hasCharacterConfirmationInput &&
       !hasCharacterGenderInput &&
@@ -1704,6 +1723,13 @@ export default function Kabaneri2Page() {
               tsuranukiCylinderCount,
               itemLotteryTotal,
               setting.tsuranukiCylinderRate
+            )
+          : 0) +
+        (hasKageyukiVoiceInput
+          ? calculateLogBinomialProbability(
+              kageyukiVoiceCount,
+              allVoiceCount,
+              setting.kageyukiVoiceRate
             )
           : 0) +
         (hasVoiceGenderInput
@@ -1805,6 +1831,13 @@ export default function Kabaneri2Page() {
           settingIndex + 1 >= voiceConfirmationMinimumSetting
             ? 1 / (7 - voiceConfirmationMinimumSetting)
             : 0
+        )
+      : null;
+    const kageyukiVoiceProbabilities = hasKageyukiVoiceInput
+      ? calculateSettingProbabilities(
+          kageyukiVoiceCount,
+          allVoiceCount,
+          (setting) => setting.kageyukiVoiceRate
         )
       : null;
     const voiceConfirmationSummaryText = [
@@ -1920,6 +1953,15 @@ export default function Kabaneri2Page() {
             : "未集計",
           values: voiceConfirmationProbabilities
             ? voiceConfirmationProbabilities.map(formatPercent)
+            : settings.map(() => "-")
+        },
+        {
+          label: "景行ボイス合計",
+          summaryText: hasKageyukiVoiceInput
+            ? `${kageyukiVoiceCount}/${allVoiceCount} (${kageyukiVoicePercentageText})`
+            : "未入力",
+          values: kageyukiVoiceProbabilities
+            ? kageyukiVoiceProbabilities.map(formatPercent)
             : settings.map(() => "-")
         },
         {
