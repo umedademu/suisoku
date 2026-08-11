@@ -541,111 +541,64 @@ a {
   background: rgba(252, 235, 232, 0.78);
 }
 
-.character-light-rate {
+.character-point-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.character-point-summary-item {
   display: flex;
-  align-items: baseline;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
   gap: 5px;
-  min-height: 38px;
+  min-width: 0;
+  min-height: 62px;
   border-radius: 11px;
-  background: rgba(255, 255, 255, 0.72);
-  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.76);
+  padding: 7px 4px;
+  text-align: center;
 }
 
-.character-point-panel-green .character-light-rate {
-  border: 1px solid rgba(42, 112, 51, 0.2);
-  color: #205d2a;
-}
-
-.character-point-panel-red .character-light-rate {
-  border: 1px solid rgba(151, 50, 50, 0.2);
-  color: #842626;
-}
-
-.character-light-rate-label,
-.character-light-rate-percentage {
-  font-size: 0.82rem;
-  font-weight: 700;
-}
-
-.character-light-rate-value {
-  font-size: 1.25rem;
-  line-height: 1;
-}
-
-.character-point-progress {
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 5px;
-  min-height: 38px;
-  border-radius: 11px;
-  background: rgba(255, 255, 255, 0.72);
-  padding: 6px 10px;
-}
-
-.character-point-panel-green .character-point-progress {
-  border: 1px solid rgba(42, 112, 51, 0.2);
-  color: #205d2a;
-}
-
-.character-point-panel-red .character-point-progress {
-  border: 1px solid rgba(151, 50, 50, 0.2);
-  color: #842626;
-}
-
-.character-point-progress-label,
-.character-point-progress-detail {
-  font-size: 0.82rem;
-  font-weight: 700;
-}
-
-.character-point-progress-value {
-  font-size: 1.25rem;
-  line-height: 1;
-}
-
-.character-point-progress-total {
+.character-point-summary-item-average {
   background: rgba(255, 255, 255, 0.9);
 }
 
-.character-point-progress-total .character-point-progress-value {
-  font-size: 1.35rem;
-}
-
-.character-point-total {
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 6px;
-  min-height: 48px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.84);
-  padding: 7px 12px;
-}
-
-.character-point-panel-green .character-point-total {
-  border: 1px solid rgba(42, 112, 51, 0.22);
+.character-point-panel-green .character-point-summary-item {
+  border: 1px solid rgba(42, 112, 51, 0.2);
   color: #205d2a;
 }
 
-.character-point-panel-red .character-point-total {
-  border: 1px solid rgba(151, 50, 50, 0.22);
+.character-point-panel-red .character-point-summary-item {
+  border: 1px solid rgba(151, 50, 50, 0.2);
   color: #842626;
 }
 
-.character-point-total-label {
-  font-size: 0.8rem;
+.character-point-summary-label {
+  font-size: 0.72rem;
   font-weight: 700;
+  line-height: 1.1;
+  white-space: nowrap;
 }
 
-.character-point-total-value {
-  font-size: 1.8rem;
+.character-point-summary-value-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.character-point-summary-value {
+  font-size: 1.2rem;
   line-height: 1;
 }
 
-.character-point-total-unit {
-  font-size: 0.9rem;
+.character-point-summary-unit,
+.character-point-summary-detail {
+  font-size: 0.64rem;
   font-weight: 700;
 }
 
@@ -2180,6 +2133,29 @@ a {
   .cycle-step-button {
     width: 26px;
     min-width: 26px;
+  }
+
+  .character-point-summary {
+    gap: 3px;
+  }
+
+  .character-point-summary-item {
+    gap: 4px;
+    min-height: 58px;
+    padding: 6px 2px;
+  }
+
+  .character-point-summary-label {
+    font-size: 0.62rem;
+  }
+
+  .character-point-summary-value {
+    font-size: 1.02rem;
+  }
+
+  .character-point-summary-unit,
+  .character-point-summary-detail {
+    font-size: 0.56rem;
   }
 
   .choice-group {

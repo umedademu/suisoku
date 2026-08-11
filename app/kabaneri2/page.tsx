@@ -1329,79 +1329,57 @@ export default function Kabaneri2Page() {
                 >
                   {(() => {
                     const lightRate = getCharacterLightRate(group);
-
-                    return (
-                      <div
-                        aria-label={`${group.character}の発光率 ${lightRate.numerator}/${lightRate.denominator} ${lightRate.percentageText}`}
-                        aria-live="polite"
-                        className="character-light-rate"
-                        role="status"
-                      >
-                        <span className="character-light-rate-label">発光率</span>
-                        <strong className="character-light-rate-value">
-                          {lightRate.numerator}/{lightRate.denominator}
-                        </strong>
-                        <span className="character-light-rate-percentage">
-                          （{lightRate.percentageText}）
-                        </span>
-                      </div>
-                    );
-                  })()}
-                  <div
-                    aria-label={`現在の${group.character}pt ${getCharacterPoints(group.pointKey)}pt`}
-                    aria-live="polite"
-                    className="character-point-total"
-                    role="status"
-                  >
-                    <span className="character-point-total-label">現在の合計</span>
-                    <strong className="character-point-total-value">
-                      {getCharacterPoints(group.pointKey)}
-                    </strong>
-                    <span className="character-point-total-unit">pt</span>
-                  </div>
-                  {(() => {
+                    const lightRatePercentageText =
+                      lightRate.denominator > 0 ? lightRate.percentageText : "0%";
                     const pointProgress = getCharacterPointProgress(group);
-
-                    return (
-                      <div
-                        aria-label={`${group.character}の現在の規定pt到達率 ${pointProgress.percentageText} 現在${pointProgress.points}pt 規定${group.standardPoints}pt`}
-                        aria-live="polite"
-                        className="character-point-progress"
-                        role="status"
-                      >
-                        <span className="character-point-progress-label">
-                          現在の規定pt到達率
-                        </span>
-                        <strong className="character-point-progress-value">
-                          {pointProgress.percentageText}
-                        </strong>
-                        <span className="character-point-progress-detail">
-                          （{pointProgress.points}/{group.standardPoints}pt）
-                        </span>
-                      </div>
-                    );
-                  })()}
-                  {(() => {
                     const totalPointProgress = getCharacterTotalPointProgress(group);
 
                     return (
-                      <div
-                        aria-label={`${group.character}の合計の規定pt到達率 ${totalPointProgress.percentageText} 履歴${totalPointProgress.historyCount}件の平均`}
-                        aria-live="polite"
-                        className="character-point-progress character-point-progress-total"
-                        role="status"
-                      >
-                        <span className="character-point-progress-label">
-                          合計の規定pt到達率
-                        </span>
-                        <strong className="character-point-progress-value">
-                          {totalPointProgress.percentageText}
-                        </strong>
-                        <span className="character-point-progress-detail">
-                          {totalPointProgress.historyCount > 0
-                            ? `（履歴${totalPointProgress.historyCount}件の平均）`
-                            : "（集計前）"}
-                        </span>
+                      <div className="character-point-summary">
+                        <div
+                          aria-label={`${group.character}の現在のpt ${pointProgress.points}pt 到達率${pointProgress.percentageText}`}
+                          aria-live="polite"
+                          className="character-point-summary-item"
+                          role="status"
+                        >
+                          <span className="character-point-summary-label">現在のpt</span>
+                          <span className="character-point-summary-value-row">
+                            <strong className="character-point-summary-value">
+                              {pointProgress.points}
+                            </strong>
+                            <span className="character-point-summary-unit">pt</span>
+                            <span className="character-point-summary-detail">
+                              （{pointProgress.percentageText}）
+                            </span>
+                          </span>
+                        </div>
+                        <div
+                          aria-label={`${group.character}の平均到達率 ${totalPointProgress.percentageText} 履歴${totalPointProgress.historyCount}件`}
+                          aria-live="polite"
+                          className="character-point-summary-item character-point-summary-item-average"
+                          role="status"
+                        >
+                          <span className="character-point-summary-label">平均到達率</span>
+                          <strong className="character-point-summary-value">
+                            {totalPointProgress.percentageText}
+                          </strong>
+                        </div>
+                        <div
+                          aria-label={`${group.character}の発光率 ${lightRatePercentageText} ${lightRate.numerator}/${lightRate.denominator}`}
+                          aria-live="polite"
+                          className="character-point-summary-item"
+                          role="status"
+                        >
+                          <span className="character-point-summary-label">発光率</span>
+                          <span className="character-point-summary-value-row">
+                            <strong className="character-point-summary-value">
+                              {lightRatePercentageText}
+                            </strong>
+                            <span className="character-point-summary-detail">
+                              （{lightRate.numerator}/{lightRate.denominator}）
+                            </span>
+                          </span>
+                        </div>
                       </div>
                     );
                   })()}
