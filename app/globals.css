@@ -929,19 +929,36 @@ a {
 
 .character-special-point-button-red-green {
   border-color: #5f4e31;
-  background: linear-gradient(135deg, #9f3340 0%, #347d3e 100%);
+  background: linear-gradient(
+    135deg,
+    #9f3340 0 calc(50% - 1px),
+    rgba(255, 255, 255, 0.7) calc(50% - 1px) calc(50% + 1px),
+    #347d3e calc(50% + 1px) 100%
+  );
   box-shadow: 0 4px 11px rgba(75, 63, 41, 0.25);
 }
 
 .character-special-point-button-blue-green {
   border-color: #245b51;
-  background: linear-gradient(135deg, #2d6fa8 0%, #347d3e 100%);
+  background: linear-gradient(
+    135deg,
+    #2d6fa8 0 calc(50% - 1px),
+    rgba(255, 255, 255, 0.7) calc(50% - 1px) calc(50% + 1px),
+    #347d3e calc(50% + 1px) 100%
+  );
   box-shadow: 0 4px 11px rgba(36, 91, 81, 0.25);
 }
 
 .character-special-point-button-all-star {
   border-color: #4d514c;
-  background: linear-gradient(135deg, #9f3340 0%, #2d6fa8 50%, #347d3e 100%);
+  background: linear-gradient(
+    135deg,
+    #9f3340 0 calc(33.333% - 1px),
+    rgba(255, 255, 255, 0.7) calc(33.333% - 1px) calc(33.333% + 1px),
+    #2d6fa8 calc(33.333% + 1px) calc(66.667% - 1px),
+    rgba(255, 255, 255, 0.7) calc(66.667% - 1px) calc(66.667% + 1px),
+    #347d3e calc(66.667% + 1px) 100%
+  );
   box-shadow: 0 4px 11px rgba(57, 65, 70, 0.28);
 }
 
