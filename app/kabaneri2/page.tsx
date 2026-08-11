@@ -1578,6 +1578,9 @@ export default function Kabaneri2Page() {
         ?.count ?? 0;
     const characterGenderTotal = femaleCharacterCount + maleCharacterCount;
     const hasCharacterGenderInput = characterGenderTotal > 0;
+    const bibaCount =
+      myslotCharacterSummary.categories.find((category) => category.key === "biba")?.count ?? 0;
+    const hasCharacterConfirmationInput = bibaCount > 0;
     const femaleVoiceCount =
       myslotVoiceSummary.categories.find((category) => category.key === "female")?.count ?? 0;
     const maleVoiceCount =
@@ -1661,6 +1664,7 @@ export default function Kabaneri2Page() {
       !hasItemLotteryInput &&
       !hasVoiceConfirmationInput &&
       !hasVoiceGenderInput &&
+      !hasCharacterConfirmationInput &&
       !hasCharacterGenderInput &&
       !characterPointObservations.some((observation) => observation.hasInput)
     ) {
@@ -1677,6 +1681,9 @@ export default function Kabaneri2Page() {
           ? Number.NEGATIVE_INFINITY
           : 0) +
         (hasVoiceConfirmationInput && settingIndex + 1 < voiceConfirmationMinimumSetting
+          ? Number.NEGATIVE_INFINITY
+          : 0) +
+        (hasCharacterConfirmationInput && settingIndex + 1 < 4
           ? Number.NEGATIVE_INFINITY
           : 0) +
         (hasLowerBellInput
@@ -1806,6 +1813,9 @@ export default function Kabaneri2Page() {
     ]
       .filter((value) => value !== "")
       .join("・");
+    const characterConfirmationProbabilities = hasCharacterConfirmationInput
+      ? settings.map((_setting, settingIndex) => (settingIndex + 1 >= 4 ? 1 / 3 : 0))
+      : null;
     const trophyProbabilities = hasTrophyInput
       ? settings.map((_setting, settingIndex) =>
           settingIndex + 1 >= trophyMinimumSetting ? 1 / (7 - trophyMinimumSetting) : 0
@@ -1928,6 +1938,15 @@ export default function Kabaneri2Page() {
             : "未入力",
           values: characterGenderProbabilities
             ? characterGenderProbabilities.map(formatPercent)
+            : settings.map(() => "-")
+        },
+        {
+          label: "キャラ紹介 確定示唆",
+          summaryText: hasCharacterConfirmationInput
+            ? `美馬 ${bibaCount}回 (設定4以上確定)`
+            : "未集計",
+          values: characterConfirmationProbabilities
+            ? characterConfirmationProbabilities.map(formatPercent)
             : settings.map(() => "-")
         },
         ...characterPointDetailColumns
