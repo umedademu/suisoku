@@ -15,6 +15,7 @@ const settings = [
     characterFemaleRate: 0.4,
     tsuranukiCylinderRate: 0.3,
     kageyukiVoiceRate: 0.12,
+    characterLightRate: 0.1,
     bonusInitialDenominator: 254.2,
     stDenominator: 422.5,
     payout: 97.5
@@ -30,6 +31,7 @@ const settings = [
     characterFemaleRate: 0.6,
     tsuranukiCylinderRate: 0.3,
     kageyukiVoiceRate: 0.12,
+    characterLightRate: 0.12,
     bonusInitialDenominator: 242.3,
     stDenominator: 405.9,
     payout: 98.5
@@ -45,6 +47,7 @@ const settings = [
     characterFemaleRate: 0.4,
     tsuranukiCylinderRate: 0.3,
     kageyukiVoiceRate: 0.12,
+    characterLightRate: 0.14,
     bonusInitialDenominator: 239.6,
     stDenominator: 398.7,
     payout: 100.8
@@ -60,6 +63,7 @@ const settings = [
     characterFemaleRate: 0.6,
     tsuranukiCylinderRate: 0.2,
     kageyukiVoiceRate: 0.19,
+    characterLightRate: 0.16,
     bonusInitialDenominator: 214.0,
     stDenominator: 357.2,
     payout: 106.0
@@ -75,6 +79,7 @@ const settings = [
     characterFemaleRate: 0.4,
     tsuranukiCylinderRate: 0.3,
     kageyukiVoiceRate: 0.19,
+    characterLightRate: 0.18,
     bonusInitialDenominator: 203.2,
     stDenominator: 332.6,
     payout: 111.0
@@ -90,6 +95,7 @@ const settings = [
     characterFemaleRate: 0.6,
     tsuranukiCylinderRate: 0.3,
     kageyukiVoiceRate: 0.19,
+    characterLightRate: 0.2,
     bonusInitialDenominator: 195.1,
     stDenominator: 318.5,
     payout: 114.9
@@ -131,6 +137,19 @@ const specGroups: Array<{ title: string; columns: SpecColumn[] }> = [
       {
         label: "生駒CZ",
         format: (setting) => `${setting.ikomaCzPointReachRate.toFixed(1)}%`
+      }
+    ]
+  },
+  {
+    title: "発光率",
+    columns: [
+      {
+        label: "無名",
+        format: (setting) => `${(setting.characterLightRate * 100).toFixed(1)}%`
+      },
+      {
+        label: "生駒",
+        format: (setting) => `${(setting.characterLightRate * 100).toFixed(1)}%`
       }
     ]
   },
@@ -1676,6 +1695,15 @@ export default function Kabaneri2Page() {
         hasInput: totalPointProgress.historyCount > 0
       };
     });
+    const characterLightObservations = characterPointGroups.map((group) => {
+      const lightRate = getCharacterLightRate(group);
+
+      return {
+        character: group.character,
+        ...lightRate,
+        hasInput: lightRate.denominator > 0
+      };
+    });
     const allCounts = [
       beforeGames,
       currentGames,
@@ -1735,10 +1763,11 @@ export default function Kabaneri2Page() {
       !hasVoiceGenderInput &&
       !hasCharacterConfirmationInput &&
       !hasCharacterGenderInput &&
+      !characterLightObservations.some((observation) => observation.hasInput) &&
       !characterPointObservations.some((observation) => observation.hasInput)
     ) {
       setErrorMessage(
-        "推測に使うCZ当選履歴、マイスロ、周期当選、またはG数と下段ベルを入力してください。"
+        "推測に使うpt・発光カウント、CZ当選履歴、マイスロ、周期当選、またはG数と下段ベルを入力してください。"
       );
       return;
     }
@@ -1808,6 +1837,18 @@ export default function Kabaneri2Page() {
                   observation.likelihoodPoints,
                   observation.likelihoodTrialCount,
                   getCharacterPointReachProbability(setting, observation.character)
+                )
+              : 0),
+          0
+        ) +
+        characterLightObservations.reduce(
+          (logValue, observation) =>
+            logValue +
+            (observation.hasInput
+              ? calculateLogBinomialProbability(
+                  observation.numerator,
+                  observation.denominator,
+                  setting.characterLightRate
                 )
               : 0),
           0
@@ -1950,6 +1991,21 @@ export default function Kabaneri2Page() {
           : settings.map(() => "-")
       })
     );
+    const characterLightDetailColumns = characterLightObservations.map<DetailColumn>(
+      (observation) => ({
+        label: `${observation.character} 発光率`,
+        summaryText: observation.hasInput
+          ? `${observation.numerator}/${observation.denominator} (${observation.percentageText})`
+          : "未集計",
+        values: observation.hasInput
+          ? calculateSettingProbabilities(
+              observation.numerator,
+              observation.denominator,
+              (setting) => setting.characterLightRate
+            ).map(formatPercent)
+          : settings.map(() => "-")
+      })
+    );
 
     setEstimateResult({
       hasPracticeGames,
@@ -2074,7 +2130,8 @@ export default function Kabaneri2Page() {
             ? characterConfirmationProbabilities.map(formatPercent)
             : settings.map(() => "-")
         },
-        ...characterPointDetailColumns
+        ...characterPointDetailColumns,
+        ...characterLightDetailColumns
       ]
     });
   };
