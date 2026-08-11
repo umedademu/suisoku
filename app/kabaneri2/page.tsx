@@ -652,7 +652,7 @@ const MYSLOT_VOICE_CATEGORIES = [
   { key: "no18", label: "景行(中)", rangeLabel: "No.18" },
   { key: "no19", label: "景行(強)", rangeLabel: "No.19" },
   { key: "no3", label: "無名特殊(1否定)", rangeLabel: "No.3" },
-  { key: "no20", label: "ボイス無し", rangeLabel: "No.20" }
+  { key: "no20", label: "ボイス無し(56確)", rangeLabel: "No.20" }
 ] as const;
 
 type MyslotVoiceCategoryKey = (typeof MYSLOT_VOICE_CATEGORIES)[number]["key"];
@@ -953,7 +953,7 @@ function MyslotInput({
         onChange={(event) => onChange(event.currentTarget.value)}
       />
       <p className="myslot-voice-help">
-        キャラ紹介はNo.1〜3を女性、No.4〜6を男性、No.7を美馬として集計します。ボイスはNo.1・2・4〜8を女性、No.9〜16を男性、No.3を無名特殊、No.17〜19を景行、No.20をボイス無しとして集計します。
+        キャラ紹介はNo.1〜3を女性、No.4〜6を男性、No.7を美馬として集計します。ボイスはNo.1・2・4〜8を女性、No.9〜16を男性、No.3を無名特殊、No.17〜19を景行、No.20をボイス無し(56確)として集計します。
       </p>
       <MyslotSummaryBlock
         summaryKey="character"
