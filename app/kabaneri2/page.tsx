@@ -913,9 +913,11 @@ function MyslotSummaryBlock({
           >
             <span className="myslot-voice-summary-label">{category.label}</span>
             <span className="myslot-voice-summary-value-row">
-              <strong className="myslot-voice-summary-value">{category.count}回</strong>
+              <strong className="myslot-voice-summary-value">
+                {category.percentageText}
+              </strong>
               <span className="myslot-voice-summary-percentage">
-                ({category.percentageText})
+                ({category.count}回)
               </span>
             </span>
           </div>
