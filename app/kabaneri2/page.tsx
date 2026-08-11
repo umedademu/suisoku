@@ -1584,6 +1584,12 @@ export default function Kabaneri2Page() {
       myslotVoiceSummary.categories.find((category) => category.key === "male")?.count ?? 0;
     const voiceGenderTotal = femaleVoiceCount + maleVoiceCount;
     const hasVoiceGenderInput = voiceGenderTotal > 0;
+    const no3VoiceCount =
+      myslotVoiceSummary.categories.find((category) => category.key === "no3")?.count ?? 0;
+    const no20VoiceCount =
+      myslotVoiceSummary.categories.find((category) => category.key === "no20")?.count ?? 0;
+    const voiceConfirmationMinimumSetting = no20VoiceCount > 0 ? 5 : no3VoiceCount > 0 ? 2 : 0;
+    const hasVoiceConfirmationInput = voiceConfirmationMinimumSetting > 0;
     const characterPointObservations = characterPointGroups.map((group) => {
       const totalPointProgress = getCharacterTotalPointProgress(group);
       const likelihoodTrialCount = totalPointProgress.historyCount * 100;
@@ -1653,6 +1659,7 @@ export default function Kabaneri2Page() {
       !hasCycle4Input &&
       !hasTrophyInput &&
       !hasItemLotteryInput &&
+      !hasVoiceConfirmationInput &&
       !hasVoiceGenderInput &&
       !hasCharacterGenderInput &&
       !characterPointObservations.some((observation) => observation.hasInput)
@@ -1667,6 +1674,9 @@ export default function Kabaneri2Page() {
       label: setting.label,
       logValue:
         (hasTrophyInput && settingIndex + 1 < trophyMinimumSetting
+          ? Number.NEGATIVE_INFINITY
+          : 0) +
+        (hasVoiceConfirmationInput && settingIndex + 1 < voiceConfirmationMinimumSetting
           ? Number.NEGATIVE_INFINITY
           : 0) +
         (hasLowerBellInput
@@ -1783,6 +1793,19 @@ export default function Kabaneri2Page() {
           (setting) => setting.tsuranukiCylinderRate
         )
       : null;
+    const voiceConfirmationProbabilities = hasVoiceConfirmationInput
+      ? settings.map((_setting, settingIndex) =>
+          settingIndex + 1 >= voiceConfirmationMinimumSetting
+            ? 1 / (7 - voiceConfirmationMinimumSetting)
+            : 0
+        )
+      : null;
+    const voiceConfirmationSummaryText = [
+      no3VoiceCount > 0 ? `No.3 ${no3VoiceCount}回` : "",
+      no20VoiceCount > 0 ? `ボイス無し ${no20VoiceCount}回` : ""
+    ]
+      .filter((value) => value !== "")
+      .join("・");
     const trophyProbabilities = hasTrophyInput
       ? settings.map((_setting, settingIndex) =>
           settingIndex + 1 >= trophyMinimumSetting ? 1 / (7 - trophyMinimumSetting) : 0
@@ -1878,6 +1901,15 @@ export default function Kabaneri2Page() {
             : "未入力",
           values: itemLotteryProbabilities
             ? itemLotteryProbabilities.map(formatPercent)
+            : settings.map(() => "-")
+        },
+        {
+          label: "サンド目停止ボイス 確定示唆",
+          summaryText: hasVoiceConfirmationInput
+            ? `${voiceConfirmationSummaryText} (設定${voiceConfirmationMinimumSetting}以上確定)`
+            : "未集計",
+          values: voiceConfirmationProbabilities
+            ? voiceConfirmationProbabilities.map(formatPercent)
             : settings.map(() => "-")
         },
         {
