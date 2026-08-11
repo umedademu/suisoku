@@ -222,6 +222,8 @@ type DetailColumn = {
 };
 
 type EstimateResult = {
+  hasPracticeGames: boolean;
+  hasLowerBellInput: boolean;
   practiceGames: number;
   practiceLowerBells: number;
   measuredRateText: string;
@@ -949,9 +951,14 @@ export default function Kabaneri2Page() {
     event.preventDefault();
     resetResults();
 
-    const beforeGames = toNumber(inputValues.beforeGames ?? "");
-    const currentGames = toNumber(inputValues.currentGames ?? "");
-    const practiceLowerBells = toNumber(inputValues.lowerBells ?? "");
+    const beforeGamesRaw = inputValues.beforeGames ?? "";
+    const currentGamesRaw = inputValues.currentGames ?? "";
+    const lowerBellsRaw = inputValues.lowerBells ?? "";
+    const beforeGames = toNumber(beforeGamesRaw);
+    const currentGames = toNumber(currentGamesRaw);
+    const practiceLowerBells = toNumber(lowerBellsRaw);
+    const hasPracticeGames = currentGamesRaw.trim() !== "";
+    const hasLowerBellCountInput = lowerBellsRaw.trim() !== "";
     const cycle3TrialsRaw = inputValues.cycle3Trials ?? "";
     const cycle3HitsRaw = inputValues.cycle3Hits ?? "";
     const cycle4TrialsRaw = inputValues.cycle4Trials ?? "";
@@ -987,27 +994,20 @@ export default function Kabaneri2Page() {
       cycle4Hits
     ];
 
-    if (
-      (inputValues.currentGames ?? "").trim() === "" ||
-      (inputValues.lowerBells ?? "").trim() === ""
-    ) {
-      setErrorMessage("現在のG数と下段ベルを入力してください。");
-      return;
-    }
-
     if (allCounts.some((value) => value < 0 || !Number.isInteger(value))) {
       setErrorMessage("G数、下段ベル、周期の分母・分子は0以上の整数で入力してください。");
       return;
     }
 
-    const practiceGames = currentGames - beforeGames;
+    const practiceGames = hasPracticeGames ? currentGames - beforeGames : 0;
+    const hasLowerBellInput = hasPracticeGames && hasLowerBellCountInput;
 
-    if (practiceGames <= 0) {
+    if (hasPracticeGames && practiceGames <= 0) {
       setErrorMessage("現在のG数は開始前のG数より大きい値を入力してください。");
       return;
     }
 
-    if (practiceLowerBells > practiceGames) {
+    if (hasLowerBellInput && practiceLowerBells > practiceGames) {
       setErrorMessage("下段ベルの実践回数は実践G数以下にしてください。");
       return;
     }
@@ -1032,14 +1032,28 @@ export default function Kabaneri2Page() {
       return;
     }
 
+    if (
+      !hasLowerBellInput &&
+      !hasCycle3Input &&
+      !hasCycle4Input &&
+      !characterPointObservations.some((observation) => observation.hasInput)
+    ) {
+      setErrorMessage(
+        "推測に使うCZ当選履歴、周期当選、またはG数と下段ベルを入力してください。"
+      );
+      return;
+    }
+
     const logRows = settings.map((setting) => ({
       label: setting.label,
       logValue:
-        calculateLogBinomialProbability(
-          practiceLowerBells,
-          practiceGames,
-          1 / setting.lowerBellDenominator
-        ) +
+        (hasLowerBellInput
+          ? calculateLogBinomialProbability(
+              practiceLowerBells,
+              practiceGames,
+              1 / setting.lowerBellDenominator
+            )
+          : 0) +
         (hasCycle3Input
           ? calculateLogBinomialProbability(cycle3Hits, cycle3Trials, setting.cycle3Rate)
           : 0) +
@@ -1080,7 +1094,9 @@ export default function Kabaneri2Page() {
     const settingExpectations = settings.map((setting) => {
       const payoutRate = setting.payout / 100;
 
-      return practiceGames * 3 * yenPerMedal * (payoutRate - 1) - cashGapLoss;
+      return hasPracticeGames
+        ? practiceGames * 3 * yenPerMedal * (payoutRate - 1) - cashGapLoss
+        : 0;
     });
     const totalExpectedYen = settingExpectations.reduce(
       (sum, expectedYen, index) => sum + expectedYen * probabilities[index],
@@ -1090,11 +1106,13 @@ export default function Kabaneri2Page() {
       (sum, setting, index) => sum + setting.payout * probabilities[index],
       0
     );
-    const lowerBellProbabilities = calculateSettingProbabilities(
-      practiceLowerBells,
-      practiceGames,
-      (setting) => 1 / setting.lowerBellDenominator
-    );
+    const lowerBellProbabilities = hasLowerBellInput
+      ? calculateSettingProbabilities(
+          practiceLowerBells,
+          practiceGames,
+          (setting) => 1 / setting.lowerBellDenominator
+        )
+      : null;
     const cycle3Probabilities = hasCycle3Input
       ? calculateSettingProbabilities(cycle3Hits, cycle3Trials, (setting) => setting.cycle3Rate)
       : null;
@@ -1119,9 +1137,13 @@ export default function Kabaneri2Page() {
     );
 
     setEstimateResult({
+      hasPracticeGames,
+      hasLowerBellInput,
       practiceGames,
       practiceLowerBells,
-      measuredRateText: formatMeasuredRate(practiceLowerBells, practiceGames),
+      measuredRateText: hasLowerBellInput
+        ? formatMeasuredRate(practiceLowerBells, practiceGames)
+        : "未入力",
       settingRows: settings.map((setting, index) => ({
         label: setting.label,
         value: formatPercent(probabilities[index])
@@ -1129,21 +1151,29 @@ export default function Kabaneri2Page() {
       expectationRows: settings.map((setting, index) => ({
         label: setting.label,
         payoutText: `${setting.payout.toFixed(1)}%`,
-        expectationText: formatYen(settingExpectations[index]),
+        expectationText: hasPracticeGames ? formatYen(settingExpectations[index]) : "-",
         probabilityText: formatPercent(probabilities[index]),
-        weightedText: formatYen(settingExpectations[index] * probabilities[index])
+        weightedText: hasPracticeGames
+          ? formatYen(settingExpectations[index] * probabilities[index])
+          : "-"
       })),
       totalPayoutText: `${totalExpectedPayout.toFixed(2)}%`,
-      totalExpectationText: formatYen(totalExpectedYen),
-      hourlyText: formatHourlyYen((totalExpectedYen * 700) / practiceGames),
+      totalExpectationText: hasPracticeGames ? formatYen(totalExpectedYen) : "-",
+      hourlyText: hasPracticeGames
+        ? formatHourlyYen((totalExpectedYen * 700) / practiceGames)
+        : "-",
       detailColumns: [
         {
           label: "下段ベル",
-          summaryText: `${practiceLowerBells}回 (${formatMeasuredRate(
-            practiceLowerBells,
-            practiceGames
-          )})`,
-          values: lowerBellProbabilities.map(formatPercent)
+          summaryText: hasLowerBellInput
+            ? `${practiceLowerBells}回 (${formatMeasuredRate(
+                practiceLowerBells,
+                practiceGames
+              )})`
+            : "未入力",
+          values: lowerBellProbabilities
+            ? lowerBellProbabilities.map(formatPercent)
+            : settings.map(() => "-")
         },
         {
           label: "3周期目",
@@ -1444,8 +1474,13 @@ export default function Kabaneri2Page() {
                 <div className="result-item">
                   <p className="result-label">実践値</p>
                   <p className="result-value">
-                    {estimateResult.practiceGames}G / 下段ベル{estimateResult.practiceLowerBells}回（
-                    {estimateResult.measuredRateText}）
+                    {estimateResult.hasPracticeGames
+                      ? `${estimateResult.practiceGames}G`
+                      : "G数未入力"}
+                    {" / "}
+                    {estimateResult.hasLowerBellInput
+                      ? `下段ベル${estimateResult.practiceLowerBells}回（${estimateResult.measuredRateText}）`
+                      : "下段ベル未入力"}
                   </p>
                 </div>
                 {estimateResult.settingRows.map((row) => (
@@ -1462,7 +1497,11 @@ export default function Kabaneri2Page() {
                       <tr>
                         <th>
                           <div className="table-head-main">実践期待値</div>
-                          <div className="table-head-sub">{estimateResult.practiceGames}G</div>
+                          <div className="table-head-sub">
+                            {estimateResult.hasPracticeGames
+                              ? `${estimateResult.practiceGames}G`
+                              : "G数未入力"}
+                          </div>
                         </th>
                         <th>機械割</th>
                         <th>設定別期待値</th>
