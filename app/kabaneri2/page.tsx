@@ -677,14 +677,22 @@ function CharacterCzHistory({
                 <th scope="row">{historyNumber}</th>
                 <td>{entry.character}CZ</td>
                 <td>
-                  <strong className="character-cz-history-main">{entry.points}pt</strong>
-                  <span className="character-cz-history-sub">{pointProgress.percentageText}</span>
+                  <span className="character-cz-history-value">
+                    <strong className="character-cz-history-main">{entry.points}pt</strong>
+                    <span className="character-cz-history-sub">
+                      ({pointProgress.percentageText})
+                    </span>
+                  </span>
                 </td>
                 <td>
-                  <strong className="character-cz-history-main">
-                    {lightRate.numerator}/{lightRate.denominator}
-                  </strong>
-                  <span className="character-cz-history-sub">{lightRate.percentageText}</span>
+                  <span className="character-cz-history-value">
+                    <strong className="character-cz-history-main">
+                      {lightRate.numerator}/{lightRate.denominator}
+                    </strong>
+                    <span className="character-cz-history-sub">
+                      ({lightRate.percentageText})
+                    </span>
+                  </span>
                 </td>
                 <td>
                   <button

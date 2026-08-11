@@ -828,6 +828,11 @@ a {
   font-size: 0.68rem;
 }
 
+.data-table.character-cz-history-table th,
+.data-table.character-cz-history-table td {
+  padding: 5px 4px;
+}
+
 .character-cz-history-table th:first-child {
   width: 10%;
 }
@@ -845,9 +850,11 @@ a {
   width: 18%;
 }
 
-.character-cz-history-main,
-.character-cz-history-sub {
-  display: block;
+.character-cz-history-value {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  white-space: nowrap;
 }
 
 .character-cz-history-main {
@@ -855,7 +862,6 @@ a {
 }
 
 .character-cz-history-sub {
-  margin-top: 2px;
   color: var(--muted);
   font-size: 0.58rem;
 }
@@ -869,7 +875,7 @@ a {
   font: inherit;
   font-size: 0.62rem;
   font-weight: 800;
-  padding: 7px 10px;
+  padding: 5px 10px;
   transition:
     background-color 0.15s ease,
     transform 0.15s ease;
