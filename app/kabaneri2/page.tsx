@@ -1144,10 +1144,10 @@ function MyslotInput({
   const voiceSummary = parseMyslotVoiceSummary(value);
   const isEmpty = value.trim() === "";
   const summaryStatuses = [
-    { label: "サミートロフィー", summary: trophySummary },
+    { label: "サンド目停止時ボイス", summary: voiceSummary },
     { label: "キャラ紹介", summary: characterSummary },
     { label: "アイテムくじ", summary: itemLotterySummary },
-    { label: "サンド目停止時ボイス", summary: voiceSummary }
+    { label: "サミートロフィー", summary: trophySummary }
   ];
 
   return (
@@ -1160,10 +1160,12 @@ function MyslotInput({
         value={value}
         onChange={(event) => onChange(event.currentTarget.value)}
       />
-      <p className="myslot-voice-help">
-        サミートロフィーは色別に獲得数を集計します。キャラ紹介はNo.1〜3を女性、No.4〜6を男性、No.7を美馬として集計します。アイテムくじはツラヌキ筒の回数と出現率を集計します。ボイスはNo.1・2・4〜8を女性、No.9〜16を男性、No.3を無名特殊、No.17〜19を景行、No.20をボイス無し(56確)として集計します。
-      </p>
-      <MyslotTrophySummaryBlock categories={trophySummary.categories} />
+      <MyslotSummaryBlock
+        summaryKey="voice"
+        title="サンド目停止時ボイス"
+        totalCount={voiceSummary.totalCount}
+        categories={voiceSummary.categories}
+      />
       <MyslotSummaryBlock
         summaryKey="character"
         title="キャラ紹介"
@@ -1171,12 +1173,7 @@ function MyslotInput({
         categories={characterSummary.categories}
       />
       <MyslotItemLotterySummaryBlock summary={itemLotterySummary} />
-      <MyslotSummaryBlock
-        summaryKey="voice"
-        title="サンド目停止時ボイス"
-        totalCount={voiceSummary.totalCount}
-        categories={voiceSummary.categories}
-      />
+      <MyslotTrophySummaryBlock categories={trophySummary.categories} />
       {isEmpty ? (
         <p aria-live="polite" className="myslot-voice-message" role="status">
           マイスロの表示内容を貼り付けると自動で集計します。
@@ -1184,16 +1181,19 @@ function MyslotInput({
       ) : (
         summaryStatuses.map(({ label, summary }) => {
           const hasError = !summary.foundSection || summary.recognizedRowCount === 0;
+
+          if (!hasError) {
+            return null;
+          }
+
           const statusText = !summary.foundSection
             ? `「${label}」が見つかりません。貼り付け範囲を確認してください。`
-            : summary.recognizedRowCount === 0
-              ? `${label}の回数が見つかりませんでした。`
-              : `${label}を合計${summary.totalCount}回分読み取りました。`;
+            : `${label}の回数が見つかりませんでした。`;
 
           return (
             <p
               aria-live="polite"
-              className={`myslot-voice-message${hasError ? " is-error" : ""}`}
+              className="myslot-voice-message is-error"
               key={label}
               role="status"
             >
