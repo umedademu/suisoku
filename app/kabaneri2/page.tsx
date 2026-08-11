@@ -341,6 +341,7 @@ type MySlotInputGroup = {
 
 type LightRateEstimationGroup = {
   title: string;
+  hideTitle: true;
   lightRateEstimation: true;
 };
 
@@ -470,6 +471,7 @@ const inputGroups: InputGroup[] = [
   },
   {
     title: "発光率推測",
+    hideTitle: true,
     lightRateEstimation: true
   },
   {
@@ -572,7 +574,7 @@ const initialValues: Record<string, string> = {
   mumeiIkomaSpecialCount: "0",
   allStarMumeiSpecialCount: "0",
   allStarIkomaSpecialCount: "0",
-  useCharacterLightRate: "0",
+  useCharacterLightRate: "1",
   characterPointHistory: "[]",
   myslotText: "",
   medalRent: "46",
