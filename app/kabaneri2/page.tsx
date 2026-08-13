@@ -702,6 +702,44 @@ function calculateSettingProbabilities(
   return weights.map((weight) => (totalWeight > 0 ? weight / totalWeight : 0));
 }
 
+function calculateLogRateSampleProbability(
+  observedRate: number,
+  sampleCount: number,
+  probability: number
+) {
+  if (
+    sampleCount < 0 ||
+    observedRate < 0 ||
+    observedRate > 1 ||
+    probability <= 0 ||
+    probability >= 1
+  ) {
+    return Number.NEGATIVE_INFINITY;
+  }
+
+  const successWeight = observedRate * sampleCount;
+
+  return (
+    successWeight * Math.log(probability) +
+    (sampleCount - successWeight) * Math.log(1 - probability)
+  );
+}
+
+function calculateRateSampleSettingProbabilities(
+  observedRate: number,
+  sampleCount: number,
+  getProbability: (setting: (typeof settings)[number]) => number
+) {
+  const logValues = settings.map((setting) =>
+    calculateLogRateSampleProbability(observedRate, sampleCount, getProbability(setting))
+  );
+  const maxLogValue = Math.max(...logValues);
+  const weights = logValues.map((logValue) => Math.exp(logValue - maxLogValue));
+  const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
+
+  return weights.map((weight) => (totalWeight > 0 ? weight / totalWeight : 0));
+}
+
 function getCharacterPointReachProbability(
   setting: (typeof settings)[number],
   character: KabaneriCharacter
@@ -2033,16 +2071,12 @@ export default function Kabaneri2Page() {
       : "0.0%";
     const characterPointObservations = characterPointGroups.map((group) => {
       const totalPointProgress = getCharacterTotalPointProgress(group);
-      const likelihoodTrialCount = totalPointProgress.historyCount * 100;
 
       return {
         character: group.character,
         ...totalPointProgress,
-        likelihoodPoints: Math.round(
-          (Math.min(totalPointProgress.percentage, 100) / 100) *
-            likelihoodTrialCount
-        ),
-        likelihoodTrialCount,
+        likelihoodRate: Math.min(totalPointProgress.percentage, 100) / 100,
+        likelihoodSampleCount: totalPointProgress.historyCount,
         hasInput: totalPointProgress.historyCount > 0
       };
     });
@@ -2189,9 +2223,9 @@ export default function Kabaneri2Page() {
           (logValue, observation) =>
             logValue +
             (observation.hasInput
-              ? calculateLogBinomialProbability(
-                  observation.likelihoodPoints,
-                  observation.likelihoodTrialCount,
+              ? calculateLogRateSampleProbability(
+                  observation.likelihoodRate,
+                  observation.likelihoodSampleCount,
                   getCharacterPointReachProbability(setting, observation.character)
                 )
               : 0),
@@ -2340,9 +2374,9 @@ export default function Kabaneri2Page() {
           ? `履歴${observation.historyCount}件の平均 (${observation.percentageText})`
           : "未集計",
         values: observation.hasInput
-          ? calculateSettingProbabilities(
-              observation.likelihoodPoints,
-              observation.likelihoodTrialCount,
+          ? calculateRateSampleSettingProbabilities(
+              observation.likelihoodRate,
+              observation.likelihoodSampleCount,
               (setting) =>
                 getCharacterPointReachProbability(setting, observation.character)
             ).map(formatPercent)
