@@ -1355,10 +1355,12 @@ function MyslotItemLotterySummaryBlock({
 
 function MyslotInput({
   value,
-  onChange
+  onChange,
+  onClear
 }: {
   value: string;
   onChange: (value: string) => void;
+  onClear: () => void;
 }) {
   const trophySummary = parseMyslotTrophySummary(value);
   const characterSummary = parseMyslotCharacterSummary(value);
@@ -1382,6 +1384,17 @@ function MyslotInput({
         value={value}
         onChange={(event) => onChange(event.currentTarget.value)}
       />
+      <div className="myslot-input-actions">
+        <button
+          aria-label="マイスロ入力内容をクリア"
+          className="myslot-input-clear-button"
+          disabled={isEmpty}
+          type="button"
+          onClick={onClear}
+        >
+          入力内容をクリア
+        </button>
+      </div>
       <MyslotSummaryBlock
         summaryKey="voice"
         title="サンド目停止時ボイス"
@@ -2803,6 +2816,7 @@ export default function Kabaneri2Page() {
                 <MyslotInput
                   value={inputValues.myslotText ?? ""}
                   onChange={(value) => handleInputChange("myslotText", value)}
+                  onClear={() => handleInputChange("myslotText", "")}
                 />
               ) : "lightRateEstimation" in group ? (
                 <label className="light-rate-estimation-toggle">
