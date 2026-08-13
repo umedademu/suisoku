@@ -262,6 +262,25 @@ type CharacterSpecialPointCountKey =
   | "allStarMumeiSpecialCount"
   | "allStarIkomaSpecialCount";
 
+const ALL_STAR_RESET_COUNT_KEYS = [
+  "mumeiNoLightCount",
+  "mumeiUnknownLightCount",
+  "mumeiWithLightCount",
+  "mumeiHighProbabilityCount",
+  "ikomaNoLightCount",
+  "ikomaUnknownLightCount",
+  "ikomaWithLightCount",
+  "ikomaHighProbabilityCount",
+  "mumeiKabaneSpecialCount",
+  "kabaneIkomaSpecialCount",
+  "mumeiIkomaMumeiSpecialCount",
+  "mumeiIkomaSpecialCount",
+  "allStarMumeiSpecialCount",
+  "allStarIkomaSpecialCount"
+] as const satisfies readonly (CharacterPointCountKey | CharacterSpecialPointCountKey)[];
+
+type AllStarResetCountKey = (typeof ALL_STAR_RESET_COUNT_KEYS)[number];
+
 type CharacterSpecialPointButton = {
   key: string;
   label: "無名&カバネ" | "カバネ&生駒" | "無名&生駒" | "オールスター目";
@@ -345,13 +364,24 @@ type LightRateEstimationGroup = {
   lightRateEstimation: true;
 };
 
-type CharacterPointHistoryEntry = {
+type CharacterCzHistoryEntry = {
+  kind: "character";
   character: KabaneriCharacter;
   points: number;
   noLightCount: number;
   withLightCount: number;
   recordedAt: number;
 };
+
+type AllStarHistoryEntry = {
+  kind: "all-star";
+  mumeiPoints: number;
+  ikomaPoints: number;
+  counts: Record<AllStarResetCountKey, number>;
+  recordedAt: number;
+};
+
+type CharacterPointHistoryEntry = CharacterCzHistoryEntry | AllStarHistoryEntry;
 
 type InputGroup =
   | StandardInputGroup
@@ -783,15 +813,37 @@ function parseCharacterPointHistory(value: string) {
         }
 
         const entry = item as Record<string, unknown>;
+        const recordedAt = Number(entry.recordedAt);
+
+        if (entry.kind === "all-star") {
+          const rawCounts =
+            typeof entry.counts === "object" &&
+            entry.counts !== null &&
+            !Array.isArray(entry.counts)
+              ? (entry.counts as Record<string, unknown>)
+              : {};
+          const counts = Object.fromEntries(
+            ALL_STAR_RESET_COUNT_KEYS.map((key) => [key, toNonNegativeInteger(rawCounts[key])])
+          ) as Record<AllStarResetCountKey, number>;
+
+          return [
+            {
+              kind: "all-star",
+              mumeiPoints: toNonNegativeInteger(entry.mumeiPoints),
+              ikomaPoints: toNonNegativeInteger(entry.ikomaPoints),
+              counts,
+              recordedAt: Number.isFinite(recordedAt) ? recordedAt : 0
+            }
+          ];
+        }
 
         if (entry.character !== "無名" && entry.character !== "生駒") {
           return [];
         }
 
-        const recordedAt = Number(entry.recordedAt);
-
         return [
           {
+            kind: "character",
             character: entry.character,
             points: toNonNegativeInteger(entry.points),
             noLightCount: toNonNegativeInteger(entry.noLightCount),
@@ -1425,41 +1477,80 @@ function CharacterCzHistory({
         </thead>
         <tbody>
           {history.map((entry, index) => {
-            const pointProgress = calculateCharacterPointProgress(
-              entry.points,
-              CHARACTER_STANDARD_POINTS[entry.character]
-            );
-            const lightRate = calculateCharacterLightRate(
-              entry.noLightCount,
-              entry.withLightCount
-            );
+            const isAllStar = entry.kind === "all-star";
+            const pointProgress = isAllStar
+              ? null
+              : calculateCharacterPointProgress(
+                  entry.points,
+                  CHARACTER_STANDARD_POINTS[entry.character]
+                );
+            const lightRate = isAllStar
+              ? null
+              : calculateCharacterLightRate(entry.noLightCount, entry.withLightCount);
+            const allStarMumeiLightRate = isAllStar
+              ? calculateCharacterLightRate(
+                  entry.counts.mumeiNoLightCount,
+                  entry.counts.mumeiWithLightCount
+                )
+              : null;
+            const allStarIkomaLightRate = isAllStar
+              ? calculateCharacterLightRate(
+                  entry.counts.ikomaNoLightCount,
+                  entry.counts.ikomaWithLightCount
+                )
+              : null;
             const historyNumber = history.length - index;
+            const historyLabel = isAllStar ? "オールスター" : `${entry.character}CZ`;
 
             return (
-              <tr key={`${entry.recordedAt}-${entry.character}-${index}`}>
+              <tr key={`${entry.recordedAt}-${entry.kind}-${index}`}>
                 <th scope="row">{historyNumber}</th>
-                <td>{entry.character}CZ</td>
+                <td>{historyLabel}</td>
                 <td>
                   <span className="character-cz-history-value">
-                    <strong className="character-cz-history-main">{entry.points}pt</strong>
-                    <span className="character-cz-history-sub">
-                      ({pointProgress.percentageText})
-                    </span>
+                    {isAllStar ? (
+                      <>
+                        <strong className="character-cz-history-main">対象外</strong>
+                        <span className="character-cz-history-sub">（到達率）</span>
+                      </>
+                    ) : (
+                      <>
+                        <strong className="character-cz-history-main">{entry.points}pt</strong>
+                        <span className="character-cz-history-sub">
+                          ({pointProgress?.percentageText})
+                        </span>
+                      </>
+                    )}
                   </span>
                 </td>
                 <td>
-                  <span className="character-cz-history-value">
-                    <strong className="character-cz-history-main">
-                      {lightRate.numerator}/{lightRate.denominator}
-                    </strong>
-                    <span className="character-cz-history-sub">
-                      ({lightRate.percentageText})
+                  {isAllStar ? (
+                    <span className="character-cz-history-value character-cz-history-value-all-star">
+                      <span>
+                        無名{allStarMumeiLightRate?.numerator}/
+                        {allStarMumeiLightRate?.denominator}(
+                        {allStarMumeiLightRate?.percentageText})
+                      </span>
+                      <span>
+                        生駒{allStarIkomaLightRate?.numerator}/
+                        {allStarIkomaLightRate?.denominator}(
+                        {allStarIkomaLightRate?.percentageText})
+                      </span>
                     </span>
-                  </span>
+                  ) : (
+                    <span className="character-cz-history-value">
+                      <strong className="character-cz-history-main">
+                        {lightRate?.numerator}/{lightRate?.denominator}
+                      </strong>
+                      <span className="character-cz-history-sub">
+                        ({lightRate?.percentageText})
+                      </span>
+                    </span>
+                  )}
                 </td>
                 <td>
                   <button
-                    aria-label={`${historyNumber}回目 ${entry.character}CZの履歴を削除`}
+                    aria-label={`${historyNumber}回目 ${historyLabel}の履歴を削除`}
                     className="character-cz-history-delete-button"
                     type="button"
                     onClick={() => onDelete(index)}
@@ -1491,8 +1582,10 @@ function CharacterSpecialPointControl({
   onIncrement: (button: CharacterSpecialPointButton) => void;
   onDecrement: (button: CharacterSpecialPointButton) => void;
 }) {
-  const targetText =
-    button.mumeiPointIncrement > 0 && button.ikomaPointIncrement > 0
+  const isAllStar = button.key === "all-star";
+  const targetText = isAllStar
+    ? "特殊CZ当選"
+    : button.mumeiPointIncrement > 0 && button.ikomaPointIncrement > 0
       ? `無名と生駒に${button.points}ptずつ加算`
       : button.mumeiPointIncrement > 0
         ? `無名に${button.points}pt加算`
@@ -1518,7 +1611,9 @@ function CharacterSpecialPointControl({
         onClick={() => onIncrement(button)}
       >
         <span className="character-special-point-button-name">{button.label}</span>
-        <span className="character-special-point-button-points">+{button.points}pt</span>
+        <span className="character-special-point-button-points">
+          {isAllStar ? "CZ当選" : `+${button.points}pt`}
+        </span>
       </button>
     </div>
   );
@@ -1740,7 +1835,8 @@ export default function Kabaneri2Page() {
   };
   const getCharacterTotalPointProgress = (group: CharacterPointGroup) => {
     const historyEntries = characterPointHistory.filter(
-      (entry) => entry.character === group.character
+      (entry): entry is CharacterCzHistoryEntry =>
+        entry.kind === "character" && entry.character === group.character
     );
     const historyCount = historyEntries.length;
     const percentage =
@@ -1771,7 +1867,15 @@ export default function Kabaneri2Page() {
     );
     const historyCounts = characterPointHistory.reduce(
       (totals, entry) => {
-        if (entry.character === group.character) {
+        if (entry.kind === "all-star") {
+          if (group.character === "無名") {
+            totals.noLightCount += entry.counts.mumeiNoLightCount;
+            totals.withLightCount += entry.counts.mumeiWithLightCount;
+          } else {
+            totals.noLightCount += entry.counts.ikomaNoLightCount;
+            totals.withLightCount += entry.counts.ikomaWithLightCount;
+          }
+        } else if (entry.character === group.character) {
           totals.noLightCount += entry.noLightCount;
           totals.withLightCount += entry.withLightCount;
         }
@@ -1850,6 +1954,41 @@ export default function Kabaneri2Page() {
   };
 
   const handleSpecialPointIncrement = (button: CharacterSpecialPointButton) => {
+    if (button.key === "all-star") {
+      setInputValues((current) => {
+        const counts = Object.fromEntries(
+          ALL_STAR_RESET_COUNT_KEYS.map((key) => [
+            key,
+            Math.max(0, Math.trunc(toNumber(current[key] ?? "0")))
+          ])
+        ) as Record<AllStarResetCountKey, number>;
+        const historyEntry: AllStarHistoryEntry = {
+          kind: "all-star",
+          mumeiPoints: Math.max(0, Math.trunc(toNumber(current.mumeiPoints ?? "0"))),
+          ikomaPoints: Math.max(0, Math.trunc(toNumber(current.ikomaPoints ?? "0"))),
+          counts,
+          recordedAt: Date.now()
+        };
+        const currentHistory = parseCharacterPointHistory(
+          current.characterPointHistory ?? "[]"
+        );
+        const nextValues: Record<string, string> = {
+          ...current,
+          mumeiPoints: "0",
+          ikomaPoints: "0",
+          characterPointHistory: JSON.stringify([historyEntry, ...currentHistory])
+        };
+
+        ALL_STAR_RESET_COUNT_KEYS.forEach((key) => {
+          nextValues[key] = "0";
+        });
+
+        return nextValues;
+      });
+      resetResults();
+      return;
+    }
+
     setInputValues((current) => {
       const nextValues: Record<string, string> = {
         ...current,
@@ -1881,6 +2020,37 @@ export default function Kabaneri2Page() {
 
   const handleSpecialPointDecrement = (button: CharacterSpecialPointButton) => {
     setInputValues((current) => {
+      if (button.key === "all-star") {
+        const currentHistory = parseCharacterPointHistory(
+          current.characterPointHistory ?? "[]"
+        );
+        const latestHistory = currentHistory[0];
+
+        if (latestHistory?.kind === "all-star") {
+          const nextValues: Record<string, string> = {
+            ...current,
+            mumeiPoints: String(
+              Math.max(0, Math.trunc(toNumber(current.mumeiPoints ?? "0"))) +
+                latestHistory.mumeiPoints
+            ),
+            ikomaPoints: String(
+              Math.max(0, Math.trunc(toNumber(current.ikomaPoints ?? "0"))) +
+                latestHistory.ikomaPoints
+            ),
+            characterPointHistory: JSON.stringify(currentHistory.slice(1))
+          };
+
+          ALL_STAR_RESET_COUNT_KEYS.forEach((key) => {
+            nextValues[key] = String(
+              Math.max(0, Math.trunc(toNumber(current[key] ?? "0"))) +
+                latestHistory.counts[key]
+            );
+          });
+
+          return nextValues;
+        }
+      }
+
       const mumeiCount = button.mumeiCountKey
         ? Math.max(0, Math.trunc(toNumber(current[button.mumeiCountKey] ?? "0")))
         : 0;
@@ -1920,11 +2090,13 @@ export default function Kabaneri2Page() {
 
       return nextValues;
     });
+    resetResults();
   };
 
   const handleCharacterCzWin = (group: CharacterPointGroup) => {
     setInputValues((current) => {
       const historyEntry: CharacterPointHistoryEntry = {
+        kind: "character",
         character: group.character,
         points: Math.max(0, Math.trunc(toNumber(current[group.pointKey] ?? "0"))),
         noLightCount: Math.max(
@@ -2577,17 +2749,31 @@ export default function Kabaneri2Page() {
                 {[
                   CHARACTER_SPECIAL_POINT_BUTTONS.mumeiIkoma,
                   CHARACTER_SPECIAL_POINT_BUTTONS.allStar
-                ].map((button) => (
-                  <CharacterSpecialPointControl
-                    button={button}
-                    ikomaCount={getCharacterSpecialButtonCount(button.ikomaCountKey)}
-                    key={button.key}
-                    mumeiCount={getCharacterSpecialButtonCount(button.mumeiCountKey)}
-                    onDecrement={handleSpecialPointDecrement}
-                    onIncrement={handleSpecialPointIncrement}
-                    shared
-                  />
-                ))}
+                ].map((button) => {
+                  const allStarUndoCount =
+                    button.key === "all-star" &&
+                    characterPointHistory[0]?.kind === "all-star"
+                      ? 1
+                      : 0;
+
+                  return (
+                    <CharacterSpecialPointControl
+                      button={button}
+                      ikomaCount={Math.max(
+                        allStarUndoCount,
+                        getCharacterSpecialButtonCount(button.ikomaCountKey)
+                      )}
+                      key={button.key}
+                      mumeiCount={Math.max(
+                        allStarUndoCount,
+                        getCharacterSpecialButtonCount(button.mumeiCountKey)
+                      )}
+                      onDecrement={handleSpecialPointDecrement}
+                      onIncrement={handleSpecialPointIncrement}
+                      shared
+                    />
+                  );
+                })}
                 <div className="character-cz-win-row">
                   {characterPointGroups.map((group) => (
                     <button

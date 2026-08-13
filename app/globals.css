@@ -1220,6 +1220,11 @@ a {
   font-size: 0.58rem;
 }
 
+.character-cz-history-value-all-star {
+  gap: 5px;
+  font-size: 0.54rem;
+}
+
 .character-cz-history-delete-button {
   border: 1px solid rgba(173, 56, 56, 0.34);
   border-radius: 8px;
