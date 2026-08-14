@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { SaveSlotControls, useSaveSlots } from "../save-slots";
+import { AutoEstimate, MachinePageHeader } from "../machine-page-controls";
 
 const settings = [
   {
@@ -2906,11 +2907,13 @@ export default function Kabaneri2Page() {
   return (
     <main className="page-shell">
       <div className="card card-wide">
-        <a className="top-page-link" href="/">
-          トップページに戻る
-        </a>
-        <h1 className="title">Lカバネリ 海門決戦</h1>
+        <MachinePageHeader
+          title="Lカバネリ 海門決戦"
+          onClear={saveSlots.onClearCurrentData}
+          onClearAll={saveSlots.onClearAllData}
+        />
         <form className="input-form" onSubmit={handleEstimate}>
+          <AutoEstimate inputValues={inputValues} isReady={hasLoadedSavedValues} />
           <div className="kabaneri-input-layout">
             <section className="input-group character-points-group">
               <div className="character-point-columns-grid">
@@ -3173,20 +3176,9 @@ export default function Kabaneri2Page() {
             ))}
           </div>
           <SaveSlotControls {...saveSlots} />
-          <div className="action-row">
-            <button className="clear-button" type="button" onClick={saveSlots.onClearCurrentData}>
-              クリア
-            </button>
-            <button className="clear-button" type="button" onClick={saveSlots.onClearAllData}>
-              全てクリア
-            </button>
-            <button className="estimate-button" type="submit">
-              推測
-            </button>
-          </div>
         </form>
 
-        <section className="result-group">
+        <section className="result-group" id="estimate-results">
           <h2 className="result-title">推測結果</h2>
           {errorMessage ? (
             <p className="result-placeholder" role="alert">
@@ -3299,7 +3291,7 @@ export default function Kabaneri2Page() {
               </div>
             </>
           ) : (
-            <p className="result-placeholder">推測ボタンを押すとここに結果が出ます。</p>
+            <p className="result-placeholder">推測に使うデータを入力すると結果が自動更新されます。</p>
           )}
         </section>
 

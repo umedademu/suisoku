@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { SaveSlotControls, useSaveSlots } from "../save-slots";
+import { AutoEstimate, MachinePageHeader } from "../machine-page-controls";
 import { UnimemoImageUpload } from "../unimemo-image-upload";
 
 type InputMode = "unimemo" | "normal";
@@ -1171,8 +1172,11 @@ export default function ShinHanabiPage() {
   return (
     <main className="page-shell">
       <div className="card card-wide">
-        <a className="top-page-link" href="/">トップページに戻る</a>
-        <h1 className="title">新ハナビ</h1>
+        <MachinePageHeader
+          title="新ハナビ"
+          onClear={handleClear}
+          onClearAll={saveSlots.onClearAllData}
+        />
         <section className="mode-switch">
           <p className="mode-switch-label">入力モード</p>
           <div className="mode-switch-options">
@@ -1192,6 +1196,11 @@ export default function ShinHanabiPage() {
           </div>
         </section>
         <form className="input-form" onSubmit={handleEstimate}>
+          <AutoEstimate
+            calculationKey={inputMode}
+            inputValues={inputValues}
+            isReady={hasLoadedSavedValues}
+          />
           <UnimemoImageUpload
             machine="shinhanabi"
             onApply={(values) => {
@@ -1264,19 +1273,8 @@ export default function ShinHanabiPage() {
             </section>
           ))}
           <SaveSlotControls {...saveSlots} />
-          <div className="action-row">
-            <button className="clear-button" type="button" onClick={handleClear}>
-              クリア
-            </button>
-            <button className="clear-button" type="button" onClick={saveSlots.onClearAllData}>
-              全てクリア
-            </button>
-            <button className="estimate-button" type="submit">
-              推測
-            </button>
-          </div>
         </form>
-        <section className="result-group">
+        <section className="result-group" id="estimate-results">
           <h2 className="result-title">推測結果</h2>
           {settingExpectationTable ? (
             <>
@@ -1376,7 +1374,7 @@ export default function ShinHanabiPage() {
               ) : null}
             </>
           ) : (
-            <p className="result-placeholder">推測ボタンを押すとここに結果が出ます。</p>
+            <p className="result-placeholder">推測に使うデータを入力すると結果が自動更新されます。</p>
           )}
         </section>
         <section className="spec-group-wrap">
