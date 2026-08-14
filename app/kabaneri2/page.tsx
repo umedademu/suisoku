@@ -397,6 +397,11 @@ type DetailColumn = {
   values: string[];
 };
 
+type DetailGroup = {
+  title: string;
+  columns: DetailColumn[];
+};
+
 type EstimateResult = {
   hasPracticeGames: boolean;
   hasLowerBellInput: boolean;
@@ -417,7 +422,7 @@ type EstimateResult = {
   totalPayoutText: string;
   totalExpectationText: string;
   hourlyText: string;
-  detailColumns: DetailColumn[];
+  detailGroups: DetailGroup[];
 };
 
 const inputGroups: InputGroup[] = [
@@ -2653,7 +2658,7 @@ export default function Kabaneri2Page() {
       .join("・");
     const characterPointDetailColumns = characterPointObservations.map<DetailColumn>(
       (observation) => ({
-        label: `${observation.character} 合計pt到達率`,
+        label: observation.character,
         summaryText: observation.hasInput
           ? `履歴${observation.historyCount}件の平均 (${observation.percentageText}) / 推測${useCharacterPointRate ? "ON" : "OFF"}`
           : "未集計",
@@ -2669,7 +2674,7 @@ export default function Kabaneri2Page() {
     );
     const characterLightDetailColumns = characterLightObservations.map<DetailColumn>(
       (observation) => ({
-        label: `${observation.character} 発光率`,
+        label: observation.character,
         summaryText: observation.hasInput
           ? `${observation.numerator}/${observation.denominator} (${observation.percentageText}) / 推測${useCharacterLightRate ? "ON" : "OFF"}`
           : "未集計",
@@ -2707,107 +2712,147 @@ export default function Kabaneri2Page() {
       totalPayoutText: `${totalExpectedPayout.toFixed(2)}%`,
       totalExpectationText: hasPracticeGames ? formatYen(totalExpectedYen) : "-",
       hourlyText: formatHourlyYen(expectedHourlyYen),
-      detailColumns: [
+      detailGroups: [
         {
-          label: "下段ベル",
-          summaryText: hasLowerBellInput
-            ? `${practiceLowerBells}回 (${formatMeasuredRate(
-                practiceLowerBells,
-                practiceGames
-              )})`
-            : "未入力",
-          values: lowerBellProbabilities
-            ? lowerBellProbabilities.map(formatPercent)
-            : settings.map(() => "-")
+          title: "小役",
+          columns: [
+            {
+              label: "下段ベル",
+              summaryText: hasLowerBellInput
+                ? `${practiceLowerBells}回 (${formatMeasuredRate(
+                    practiceLowerBells,
+                    practiceGames
+                  )})`
+                : "未入力",
+              values: lowerBellProbabilities
+                ? lowerBellProbabilities.map(formatPercent)
+                : settings.map(() => "-")
+            }
+          ]
         },
         {
-          label: "3周期目",
-          summaryText: hasCycle3Input ? formatCycleSummary(cycle3Hits, cycle3Trials) : "未入力",
-          values: cycle3Probabilities
-            ? cycle3Probabilities.map(formatPercent)
-            : settings.map(() => "-")
+          title: "周期当選",
+          columns: [
+            {
+              label: "3周期目",
+              summaryText: hasCycle3Input
+                ? formatCycleSummary(cycle3Hits, cycle3Trials)
+                : "未入力",
+              values: cycle3Probabilities
+                ? cycle3Probabilities.map(formatPercent)
+                : settings.map(() => "-")
+            },
+            {
+              label: "4周期目",
+              summaryText: hasCycle4Input
+                ? formatCycleSummary(cycle4Hits, cycle4Trials)
+                : "未入力",
+              values: cycle4Probabilities
+                ? cycle4Probabilities.map(formatPercent)
+                : settings.map(() => "-")
+            }
+          ]
         },
         {
-          label: "4周期目",
-          summaryText: hasCycle4Input ? formatCycleSummary(cycle4Hits, cycle4Trials) : "未入力",
-          values: cycle4Probabilities
-            ? cycle4Probabilities.map(formatPercent)
-            : settings.map(() => "-")
+          title: "サミートロフィー",
+          columns: [
+            {
+              label: "確定示唆",
+              summaryText: hasTrophyInput
+                ? `${trophySummaryText} (${trophyMinimumSetting === 6 ? "設定6確定" : `設定${trophyMinimumSetting}以上確定`}) / 推測${useTrophy ? "ON" : "OFF"}`
+                : "未集計",
+              values: trophyProbabilities
+                ? trophyProbabilities.map(formatPercent)
+                : settings.map(() => "-")
+            }
+          ]
         },
         {
-          label: "サミートロフィー",
-          summaryText: hasTrophyInput
-            ? `${trophySummaryText} (${trophyMinimumSetting === 6 ? "設定6確定" : `設定${trophyMinimumSetting}以上確定`}) / 推測${useTrophy ? "ON" : "OFF"}`
-            : "未集計",
-          values: trophyProbabilities
-            ? trophyProbabilities.map(formatPercent)
-            : settings.map(() => "-")
+          title: "アイテムくじ",
+          columns: [
+            {
+              label: "ツラヌキ筒",
+              summaryText: hasItemLotteryInput
+                ? `${tsuranukiCylinderCount}/${itemLotteryTotal} (${myslotItemLotterySummary.percentageText}) / 推測${useItemLottery ? "ON" : "OFF"}`
+                : "未入力",
+              values: itemLotteryProbabilities
+                ? itemLotteryProbabilities.map(formatPercent)
+                : settings.map(() => "-")
+            },
+            {
+              label: "確定示唆",
+              summaryText: hasItemLotteryConfirmationInput
+                ? `${itemLotteryConfirmationSummaryText} / 推測${useItemLottery ? "ON" : "OFF"}`
+                : "未集計",
+              values: itemLotteryConfirmationProbabilities
+                ? itemLotteryConfirmationProbabilities.map(formatPercent)
+                : settings.map(() => "-")
+            }
+          ]
         },
         {
-          label: "アイテムくじ ツラヌキ筒",
-          summaryText: hasItemLotteryInput
-            ? `${tsuranukiCylinderCount}/${itemLotteryTotal} (${myslotItemLotterySummary.percentageText}) / 推測${useItemLottery ? "ON" : "OFF"}`
-            : "未入力",
-          values: itemLotteryProbabilities
-            ? itemLotteryProbabilities.map(formatPercent)
-            : settings.map(() => "-")
+          title: "サンド目停止ボイス",
+          columns: [
+            {
+              label: "確定示唆",
+              summaryText: hasVoiceConfirmationInput
+                ? `${voiceConfirmationSummaryText} (設定${voiceConfirmationMinimumSetting}以上確定)`
+                : "未集計",
+              values: voiceConfirmationProbabilities
+                ? voiceConfirmationProbabilities.map(formatPercent)
+                : settings.map(() => "-")
+            },
+            {
+              label: "景行ボイス",
+              summaryText: hasKageyukiVoiceInput
+                ? `${kageyukiVoiceCount}/${allVoiceCount} (${kageyukiVoicePercentageText})`
+                : "未入力",
+              values: kageyukiVoiceProbabilities
+                ? kageyukiVoiceProbabilities.map(formatPercent)
+                : settings.map(() => "-")
+            },
+            {
+              label: "男女比",
+              summaryText: hasVoiceGenderInput
+                ? formatGenderSummary(femaleVoiceCount, voiceGenderTotal)
+                : "未入力",
+              values: voiceGenderProbabilities
+                ? voiceGenderProbabilities.map(formatPercent)
+                : settings.map(() => "-")
+            }
+          ]
         },
         {
-          label: "アイテムくじ 確定示唆",
-          summaryText: hasItemLotteryConfirmationInput
-            ? `${itemLotteryConfirmationSummaryText} / 推測${useItemLottery ? "ON" : "OFF"}`
-            : "未集計",
-          values: itemLotteryConfirmationProbabilities
-            ? itemLotteryConfirmationProbabilities.map(formatPercent)
-            : settings.map(() => "-")
+          title: "キャラ紹介",
+          columns: [
+            {
+              label: "男女比",
+              summaryText: hasCharacterGenderInput
+                ? formatGenderSummary(femaleCharacterCount, characterGenderTotal)
+                : "未入力",
+              values: characterGenderProbabilities
+                ? characterGenderProbabilities.map(formatPercent)
+                : settings.map(() => "-")
+            },
+            {
+              label: "確定示唆",
+              summaryText: hasCharacterConfirmationInput
+                ? `美馬 ${bibaCount}回 (設定4以上確定)`
+                : "未集計",
+              values: characterConfirmationProbabilities
+                ? characterConfirmationProbabilities.map(formatPercent)
+                : settings.map(() => "-")
+            }
+          ]
         },
         {
-          label: "サンド目停止ボイス 確定示唆",
-          summaryText: hasVoiceConfirmationInput
-            ? `${voiceConfirmationSummaryText} (設定${voiceConfirmationMinimumSetting}以上確定)`
-            : "未集計",
-          values: voiceConfirmationProbabilities
-            ? voiceConfirmationProbabilities.map(formatPercent)
-            : settings.map(() => "-")
+          title: "平均到達率",
+          columns: characterPointDetailColumns
         },
         {
-          label: "景行ボイス合計",
-          summaryText: hasKageyukiVoiceInput
-            ? `${kageyukiVoiceCount}/${allVoiceCount} (${kageyukiVoicePercentageText})`
-            : "未入力",
-          values: kageyukiVoiceProbabilities
-            ? kageyukiVoiceProbabilities.map(formatPercent)
-            : settings.map(() => "-")
-        },
-        {
-          label: "サンド目停止ボイス",
-          summaryText: hasVoiceGenderInput
-            ? formatGenderSummary(femaleVoiceCount, voiceGenderTotal)
-            : "未入力",
-          values: voiceGenderProbabilities
-            ? voiceGenderProbabilities.map(formatPercent)
-            : settings.map(() => "-")
-        },
-        {
-          label: "キャラ紹介",
-          summaryText: hasCharacterGenderInput
-            ? formatGenderSummary(femaleCharacterCount, characterGenderTotal)
-            : "未入力",
-          values: characterGenderProbabilities
-            ? characterGenderProbabilities.map(formatPercent)
-            : settings.map(() => "-")
-        },
-        {
-          label: "キャラ紹介 確定示唆",
-          summaryText: hasCharacterConfirmationInput
-            ? `美馬 ${bibaCount}回 (設定4以上確定)`
-            : "未集計",
-          values: characterConfirmationProbabilities
-            ? characterConfirmationProbabilities.map(formatPercent)
-            : settings.map(() => "-")
-        },
-        ...characterPointDetailColumns,
-        ...characterLightDetailColumns
+          title: "発光率",
+          columns: characterLightDetailColumns
+        }
       ]
     });
   };
@@ -3172,33 +3217,40 @@ export default function Kabaneri2Page() {
               </div>
               <div className="result-subgroup">
                 <h3 className="result-section-title">各項目ごとの推測値</h3>
-                <div className="table-wrap table-wrap-tight">
-                  <table className="data-table data-table-compact">
-                    <thead>
-                      <tr>
-                        <th>設定</th>
-                        {estimateResult.detailColumns.map((column) => (
-                          <th key={`detail-head-${column.label}`}>
-                            <div className="table-head-main">{column.label}</div>
-                            <div className="table-head-sub">{column.summaryText}</div>
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {settings.map((setting, settingIndex) => (
-                        <tr key={`detail-${setting.label}`}>
-                          <th scope="row">{setting.label}</th>
-                          {estimateResult.detailColumns.map((column) => (
-                            <td key={`detail-${setting.label}-${column.label}`}>
-                              {column.values[settingIndex]}
-                            </td>
+                {estimateResult.detailGroups.map((group) => (
+                  <section className="result-metric-group" key={group.title}>
+                    <div className="table-wrap table-wrap-tight">
+                      <table className="data-table data-table-compact">
+                        <thead>
+                          <tr>
+                            <th>
+                              <div className="table-head-main">{group.title}</div>
+                              <div className="table-head-sub">設定</div>
+                            </th>
+                            {group.columns.map((column) => (
+                              <th key={`${group.title}-${column.label}`}>
+                                <div className="table-head-main">{column.label}</div>
+                                <div className="table-head-sub">{column.summaryText}</div>
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {settings.map((setting, settingIndex) => (
+                            <tr key={`${group.title}-${setting.label}`}>
+                              <th scope="row">{setting.label}</th>
+                              {group.columns.map((column) => (
+                                <td key={`${group.title}-${setting.label}-${column.label}`}>
+                                  {column.values[settingIndex]}
+                                </td>
+                              ))}
+                            </tr>
                           ))}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                        </tbody>
+                      </table>
+                    </div>
+                  </section>
+                ))}
               </div>
             </>
           ) : (
