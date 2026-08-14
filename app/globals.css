@@ -895,6 +895,12 @@ a {
   background: rgba(255, 255, 255, 0.9);
 }
 
+.character-point-summary-item-inline {
+  flex-direction: row;
+  gap: 2px;
+  white-space: nowrap;
+}
+
 .character-point-panel-green .character-point-summary-item {
   border: 1px solid rgba(42, 112, 51, 0.2);
   color: #205d2a;
@@ -924,6 +930,10 @@ a {
 .character-point-summary-value {
   font-size: 1.2rem;
   line-height: 1;
+}
+
+.character-point-summary-value-current {
+  font-size: 2.4rem;
 }
 
 .character-point-summary-unit,
@@ -2792,6 +2802,10 @@ a {
 
   .character-point-summary-value {
     font-size: 1.02rem;
+  }
+
+  .character-point-summary-value-current {
+    font-size: 2.04rem;
   }
 
   .character-point-summary-unit,

@@ -1895,32 +1895,30 @@ function CharacterPointColumn({
           <div
             aria-label={`${group.character}の現在のpt ${pointProgress.points}pt 到達率${pointProgress.percentageText}`}
             aria-live="polite"
-            className="character-point-summary-item"
+            className="character-point-summary-item character-point-summary-item-inline"
             role="status"
           >
-            <span className="character-point-summary-label">現在のpt</span>
-            <span className="character-point-summary-value-row">
-              <strong className="character-point-summary-value">{pointProgress.points}</strong>
-              <span className="character-point-summary-unit">pt</span>
-              <span className="character-point-summary-detail">
-                （{pointProgress.percentageText}）
-              </span>
+            <span className="character-point-summary-label">現在</span>
+            <strong className="character-point-summary-value character-point-summary-value-current">
+              {pointProgress.points}
+            </strong>
+            <span className="character-point-summary-unit">pt</span>
+            <span className="character-point-summary-detail">
+              ({pointProgress.percentageText})
             </span>
           </div>
           <div
             aria-label={`${group.character}の平均到達率 ${totalPointProgress.percentageText} 履歴${totalPointProgress.historyCount}件`}
             aria-live="polite"
-            className="character-point-summary-item character-point-summary-item-average"
+            className="character-point-summary-item character-point-summary-item-average character-point-summary-item-inline"
             role="status"
           >
-            <span className="character-point-summary-label">平均到達率</span>
-            <span className="character-point-summary-value-row">
-              <strong className="character-point-summary-value">
-                {totalPointProgress.percentageText}
-              </strong>
-              <span className="character-point-summary-detail">
-                （履歴:{totalPointProgress.historyCount}）
-              </span>
+            <span className="character-point-summary-label">平均</span>
+            <strong className="character-point-summary-value">
+              {totalPointProgress.percentageText}
+            </strong>
+            <span className="character-point-summary-detail">
+              (履歴:{totalPointProgress.historyCount})
             </span>
           </div>
         </div>
