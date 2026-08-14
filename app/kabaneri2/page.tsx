@@ -1890,9 +1890,6 @@ function CharacterPointColumn({
 
   return (
     <div className="character-point-column">
-      <div className="group-title-row">
-        <p className="group-title">【{group.title}】</p>
-      </div>
       <div className={`character-point-panel character-point-panel-${group.theme}`}>
         <div className="character-point-summary">
           <div
