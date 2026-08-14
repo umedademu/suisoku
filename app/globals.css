@@ -404,6 +404,14 @@ a {
   gap: 8px;
 }
 
+.myslot-summary-heading-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  min-width: 0;
+}
+
 .myslot-voice-summary-title,
 .myslot-voice-total {
   margin: 0;
@@ -772,6 +780,39 @@ a {
 
 .light-rate-estimation-state {
   color: #8f2f18;
+}
+
+.character-point-estimation-toggle {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 8px;
+}
+
+.light-rate-estimation-toggle-compact {
+  gap: 5px;
+  padding: 3px 7px;
+}
+
+.light-rate-estimation-toggle-compact .light-rate-estimation-track {
+  width: 34px;
+  min-width: 34px;
+  height: 20px;
+}
+
+.light-rate-estimation-toggle-compact .light-rate-estimation-track::after {
+  width: 14px;
+  height: 14px;
+}
+
+.light-rate-estimation-toggle-compact
+  .light-rate-estimation-input:checked
+  + .light-rate-estimation-track::after {
+  transform: translateX(14px);
+}
+
+.light-rate-estimation-toggle-compact .light-rate-estimation-label,
+.light-rate-estimation-toggle-compact .light-rate-estimation-state {
+  font-size: 0.6rem;
 }
 
 .character-point-panel-green {

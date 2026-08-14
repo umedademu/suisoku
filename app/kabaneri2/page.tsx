@@ -604,7 +604,10 @@ const initialValues: Record<string, string> = {
   mumeiIkomaSpecialCount: "0",
   allStarMumeiSpecialCount: "0",
   allStarIkomaSpecialCount: "0",
+  useCharacterPointRate: "1",
   useCharacterLightRate: "1",
+  useItemLottery: "1",
+  useTrophy: "1",
   characterPointHistory: "[]",
   myslotText: "",
   medalRent: "46",
@@ -1262,19 +1265,62 @@ function MyslotSummaryBlock({
   );
 }
 
+function EstimationToggle({
+  label,
+  ariaLabel = label,
+  checked,
+  compact = false,
+  onChange
+}: {
+  label: string;
+  ariaLabel?: string;
+  checked: boolean;
+  compact?: boolean;
+  onChange: (checked: boolean) => void;
+}) {
+  return (
+    <label
+      className={`light-rate-estimation-toggle${compact ? " light-rate-estimation-toggle-compact" : ""}`}
+    >
+      <input
+        aria-label={ariaLabel}
+        checked={checked}
+        className="light-rate-estimation-input"
+        role="switch"
+        type="checkbox"
+        onChange={(event) => onChange(event.currentTarget.checked)}
+      />
+      <span aria-hidden="true" className="light-rate-estimation-track" />
+      <span className="light-rate-estimation-label">{label}</span>
+      <strong className="light-rate-estimation-state">{checked ? "ON" : "OFF"}</strong>
+    </label>
+  );
+}
+
 function MyslotTrophySummaryBlock({
-  categories
+  categories,
+  useForEstimation,
+  onUseForEstimationChange
 }: {
   categories: Array<{
     key: string;
     label: string;
     count: number;
   }>;
+  useForEstimation: boolean;
+  onUseForEstimationChange: (checked: boolean) => void;
 }) {
   return (
     <div className="myslot-summary-block" data-myslot-summary="trophy">
       <div className="myslot-voice-summary-heading">
         <p className="myslot-voice-summary-title">サミートロフィー</p>
+        <EstimationToggle
+          ariaLabel="サミートロフィーを推測に使用"
+          checked={useForEstimation}
+          compact
+          label="推測に使用"
+          onChange={onUseForEstimationChange}
+        />
       </div>
       <div className="myslot-voice-summary-grid">
         {categories.map((category) => (
@@ -1294,7 +1340,9 @@ function MyslotTrophySummaryBlock({
 }
 
 function MyslotItemLotterySummaryBlock({
-  summary
+  summary,
+  useForEstimation,
+  onUseForEstimationChange
 }: {
   summary: {
     totalCount: number;
@@ -1306,6 +1354,8 @@ function MyslotItemLotterySummaryBlock({
     bigLuckCount: number;
     percentageText: string;
   };
+  useForEstimation: boolean;
+  onUseForEstimationChange: (checked: boolean) => void;
 }) {
   const hintItems = [
     { key: "kurusu-sword", label: "来栖の刀", count: summary.kurusuSwordCount },
@@ -1319,7 +1369,16 @@ function MyslotItemLotterySummaryBlock({
     <div className="myslot-summary-block" data-myslot-summary="item-lottery">
       <div className="myslot-voice-summary-heading">
         <p className="myslot-voice-summary-title">アイテムくじ</p>
-        <p className="myslot-voice-total">全体 {summary.totalCount}回</p>
+        <div className="myslot-summary-heading-actions">
+          <p className="myslot-voice-total">全体 {summary.totalCount}回</p>
+          <EstimationToggle
+            ariaLabel="アイテムくじを推測に使用"
+            checked={useForEstimation}
+            compact
+            label="推測に使用"
+            onChange={onUseForEstimationChange}
+          />
+        </div>
       </div>
       <div className="myslot-voice-summary-grid">
         <div
@@ -1356,11 +1415,19 @@ function MyslotItemLotterySummaryBlock({
 function MyslotInput({
   value,
   onChange,
-  onClear
+  onClear,
+  useItemLottery,
+  useTrophy,
+  onUseItemLotteryChange,
+  onUseTrophyChange
 }: {
   value: string;
   onChange: (value: string) => void;
   onClear: () => void;
+  useItemLottery: boolean;
+  useTrophy: boolean;
+  onUseItemLotteryChange: (checked: boolean) => void;
+  onUseTrophyChange: (checked: boolean) => void;
 }) {
   const trophySummary = parseMyslotTrophySummary(value);
   const characterSummary = parseMyslotCharacterSummary(value);
@@ -1407,8 +1474,16 @@ function MyslotInput({
         totalCount={characterSummary.totalCount}
         categories={characterSummary.categories}
       />
-      <MyslotItemLotterySummaryBlock summary={itemLotterySummary} />
-      <MyslotTrophySummaryBlock categories={trophySummary.categories} />
+      <MyslotItemLotterySummaryBlock
+        onUseForEstimationChange={onUseItemLotteryChange}
+        summary={itemLotterySummary}
+        useForEstimation={useItemLottery}
+      />
+      <MyslotTrophySummaryBlock
+        categories={trophySummary.categories}
+        onUseForEstimationChange={onUseTrophyChange}
+        useForEstimation={useTrophy}
+      />
       {isEmpty ? (
         <p aria-live="polite" className="myslot-voice-message" role="status">
           マイスロの表示内容を貼り付けると自動で集計します。
@@ -1455,11 +1530,20 @@ function mergeKabaneriInputValues(
 
   return {
     ...defaultMergedValues,
+    useCharacterPointRate: slotValues.some(
+      (values) => values.useCharacterPointRate === "1"
+    )
+      ? "1"
+      : "0",
     useCharacterLightRate: slotValues.some(
       (values) => values.useCharacterLightRate === "1"
     )
       ? "1"
       : "0",
+    useItemLottery: slotValues.some((values) => values.useItemLottery === "1")
+      ? "1"
+      : "0",
+    useTrophy: slotValues.some((values) => values.useTrophy === "1") ? "1" : "0",
     characterPointHistory: JSON.stringify(mergedHistory),
     myslotText: mergedMyslotText
   };
@@ -1768,7 +1852,10 @@ export default function Kabaneri2Page() {
   const characterPointHistory = parseCharacterPointHistory(
     inputValues.characterPointHistory ?? "[]"
   );
+  const useCharacterPointRate = inputValues.useCharacterPointRate === "1";
   const useCharacterLightRate = inputValues.useCharacterLightRate === "1";
+  const useItemLottery = inputValues.useItemLottery === "1";
+  const useTrophy = inputValues.useTrophy === "1";
 
   const resetResults = () => {
     setEstimateResult(null);
@@ -2265,6 +2352,9 @@ export default function Kabaneri2Page() {
         hasInput: totalPointProgress.historyCount > 0
       };
     });
+    const hasCharacterPointInput = characterPointObservations.some(
+      (observation) => observation.hasInput
+    );
     const characterLightObservations = characterPointGroups.map((group) => {
       const lightRate = getCharacterLightRate(group);
 
@@ -2329,19 +2419,25 @@ export default function Kabaneri2Page() {
       !hasLowerBellInput &&
       !hasCycle3Input &&
       !hasCycle4Input &&
-      !hasTrophyInput &&
-      !hasItemLotteryInput &&
+      !(useTrophy && hasTrophyInput) &&
+      !(useItemLottery && hasItemLotteryInput) &&
       !hasVoiceConfirmationInput &&
       !hasKageyukiVoiceInput &&
       !hasVoiceGenderInput &&
       !hasCharacterConfirmationInput &&
       !hasCharacterGenderInput &&
       !(useCharacterLightRate && hasCharacterLightInput) &&
-      !characterPointObservations.some((observation) => observation.hasInput)
+      !(useCharacterPointRate && hasCharacterPointInput)
     ) {
+      const hasDisabledSelectableInput =
+        (!useTrophy && hasTrophyInput) ||
+        (!useItemLottery && hasItemLotteryInput) ||
+        (!useCharacterLightRate && hasCharacterLightInput) ||
+        (!useCharacterPointRate && hasCharacterPointInput);
+
       setErrorMessage(
-        hasCharacterLightInput && !useCharacterLightRate
-          ? "発光率を推測に使う場合は、「発光率を推測に使用」をONにしてください。"
+        hasDisabledSelectableInput
+          ? "入力済みの項目を推測に使う場合は、対応する「推測に使用」をONにしてください。"
           : "推測に使うpt・発光カウント、CZ当選履歴、マイスロ、周期当選、またはG数と下段ベルを入力してください。"
       );
       return;
@@ -2350,7 +2446,7 @@ export default function Kabaneri2Page() {
     const logRows = settings.map((setting, settingIndex) => ({
       label: setting.label,
       logValue:
-        (hasTrophyInput && settingIndex + 1 < trophyMinimumSetting
+        (useTrophy && hasTrophyInput && settingIndex + 1 < trophyMinimumSetting
           ? Number.NEGATIVE_INFINITY
           : 0) +
         (hasVoiceConfirmationInput && settingIndex + 1 < voiceConfirmationMinimumSetting
@@ -2359,7 +2455,8 @@ export default function Kabaneri2Page() {
         (hasCharacterConfirmationInput && settingIndex + 1 < 4
           ? Number.NEGATIVE_INFINITY
           : 0) +
-        (hasItemLotteryConfirmationInput &&
+        (useItemLottery &&
+          hasItemLotteryConfirmationInput &&
           !isItemLotterySettingAllowed(settingIndex + 1)
           ? Number.NEGATIVE_INFINITY
           : 0) +
@@ -2376,7 +2473,7 @@ export default function Kabaneri2Page() {
         (hasCycle4Input
           ? calculateLogBinomialProbability(cycle4Hits, cycle4Trials, setting.cycle4Rate)
           : 0) +
-        (hasItemLotteryInput
+        (useItemLottery && hasItemLotteryInput
           ? calculateLogBinomialProbability(
               tsuranukiCylinderCount,
               itemLotteryTotal,
@@ -2404,18 +2501,20 @@ export default function Kabaneri2Page() {
               setting.characterFemaleRate
             )
           : 0) +
-        characterPointObservations.reduce(
-          (logValue, observation) =>
-            logValue +
-            (observation.hasInput
-              ? calculateLogRateSampleProbability(
-                  observation.likelihoodRate,
-                  observation.likelihoodSampleCount,
-                  getCharacterPointReachProbability(setting, observation.character)
-                )
-              : 0),
-          0
-        ) +
+        (useCharacterPointRate
+          ? characterPointObservations.reduce(
+              (logValue, observation) =>
+                logValue +
+                (observation.hasInput
+                  ? calculateLogRateSampleProbability(
+                      observation.likelihoodRate,
+                      observation.likelihoodSampleCount,
+                      getCharacterPointReachProbability(setting, observation.character)
+                    )
+                  : 0),
+              0
+            )
+          : 0) +
         (useCharacterLightRate
           ? characterLightObservations.reduce(
               (logValue, observation) =>
@@ -2556,7 +2655,7 @@ export default function Kabaneri2Page() {
       (observation) => ({
         label: `${observation.character} 合計pt到達率`,
         summaryText: observation.hasInput
-          ? `履歴${observation.historyCount}件の平均 (${observation.percentageText})`
+          ? `履歴${observation.historyCount}件の平均 (${observation.percentageText}) / 推測${useCharacterPointRate ? "ON" : "OFF"}`
           : "未集計",
         values: observation.hasInput
           ? calculateRateSampleSettingProbabilities(
@@ -2638,7 +2737,7 @@ export default function Kabaneri2Page() {
         {
           label: "サミートロフィー",
           summaryText: hasTrophyInput
-            ? `${trophySummaryText} (${trophyMinimumSetting === 6 ? "設定6確定" : `設定${trophyMinimumSetting}以上確定`})`
+            ? `${trophySummaryText} (${trophyMinimumSetting === 6 ? "設定6確定" : `設定${trophyMinimumSetting}以上確定`}) / 推測${useTrophy ? "ON" : "OFF"}`
             : "未集計",
           values: trophyProbabilities
             ? trophyProbabilities.map(formatPercent)
@@ -2647,7 +2746,7 @@ export default function Kabaneri2Page() {
         {
           label: "アイテムくじ ツラヌキ筒",
           summaryText: hasItemLotteryInput
-            ? `${tsuranukiCylinderCount}/${itemLotteryTotal} (${myslotItemLotterySummary.percentageText})`
+            ? `${tsuranukiCylinderCount}/${itemLotteryTotal} (${myslotItemLotterySummary.percentageText}) / 推測${useItemLottery ? "ON" : "OFF"}`
             : "未入力",
           values: itemLotteryProbabilities
             ? itemLotteryProbabilities.map(formatPercent)
@@ -2656,7 +2755,7 @@ export default function Kabaneri2Page() {
         {
           label: "アイテムくじ 確定示唆",
           summaryText: hasItemLotteryConfirmationInput
-            ? itemLotteryConfirmationSummaryText
+            ? `${itemLotteryConfirmationSummaryText} / 推測${useItemLottery ? "ON" : "OFF"}`
             : "未集計",
           values: itemLotteryConfirmationProbabilities
             ? itemLotteryConfirmationProbabilities.map(formatPercent)
@@ -2800,6 +2899,15 @@ export default function Kabaneri2Page() {
                   ))}
                 </div>
               </div>
+              <div className="character-point-estimation-toggle">
+                <EstimationToggle
+                  checked={useCharacterPointRate}
+                  label="平均到達率を推測に使用"
+                  onChange={(checked) =>
+                    handleInputChange("useCharacterPointRate", checked ? "1" : "0")
+                  }
+                />
+              </div>
             </section>
             {inputGroups.filter((group) => !("pointButtons" in group)).map((group) => (
               <section
@@ -2817,30 +2925,23 @@ export default function Kabaneri2Page() {
                   value={inputValues.myslotText ?? ""}
                   onChange={(value) => handleInputChange("myslotText", value)}
                   onClear={() => handleInputChange("myslotText", "")}
+                  onUseItemLotteryChange={(checked) =>
+                    handleInputChange("useItemLottery", checked ? "1" : "0")
+                  }
+                  onUseTrophyChange={(checked) =>
+                    handleInputChange("useTrophy", checked ? "1" : "0")
+                  }
+                  useItemLottery={useItemLottery}
+                  useTrophy={useTrophy}
                 />
               ) : "lightRateEstimation" in group ? (
-                <label className="light-rate-estimation-toggle">
-                  <input
-                    aria-label="発光率を推測に使用"
-                    checked={useCharacterLightRate}
-                    className="light-rate-estimation-input"
-                    role="switch"
-                    type="checkbox"
-                    onChange={(event) =>
-                      handleInputChange(
-                        "useCharacterLightRate",
-                        event.currentTarget.checked ? "1" : "0"
-                      )
-                    }
-                  />
-                  <span aria-hidden="true" className="light-rate-estimation-track" />
-                  <span className="light-rate-estimation-label">
-                    発光率を推測に使用
-                  </span>
-                  <strong className="light-rate-estimation-state">
-                    {useCharacterLightRate ? "ON" : "OFF"}
-                  </strong>
-                </label>
+                <EstimationToggle
+                  checked={useCharacterLightRate}
+                  label="発光率を推測に使用"
+                  onChange={(checked) =>
+                    handleInputChange("useCharacterLightRate", checked ? "1" : "0")
+                  }
+                />
               ) : "history" in group ? (
                 <CharacterCzHistory
                   history={characterPointHistory}
