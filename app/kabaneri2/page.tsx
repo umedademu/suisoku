@@ -1926,27 +1926,12 @@ function CharacterPointColumn({
               </span>
             </span>
           </div>
-          <div
-            aria-label={`${group.character}の発光率 ${lightRatePercentageText} ${lightRate.numerator}/${lightRate.denominator}`}
-            aria-live="polite"
-            className="character-point-summary-item"
-            role="status"
-          >
-            <span className="character-point-summary-label">発光率</span>
-            <span className="character-point-summary-value-row">
-              <strong className="character-point-summary-value">
-                {lightRatePercentageText}
-              </strong>
-              <span className="character-point-summary-detail">
-                （{lightRate.numerator}/{lightRate.denominator}）
-              </span>
-            </span>
-          </div>
         </div>
         <div className="character-point-button-grid">
           {group.pointButtons.map((button) => {
             const buttonCount = getButtonCount(button.countKey);
             const buttonTotalCount = getButtonTotalCount(button.countKey);
+            const showsLightRate = button.countKey === group.withLightCountKey;
             const minusOnRight = group.character === "生駒";
             const decrementButton = (
               <button
@@ -1961,12 +1946,17 @@ function CharacterPointColumn({
             );
             const incrementButton = (
               <button
-                aria-label={`${group.character} ${button.label} ${button.points}pt加算`}
-                className={`character-point-button character-point-button-${button.tone}`}
+                aria-label={`${group.character} ${button.label} ${button.points}pt加算${showsLightRate ? ` 発光率${lightRatePercentageText}` : ""}`}
+                className={`character-point-button character-point-button-${button.tone}${showsLightRate ? " character-point-button-with-light-rate" : ""}`}
                 type="button"
                 onClick={() => onIncrement(button)}
               >
                 <span className="character-point-button-name">{button.label}</span>
+                {showsLightRate ? (
+                  <span className="character-point-button-light-rate">
+                    {lightRatePercentageText}
+                  </span>
+                ) : null}
                 <span className="character-point-button-count">{buttonTotalCount}</span>
               </button>
             );
