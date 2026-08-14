@@ -2732,7 +2732,7 @@ export default function Kabaneri2Page() {
       (observation) => ({
         label: observation.character,
         summaryText: observation.hasInput
-          ? `履歴${observation.historyCount}件の平均 (${observation.percentageText}) / 推測${useCharacterPointRate ? "ON" : "OFF"}`
+          ? `履歴${observation.historyCount}件の平均 (${observation.percentageText})`
           : "未集計",
         values: observation.hasInput
           ? calculateRateSampleSettingProbabilities(
@@ -2748,7 +2748,7 @@ export default function Kabaneri2Page() {
       (observation) => ({
         label: observation.character,
         summaryText: observation.hasInput
-          ? `${observation.numerator}/${observation.denominator} (${observation.percentageText}) / 推測${useCharacterLightRate ? "ON" : "OFF"}`
+          ? `${observation.numerator}/${observation.denominator} (${observation.percentageText})`
           : "未集計",
         values: observation.hasInput
           ? calculateSettingProbabilities(
@@ -2831,7 +2831,7 @@ export default function Kabaneri2Page() {
             {
               label: "確定示唆",
               summaryText: hasTrophyInput
-                ? `${trophySummaryText} (${trophyMinimumSetting === 6 ? "設定6確定" : `設定${trophyMinimumSetting}以上確定`}) / 推測${useTrophy ? "ON" : "OFF"}`
+                ? `${trophySummaryText} (${trophyMinimumSetting === 6 ? "設定6確定" : `設定${trophyMinimumSetting}以上確定`})`
                 : "未集計",
               values: trophyProbabilities
                 ? trophyProbabilities.map(formatPercent)
@@ -2845,7 +2845,7 @@ export default function Kabaneri2Page() {
             {
               label: "ツラヌキ筒",
               summaryText: hasItemLotteryInput
-                ? `${tsuranukiCylinderCount}/${itemLotteryTotal} (${myslotItemLotterySummary.percentageText}) / 推測${useItemLottery ? "ON" : "OFF"}`
+                ? `${tsuranukiCylinderCount}/${itemLotteryTotal} (${myslotItemLotterySummary.percentageText})`
                 : "未入力",
               values: itemLotteryProbabilities
                 ? itemLotteryProbabilities.map(formatPercent)
@@ -2854,7 +2854,7 @@ export default function Kabaneri2Page() {
             {
               label: "確定示唆",
               summaryText: hasItemLotteryConfirmationInput
-                ? `${itemLotteryConfirmationSummaryText} / 推測${useItemLottery ? "ON" : "OFF"}`
+                ? itemLotteryConfirmationSummaryText
                 : "未集計",
               values: itemLotteryConfirmationProbabilities
                 ? itemLotteryConfirmationProbabilities.map(formatPercent)
