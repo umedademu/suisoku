@@ -1800,12 +1800,7 @@ function CharacterPointColumn({
   lightRate,
   getButtonCount,
   onIncrement,
-  onDecrement,
-  specialButton,
-  specialMumeiCount,
-  specialIkomaCount,
-  onSpecialIncrement,
-  onSpecialDecrement
+  onDecrement
 }: {
   group: CharacterPointGroup;
   pointProgress: ReturnType<typeof calculateCharacterPointProgress>;
@@ -1817,11 +1812,6 @@ function CharacterPointColumn({
   getButtonCount: (countKey: CharacterPointCountKey) => number;
   onIncrement: (button: CharacterPointButton) => void;
   onDecrement: (button: CharacterPointButton) => void;
-  specialButton: CharacterSpecialPointButton;
-  specialMumeiCount: number;
-  specialIkomaCount: number;
-  onSpecialIncrement: (button: CharacterSpecialPointButton) => void;
-  onSpecialDecrement: (button: CharacterSpecialPointButton) => void;
 }) {
   const lightRatePercentageText =
     lightRate.denominator > 0 ? lightRate.percentageText : "0%";
@@ -1910,13 +1900,6 @@ function CharacterPointColumn({
           })}
         </div>
       </div>
-      <CharacterSpecialPointControl
-        button={specialButton}
-        ikomaCount={specialIkomaCount}
-        mumeiCount={specialMumeiCount}
-        onDecrement={onSpecialDecrement}
-        onIncrement={onSpecialIncrement}
-      />
     </div>
   );
 }
@@ -2946,10 +2929,6 @@ export default function Kabaneri2Page() {
                   const lightRate = getCharacterLightRate(group);
                   const pointProgress = getCharacterPointProgress(group);
                   const totalPointProgress = getCharacterTotalPointProgress(group);
-                  const isMumei = group.character === "無名";
-                  const specialButton = isMumei
-                    ? CHARACTER_SPECIAL_POINT_BUTTONS.mumeiKabane
-                    : CHARACTER_SPECIAL_POINT_BUTTONS.kabaneIkoma;
 
                   return (
                     <CharacterPointColumn
@@ -2963,26 +2942,47 @@ export default function Kabaneri2Page() {
                       onIncrement={(button) =>
                         handleCharacterPointIncrement(group, button)
                       }
-                      onSpecialDecrement={handleSpecialPointDecrement}
-                      onSpecialIncrement={handleSpecialPointIncrement}
                       pointProgress={pointProgress}
-                      specialButton={specialButton}
-                      specialIkomaCount={getCharacterSpecialButtonCount(
-                        specialButton.ikomaCountKey
-                      )}
-                      specialMumeiCount={getCharacterSpecialButtonCount(
-                        specialButton.mumeiCountKey
-                      )}
                       totalPointProgress={totalPointProgress}
                     />
                   );
                 })}
-                {[
-                  CHARACTER_SPECIAL_POINT_BUTTONS.mumeiIkoma,
-                  CHARACTER_SPECIAL_POINT_BUTTONS.allStar
-                ].map((button) => {
+                {[CHARACTER_SPECIAL_POINT_BUTTONS.mumeiIkoma].map((button) => (
+                  <CharacterSpecialPointControl
+                    button={button}
+                    ikomaCount={getCharacterSpecialButtonCount(button.ikomaCountKey)}
+                    key={button.key}
+                    mumeiCount={getCharacterSpecialButtonCount(button.mumeiCountKey)}
+                    onDecrement={handleSpecialPointDecrement}
+                    onIncrement={handleSpecialPointIncrement}
+                    shared
+                  />
+                ))}
+                <div className="character-special-point-row">
+                  {characterPointGroups.map((group) => {
+                    const specialButton =
+                      group.character === "無名"
+                        ? CHARACTER_SPECIAL_POINT_BUTTONS.mumeiKabane
+                        : CHARACTER_SPECIAL_POINT_BUTTONS.kabaneIkoma;
+
+                    return (
+                      <CharacterSpecialPointControl
+                        button={specialButton}
+                        ikomaCount={getCharacterSpecialButtonCount(
+                          specialButton.ikomaCountKey
+                        )}
+                        key={specialButton.key}
+                        mumeiCount={getCharacterSpecialButtonCount(
+                          specialButton.mumeiCountKey
+                        )}
+                        onDecrement={handleSpecialPointDecrement}
+                        onIncrement={handleSpecialPointIncrement}
+                      />
+                    );
+                  })}
+                </div>
+                {[CHARACTER_SPECIAL_POINT_BUTTONS.allStar].map((button) => {
                   const allStarUndoCount =
-                    button.key === "all-star" &&
                     characterPointHistory[0]?.kind === "all-star"
                       ? 1
                       : 0;

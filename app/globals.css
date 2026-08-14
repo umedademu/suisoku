@@ -1097,9 +1097,17 @@ a {
   box-shadow: 0 4px 11px rgba(57, 65, 70, 0.28);
 }
 
+.character-special-point-row,
 .character-shared-point-control,
 .character-cz-win-row {
   grid-column: 1 / -1;
+}
+
+.character-special-point-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--character-point-column-gap);
+  min-width: 0;
 }
 
 .character-shared-point-control {
