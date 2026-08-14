@@ -893,13 +893,8 @@ a {
 
 .character-point-summary-item-average {
   background: rgba(255, 255, 255, 0.9);
-}
-
-.character-point-summary-item-inline {
-  align-items: baseline;
-  flex-direction: row;
-  gap: 2px;
-  white-space: nowrap;
+  min-height: 40px;
+  padding-block: 4px;
 }
 
 .character-point-panel-green .character-point-summary-item {
@@ -2795,6 +2790,11 @@ a {
     gap: 4px;
     min-height: 58px;
     padding: 6px 2px;
+  }
+
+  .character-point-summary-item-average {
+    min-height: 36px;
+    padding-block: 3px;
   }
 
   .character-point-summary-label {
