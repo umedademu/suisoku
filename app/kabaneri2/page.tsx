@@ -1746,6 +1746,7 @@ function CharacterSpecialPointControl({
   mumeiCount,
   ikomaCount,
   shared = false,
+  minusPosition = "left",
   onIncrement,
   onDecrement
 }: {
@@ -1753,6 +1754,7 @@ function CharacterSpecialPointControl({
   mumeiCount: number;
   ikomaCount: number;
   shared?: boolean;
+  minusPosition?: "left" | "right";
   onIncrement: (button: CharacterSpecialPointButton) => void;
   onDecrement: (button: CharacterSpecialPointButton) => void;
 }) {
@@ -1764,31 +1766,46 @@ function CharacterSpecialPointControl({
       : button.mumeiPointIncrement > 0
         ? `無名に${button.points}pt加算`
         : `生駒に${button.points}pt加算`;
+  const decrementButton = (
+    <button
+      aria-label={`${button.label} 1回取り消し`}
+      className="character-special-point-minus-button"
+      disabled={mumeiCount <= 0 && ikomaCount <= 0}
+      type="button"
+      onClick={() => onDecrement(button)}
+    >
+      −
+    </button>
+  );
+  const incrementButton = (
+    <button
+      aria-label={`${button.label} ${targetText}`}
+      className={`character-special-point-button character-special-point-button-${button.tone}`}
+      type="button"
+      onClick={() => onIncrement(button)}
+    >
+      <span className="character-special-point-button-name">{button.label}</span>
+      <span className="character-special-point-button-points">
+        {isAllStar ? "CZ当選" : `+${button.points}pt`}
+      </span>
+    </button>
+  );
 
   return (
     <div
-      className={`character-special-point-control${shared ? " character-shared-point-control" : ""}`}
+      className={`character-special-point-control character-special-point-control-minus-${minusPosition}${shared ? " character-shared-point-control" : ""}`}
     >
-      <button
-        aria-label={`${button.label} 1回取り消し`}
-        className="character-special-point-minus-button"
-        disabled={mumeiCount <= 0 && ikomaCount <= 0}
-        type="button"
-        onClick={() => onDecrement(button)}
-      >
-        −
-      </button>
-      <button
-        aria-label={`${button.label} ${targetText}`}
-        className={`character-special-point-button character-special-point-button-${button.tone}`}
-        type="button"
-        onClick={() => onIncrement(button)}
-      >
-        <span className="character-special-point-button-name">{button.label}</span>
-        <span className="character-special-point-button-points">
-          {isAllStar ? "CZ当選" : `+${button.points}pt`}
-        </span>
-      </button>
+      {minusPosition === "left" ? (
+        <>
+          {decrementButton}
+          {incrementButton}
+        </>
+      ) : (
+        <>
+          {incrementButton}
+          {decrementButton}
+        </>
+      )}
     </div>
   );
 }
@@ -1874,27 +1891,46 @@ function CharacterPointColumn({
         <div className="character-point-button-grid">
           {group.pointButtons.map((button) => {
             const buttonCount = getButtonCount(button.countKey);
+            const minusOnRight = group.character === "生駒";
+            const decrementButton = (
+              <button
+                aria-label={`${group.character} ${button.label} 1回取り消し`}
+                className="character-point-minus-button"
+                disabled={buttonCount <= 0}
+                type="button"
+                onClick={() => onDecrement(button)}
+              >
+                −
+              </button>
+            );
+            const incrementButton = (
+              <button
+                aria-label={`${group.character} ${button.label} ${button.points}pt加算`}
+                className={`character-point-button character-point-button-${button.tone}`}
+                type="button"
+                onClick={() => onIncrement(button)}
+              >
+                <span className="character-point-button-name">{button.label}</span>
+                <span className="character-point-button-points">+{button.points}pt</span>
+              </button>
+            );
 
             return (
-              <div className="character-point-control" key={button.key}>
-                <button
-                  aria-label={`${group.character} ${button.label} 1回取り消し`}
-                  className="character-point-minus-button"
-                  disabled={buttonCount <= 0}
-                  type="button"
-                  onClick={() => onDecrement(button)}
-                >
-                  −
-                </button>
-                <button
-                  aria-label={`${group.character} ${button.label} ${button.points}pt加算`}
-                  className={`character-point-button character-point-button-${button.tone}`}
-                  type="button"
-                  onClick={() => onIncrement(button)}
-                >
-                  <span className="character-point-button-name">{button.label}</span>
-                  <span className="character-point-button-points">+{button.points}pt</span>
-                </button>
+              <div
+                className={`character-point-control character-point-control-minus-${minusOnRight ? "right" : "left"}`}
+                key={button.key}
+              >
+                {minusOnRight ? (
+                  <>
+                    {incrementButton}
+                    {decrementButton}
+                  </>
+                ) : (
+                  <>
+                    {decrementButton}
+                    {incrementButton}
+                  </>
+                )}
               </div>
             );
           })}
@@ -2972,6 +3008,7 @@ export default function Kabaneri2Page() {
                           specialButton.ikomaCountKey
                         )}
                         key={specialButton.key}
+                        minusPosition={group.character === "生駒" ? "right" : "left"}
                         mumeiCount={getCharacterSpecialButtonCount(
                           specialButton.mumeiCountKey
                         )}
