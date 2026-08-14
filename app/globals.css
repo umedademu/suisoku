@@ -362,11 +362,11 @@ a {
   justify-content: flex-end;
 }
 
-.myslot-input-clear-button {
-  border: 1px solid rgba(173, 56, 56, 0.34);
+.myslot-input-paste-button {
+  border: 1px solid rgba(185, 73, 44, 0.38);
   border-radius: 8px;
-  background: #fff4f2;
-  color: #9a2f32;
+  background: #fff5eb;
+  color: #92391f;
   cursor: pointer;
   font: inherit;
   font-size: 0.66rem;
@@ -374,13 +374,8 @@ a {
   padding: 6px 10px;
 }
 
-.myslot-input-clear-button:hover:not(:disabled) {
-  background: #ffe3df;
-}
-
-.myslot-input-clear-button:disabled {
-  cursor: default;
-  opacity: 0.45;
+.myslot-input-paste-button:hover {
+  background: #ffe4d1;
 }
 
 .myslot-voice-help,

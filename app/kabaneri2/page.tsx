@@ -1420,7 +1420,6 @@ function MyslotItemLotterySummaryBlock({
 function MyslotInput({
   value,
   onChange,
-  onClear,
   useItemLottery,
   useTrophy,
   onUseItemLotteryChange,
@@ -1428,7 +1427,6 @@ function MyslotInput({
 }: {
   value: string;
   onChange: (value: string) => void;
-  onClear: () => void;
   useItemLottery: boolean;
   useTrophy: boolean;
   onUseItemLotteryChange: (checked: boolean) => void;
@@ -1439,12 +1437,49 @@ function MyslotInput({
   const itemLotterySummary = parseMyslotItemLotterySummary(value);
   const voiceSummary = parseMyslotVoiceSummary(value);
   const isEmpty = value.trim() === "";
+  const [clipboardMessage, setClipboardMessage] = useState<{
+    text: string;
+    isError: boolean;
+  } | null>(null);
   const summaryStatuses = [
     { label: "サンド目停止時ボイス", summary: voiceSummary },
     { label: "キャラ紹介", summary: characterSummary },
     { label: "アイテムくじ", summary: itemLotterySummary },
     { label: "サミートロフィー", summary: trophySummary }
   ];
+
+  const handleClipboardPaste = async () => {
+    if (!navigator.clipboard?.readText) {
+      setClipboardMessage({
+        text: "このブラウザでは直接貼り付けできません。入力欄を長押しして貼り付けてください。",
+        isError: true
+      });
+      return;
+    }
+
+    try {
+      const clipboardText = await navigator.clipboard.readText();
+
+      if (clipboardText.trim() === "") {
+        setClipboardMessage({
+          text: "クリップボードに文字がありません。現在の入力内容は変更していません。",
+          isError: true
+        });
+        return;
+      }
+
+      onChange(clipboardText);
+      setClipboardMessage({
+        text: "クリップボードの内容でマイスロ入力欄を書き換えました。",
+        isError: false
+      });
+    } catch {
+      setClipboardMessage({
+        text: "クリップボードを読み取れませんでした。貼り付けを許可するか、入力欄を長押しして貼り付けてください。",
+        isError: true
+      });
+    }
+  };
 
   return (
     <div className="myslot-voice-panel">
@@ -1454,19 +1489,30 @@ function MyslotInput({
         placeholder="マイスロの表示内容を貼り付けてください"
         spellCheck={false}
         value={value}
-        onChange={(event) => onChange(event.currentTarget.value)}
+        onChange={(event) => {
+          setClipboardMessage(null);
+          onChange(event.currentTarget.value);
+        }}
       />
       <div className="myslot-input-actions">
         <button
-          aria-label="マイスロ入力内容をクリア"
-          className="myslot-input-clear-button"
-          disabled={isEmpty}
+          aria-label="クリップボードからマイスロ内容を貼り付け"
+          className="myslot-input-paste-button"
           type="button"
-          onClick={onClear}
+          onClick={handleClipboardPaste}
         >
-          入力内容をクリア
+          マイスロ貼り付け
         </button>
       </div>
+      {clipboardMessage ? (
+        <p
+          aria-live="polite"
+          className={`myslot-voice-message${clipboardMessage.isError ? " is-error" : ""}`}
+          role={clipboardMessage.isError ? "alert" : "status"}
+        >
+          {clipboardMessage.text}
+        </p>
+      ) : null}
       <MyslotSummaryBlock
         summaryKey="voice"
         title="サンド目停止時ボイス"
@@ -2969,7 +3015,6 @@ export default function Kabaneri2Page() {
                 <MyslotInput
                   value={inputValues.myslotText ?? ""}
                   onChange={(value) => handleInputChange("myslotText", value)}
-                  onClear={() => handleInputChange("myslotText", "")}
                   onUseItemLotteryChange={(checked) =>
                     handleInputChange("useItemLottery", checked ? "1" : "0")
                   }
