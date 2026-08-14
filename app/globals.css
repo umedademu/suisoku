@@ -947,7 +947,7 @@ a {
 
 .character-point-minus-button {
   min-width: 0;
-  min-height: 58px;
+  min-height: 87px;
   border: 1px solid transparent;
   border-radius: 10px;
   color: #ffffff;
@@ -997,7 +997,7 @@ a {
 }
 
 .character-cz-win-button {
-  min-height: 46px;
+  min-height: 69px;
   border: 1px solid transparent;
   border-radius: 12px;
   color: #ffffff;
@@ -1033,7 +1033,7 @@ a {
 .character-special-point-minus-button,
 .character-special-point-button {
   min-width: 0;
-  min-height: 46px;
+  min-height: 69px;
   border: 1px solid transparent;
   border-radius: 12px;
   color: #ffffff;
@@ -1183,7 +1183,7 @@ a {
   grid-template-columns: minmax(0, 1fr) max-content;
   gap: 6px;
   align-items: center;
-  min-height: 58px;
+  min-height: 87px;
   border: 1px solid transparent;
   border-radius: 12px;
   color: #fff;
@@ -2695,7 +2695,7 @@ a {
 
   .character-point-column .character-point-minus-button,
   .character-point-column .character-point-button {
-    min-height: 50px;
+    min-height: 75px;
   }
 
   .character-point-column .character-point-button {
