@@ -282,6 +282,30 @@ const ALL_STAR_RESET_COUNT_KEYS = [
 
 type AllStarResetCountKey = (typeof ALL_STAR_RESET_COUNT_KEYS)[number];
 
+const CHARACTER_RESET_COUNT_KEYS: Record<
+  KabaneriCharacter,
+  readonly AllStarResetCountKey[]
+> = {
+  無名: [
+    "mumeiNoLightCount",
+    "mumeiUnknownLightCount",
+    "mumeiWithLightCount",
+    "mumeiHighProbabilityCount",
+    "mumeiKabaneSpecialCount",
+    "mumeiIkomaMumeiSpecialCount",
+    "allStarMumeiSpecialCount"
+  ],
+  生駒: [
+    "ikomaNoLightCount",
+    "ikomaUnknownLightCount",
+    "ikomaWithLightCount",
+    "ikomaHighProbabilityCount",
+    "kabaneIkomaSpecialCount",
+    "mumeiIkomaSpecialCount",
+    "allStarIkomaSpecialCount"
+  ]
+};
+
 type CharacterSpecialPointButton = {
   key: string;
   label: "無名&カバネ" | "カバネ&生駒" | "無名&生駒" | "オールスター目";
@@ -371,6 +395,7 @@ type CharacterCzHistoryEntry = {
   points: number;
   noLightCount: number;
   withLightCount: number;
+  counts: Record<AllStarResetCountKey, number>;
   recordedAt: number;
 };
 
@@ -850,13 +875,41 @@ function parseCharacterPointHistory(value: string) {
           return [];
         }
 
+        const character = entry.character;
+        const rawCounts =
+          typeof entry.counts === "object" &&
+          entry.counts !== null &&
+          !Array.isArray(entry.counts)
+            ? (entry.counts as Record<string, unknown>)
+            : {};
+        const legacyNoLightCount = toNonNegativeInteger(entry.noLightCount);
+        const legacyWithLightCount = toNonNegativeInteger(entry.withLightCount);
+        const noLightCountKey =
+          character === "無名" ? "mumeiNoLightCount" : "ikomaNoLightCount";
+        const withLightCountKey =
+          character === "無名" ? "mumeiWithLightCount" : "ikomaWithLightCount";
+        const counts = Object.fromEntries(
+          ALL_STAR_RESET_COUNT_KEYS.map((key) => {
+            if (key === noLightCountKey && rawCounts[key] === undefined) {
+              return [key, legacyNoLightCount];
+            }
+
+            if (key === withLightCountKey && rawCounts[key] === undefined) {
+              return [key, legacyWithLightCount];
+            }
+
+            return [key, toNonNegativeInteger(rawCounts[key])];
+          })
+        ) as Record<AllStarResetCountKey, number>;
+
         return [
           {
             kind: "character",
-            character: entry.character,
+            character,
             points: toNonNegativeInteger(entry.points),
-            noLightCount: toNonNegativeInteger(entry.noLightCount),
-            withLightCount: toNonNegativeInteger(entry.withLightCount),
+            noLightCount: counts[noLightCountKey],
+            withLightCount: counts[withLightCountKey],
+            counts,
             recordedAt: Number.isFinite(recordedAt) ? recordedAt : 0
           }
         ];
@@ -1745,6 +1798,7 @@ function CharacterSpecialPointControl({
   button,
   mumeiCount,
   ikomaCount,
+  totalCount,
   shared = false,
   minusPosition = "left",
   onIncrement,
@@ -1753,6 +1807,7 @@ function CharacterSpecialPointControl({
   button: CharacterSpecialPointButton;
   mumeiCount: number;
   ikomaCount: number;
+  totalCount: number;
   shared?: boolean;
   minusPosition?: "left" | "right";
   onIncrement: (button: CharacterSpecialPointButton) => void;
@@ -1785,9 +1840,7 @@ function CharacterSpecialPointControl({
       onClick={() => onIncrement(button)}
     >
       <span className="character-special-point-button-name">{button.label}</span>
-      <span className="character-special-point-button-points">
-        {isAllStar ? "CZ当選" : `+${button.points}pt`}
-      </span>
+      <span className="character-special-point-button-count">{totalCount}回</span>
     </button>
   );
 
@@ -1816,6 +1869,7 @@ function CharacterPointColumn({
   totalPointProgress,
   lightRate,
   getButtonCount,
+  getButtonTotalCount,
   onIncrement,
   onDecrement
 }: {
@@ -1827,6 +1881,7 @@ function CharacterPointColumn({
   };
   lightRate: ReturnType<typeof calculateCharacterLightRate>;
   getButtonCount: (countKey: CharacterPointCountKey) => number;
+  getButtonTotalCount: (countKey: CharacterPointCountKey) => number;
   onIncrement: (button: CharacterPointButton) => void;
   onDecrement: (button: CharacterPointButton) => void;
 }) {
@@ -1891,6 +1946,7 @@ function CharacterPointColumn({
         <div className="character-point-button-grid">
           {group.pointButtons.map((button) => {
             const buttonCount = getButtonCount(button.countKey);
+            const buttonTotalCount = getButtonTotalCount(button.countKey);
             const minusOnRight = group.character === "生駒";
             const decrementButton = (
               <button
@@ -1911,7 +1967,7 @@ function CharacterPointColumn({
                 onClick={() => onIncrement(button)}
               >
                 <span className="character-point-button-name">{button.label}</span>
-                <span className="character-point-button-points">+{button.points}pt</span>
+                <span className="character-point-button-count">{buttonTotalCount}回</span>
               </button>
             );
 
@@ -2024,6 +2080,21 @@ export default function Kabaneri2Page() {
     countKey
       ? Math.max(0, Math.trunc(toNumber(inputValues[countKey] ?? "0")))
       : 0;
+  const getHistoryButtonCount = (countKey: AllStarResetCountKey) =>
+    characterPointHistory.reduce((sum, entry) => sum + entry.counts[countKey], 0);
+  const getCharacterButtonTotalCount = (countKey: CharacterPointCountKey) =>
+    getCharacterButtonCount(countKey) + getHistoryButtonCount(countKey);
+  const getCharacterSpecialButtonTotalCount = (button: CharacterSpecialPointButton) => {
+    if (button.key === "all-star") {
+      return characterPointHistory.filter((entry) => entry.kind === "all-star").length;
+    }
+
+    const countKey = button.mumeiCountKey ?? button.ikomaCountKey;
+
+    return countKey
+      ? getCharacterSpecialButtonCount(countKey) + getHistoryButtonCount(countKey)
+      : 0;
+  };
   const getCharacterPointProgress = (group: CharacterPointGroup) => {
     const points = getCharacterPoints(group.pointKey);
 
@@ -2291,18 +2362,22 @@ export default function Kabaneri2Page() {
 
   const handleCharacterCzWin = (group: CharacterPointGroup) => {
     setInputValues((current) => {
+      const resetCountKeys = CHARACTER_RESET_COUNT_KEYS[group.character];
+      const counts = Object.fromEntries(
+        ALL_STAR_RESET_COUNT_KEYS.map((key) => [
+          key,
+          resetCountKeys.includes(key)
+            ? Math.max(0, Math.trunc(toNumber(current[key] ?? "0")))
+            : 0
+        ])
+      ) as Record<AllStarResetCountKey, number>;
       const historyEntry: CharacterPointHistoryEntry = {
         kind: "character",
         character: group.character,
         points: Math.max(0, Math.trunc(toNumber(current[group.pointKey] ?? "0"))),
-        noLightCount: Math.max(
-          0,
-          Math.trunc(toNumber(current[group.noLightCountKey] ?? "0"))
-        ),
-        withLightCount: Math.max(
-          0,
-          Math.trunc(toNumber(current[group.withLightCountKey] ?? "0"))
-        ),
+        noLightCount: counts[group.noLightCountKey],
+        withLightCount: counts[group.withLightCountKey],
+        counts,
         recordedAt: Date.now()
       };
       const currentHistory = parseCharacterPointHistory(
@@ -2315,19 +2390,9 @@ export default function Kabaneri2Page() {
         characterPointHistory: JSON.stringify([historyEntry, ...currentHistory])
       };
 
-      group.pointButtons.forEach((button) => {
-        nextValues[button.countKey] = "0";
+      resetCountKeys.forEach((key) => {
+        nextValues[key] = "0";
       });
-
-      if (group.character === "無名") {
-        nextValues.mumeiKabaneSpecialCount = "0";
-        nextValues.mumeiIkomaMumeiSpecialCount = "0";
-        nextValues.allStarMumeiSpecialCount = "0";
-      } else {
-        nextValues.kabaneIkomaSpecialCount = "0";
-        nextValues.mumeiIkomaSpecialCount = "0";
-        nextValues.allStarIkomaSpecialCount = "0";
-      }
 
       return nextValues;
     });
@@ -2969,6 +3034,7 @@ export default function Kabaneri2Page() {
                   return (
                     <CharacterPointColumn
                       getButtonCount={getCharacterButtonCount}
+                      getButtonTotalCount={getCharacterButtonTotalCount}
                       group={group}
                       key={group.character}
                       lightRate={lightRate}
@@ -2992,6 +3058,7 @@ export default function Kabaneri2Page() {
                     onDecrement={handleSpecialPointDecrement}
                     onIncrement={handleSpecialPointIncrement}
                     shared
+                    totalCount={getCharacterSpecialButtonTotalCount(button)}
                   />
                 ))}
                 <div className="character-special-point-row">
@@ -3014,6 +3081,7 @@ export default function Kabaneri2Page() {
                         )}
                         onDecrement={handleSpecialPointDecrement}
                         onIncrement={handleSpecialPointIncrement}
+                        totalCount={getCharacterSpecialButtonTotalCount(specialButton)}
                       />
                     );
                   })}
@@ -3039,6 +3107,7 @@ export default function Kabaneri2Page() {
                       onDecrement={handleSpecialPointDecrement}
                       onIncrement={handleSpecialPointIncrement}
                       shared
+                      totalCount={getCharacterSpecialButtonTotalCount(button)}
                     />
                   );
                 })}

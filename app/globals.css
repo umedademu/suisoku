@@ -1169,7 +1169,7 @@ a {
   text-align: left;
 }
 
-.character-special-point-button-points {
+.character-special-point-button-count {
   grid-column: 2;
   justify-self: end;
   font-size: 0.88rem;
@@ -1286,7 +1286,7 @@ a {
   line-height: 1.25;
 }
 
-.character-point-button-points {
+.character-point-button-count {
   font-size: 0.92rem;
   white-space: nowrap;
 }
@@ -2727,7 +2727,7 @@ a {
     font-size: 0.66rem;
   }
 
-  .character-point-column .character-point-button-points {
+  .character-point-column .character-point-button-count {
     font-size: 0.76rem;
   }
 
@@ -2751,7 +2751,7 @@ a {
     font-size: 0.6rem;
   }
 
-  .character-special-point-button-points {
+  .character-special-point-button-count {
     font-size: 0.64rem;
   }
 
