@@ -1172,7 +1172,8 @@ a {
 .character-special-point-button-count {
   grid-column: 2;
   justify-self: end;
-  font-size: 0.88rem;
+  font-size: 1.76rem;
+  line-height: 1;
   white-space: nowrap;
 }
 
@@ -1287,7 +1288,8 @@ a {
 }
 
 .character-point-button-count {
-  font-size: 0.92rem;
+  font-size: 1.84rem;
+  line-height: 1;
   white-space: nowrap;
 }
 
@@ -2728,7 +2730,7 @@ a {
   }
 
   .character-point-column .character-point-button-count {
-    font-size: 0.76rem;
+    font-size: 1.52rem;
   }
 
   .character-special-point-control {
@@ -2752,7 +2754,7 @@ a {
   }
 
   .character-special-point-button-count {
-    font-size: 0.64rem;
+    font-size: 1.28rem;
   }
 
   .character-point-summary-item {

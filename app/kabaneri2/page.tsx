@@ -1840,7 +1840,7 @@ function CharacterSpecialPointControl({
       onClick={() => onIncrement(button)}
     >
       <span className="character-special-point-button-name">{button.label}</span>
-      <span className="character-special-point-button-count">{totalCount}回</span>
+      <span className="character-special-point-button-count">{totalCount}</span>
     </button>
   );
 
@@ -1967,7 +1967,7 @@ function CharacterPointColumn({
                 onClick={() => onIncrement(button)}
               >
                 <span className="character-point-button-name">{button.label}</span>
-                <span className="character-point-button-count">{buttonTotalCount}回</span>
+                <span className="character-point-button-count">{buttonTotalCount}</span>
               </button>
             );
 
