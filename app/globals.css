@@ -1172,7 +1172,7 @@ a {
 .character-special-point-button-count {
   grid-column: 2;
   justify-self: end;
-  font-size: 1.76rem;
+  font-size: 1.24rem;
   line-height: 1;
   white-space: nowrap;
 }
@@ -1288,31 +1288,28 @@ a {
 }
 
 .character-point-button-count {
-  font-size: 1.84rem;
+  font-size: 1.3rem;
   line-height: 1;
   white-space: nowrap;
 }
 
-.character-point-button-with-light-rate .character-point-button-name {
-  grid-column: 1;
-  grid-row: 1;
+.character-point-button-stats {
+  grid-column: 2;
+  justify-self: end;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 3px;
+  min-width: 0;
 }
 
 .character-point-button-light-rate {
-  grid-column: 1;
-  grid-row: 2;
-  justify-self: start;
-  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.72rem;
   font-weight: 800;
   line-height: 1;
   white-space: nowrap;
-}
-
-.character-point-button-with-light-rate .character-point-button-count {
-  grid-column: 2;
-  grid-row: 1 / span 2;
-  align-self: center;
-  justify-self: end;
 }
 
 .character-cz-history-empty {
@@ -2752,11 +2749,11 @@ a {
   }
 
   .character-point-column .character-point-button-count {
-    font-size: 1.52rem;
+    font-size: 1.06rem;
   }
 
   .character-point-column .character-point-button-light-rate {
-    font-size: 0.76rem;
+    font-size: 0.66rem;
   }
 
   .character-special-point-control {
@@ -2780,7 +2777,7 @@ a {
   }
 
   .character-special-point-button-count {
-    font-size: 1.28rem;
+    font-size: 0.9rem;
   }
 
   .character-point-summary-item {

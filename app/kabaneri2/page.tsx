@@ -1947,17 +1947,19 @@ function CharacterPointColumn({
             const incrementButton = (
               <button
                 aria-label={`${group.character} ${button.label} ${button.points}pt加算${showsLightRate ? ` 発光率${lightRatePercentageText}` : ""}`}
-                className={`character-point-button character-point-button-${button.tone}${showsLightRate ? " character-point-button-with-light-rate" : ""}`}
+                className={`character-point-button character-point-button-${button.tone}`}
                 type="button"
                 onClick={() => onIncrement(button)}
               >
                 <span className="character-point-button-name">{button.label}</span>
-                {showsLightRate ? (
-                  <span className="character-point-button-light-rate">
-                    {lightRatePercentageText}
-                  </span>
-                ) : null}
-                <span className="character-point-button-count">{buttonTotalCount}</span>
+                <span className="character-point-button-stats">
+                  <span className="character-point-button-count">{buttonTotalCount}</span>
+                  {showsLightRate ? (
+                    <span className="character-point-button-light-rate">
+                      ({lightRatePercentageText})
+                    </span>
+                  ) : null}
+                </span>
               </button>
             );
 
