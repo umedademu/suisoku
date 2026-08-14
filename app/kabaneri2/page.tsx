@@ -409,6 +409,10 @@ type AllStarHistoryEntry = {
 
 type CharacterPointHistoryEntry = CharacterCzHistoryEntry | AllStarHistoryEntry;
 
+type KabaneriActionSnapshot = Record<string, string>;
+
+const ACTION_HISTORY_LIMIT = 50;
+
 type InputGroup =
   | StandardInputGroup
   | CycleInputGroup
@@ -1799,7 +1803,6 @@ function CharacterSpecialPointControl({
   mumeiCount,
   ikomaCount,
   totalCount,
-  shared = false,
   minusPosition = "left",
   onIncrement,
   onDecrement
@@ -1808,7 +1811,6 @@ function CharacterSpecialPointControl({
   mumeiCount: number;
   ikomaCount: number;
   totalCount: number;
-  shared?: boolean;
   minusPosition?: "left" | "right";
   onIncrement: (button: CharacterSpecialPointButton) => void;
   onDecrement: (button: CharacterSpecialPointButton) => void;
@@ -1846,7 +1848,7 @@ function CharacterSpecialPointControl({
 
   return (
     <div
-      className={`character-special-point-control character-special-point-control-minus-${minusPosition}${shared ? " character-shared-point-control" : ""}`}
+      className={`character-special-point-control character-special-point-control-minus-${minusPosition}`}
     >
       {minusPosition === "left" ? (
         <>
@@ -1860,6 +1862,49 @@ function CharacterSpecialPointControl({
         </>
       )}
     </div>
+  );
+}
+
+function CharacterActionHistoryButton({
+  direction,
+  disabled,
+  onClick
+}: {
+  direction: "undo" | "redo";
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  const isUndo = direction === "undo";
+  const label = isUndo ? "元に戻す" : "やり直し";
+
+  return (
+    <button
+      aria-label={`${label}（直近の操作）`}
+      className="character-action-history-button"
+      disabled={disabled}
+      type="button"
+      onClick={onClick}
+    >
+      <svg
+        aria-hidden="true"
+        className="character-action-history-icon"
+        focusable="false"
+        viewBox="0 0 24 24"
+      >
+        {isUndo ? (
+          <>
+            <path d="M9 6 4 11l5 5" />
+            <path d="M4 11h8.5A7.5 7.5 0 0 1 20 18.5" />
+          </>
+        ) : (
+          <>
+            <path d="m15 6 5 5-5 5" />
+            <path d="M20 11h-8.5A7.5 7.5 0 0 0 4 18.5" />
+          </>
+        )}
+      </svg>
+      <span className="character-action-history-label">{label}</span>
+    </button>
   );
 }
 
@@ -1989,6 +2034,8 @@ export default function Kabaneri2Page() {
   const [estimateResult, setEstimateResult] = useState<EstimateResult | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [hasLoadedSavedValues, setHasLoadedSavedValues] = useState(false);
+  const [undoHistory, setUndoHistory] = useState<KabaneriActionSnapshot[]>([]);
+  const [redoHistory, setRedoHistory] = useState<KabaneriActionSnapshot[]>([]);
   const characterPointHistory = parseCharacterPointHistory(
     inputValues.characterPointHistory ?? "[]"
   );
@@ -2002,6 +2049,11 @@ export default function Kabaneri2Page() {
     setErrorMessage("");
   };
 
+  const clearActionHistory = () => {
+    setUndoHistory([]);
+    setRedoHistory([]);
+  };
+
   const saveSlots = useSaveSlots({
     storageKey: STORAGE_KEY,
     inputValues,
@@ -2010,6 +2062,7 @@ export default function Kabaneri2Page() {
     mergeValues: mergeKabaneriInputValues,
     onLoad: (nextValues) => {
       setInputValues(nextValues);
+      clearActionHistory();
       resetResults();
     }
   });
@@ -2151,24 +2204,80 @@ export default function Kabaneri2Page() {
       ...current,
       [key]: value
     }));
+    clearActionHistory();
+    resetResults();
+  };
+
+  const applyUndoableInputUpdate = (
+    updater: (current: Record<string, string>) => Record<string, string>
+  ) => {
+    const nextValues = updater(inputValues);
+
+    if (nextValues === inputValues) {
+      return;
+    }
+
+    setUndoHistory((current) => [
+      ...current.slice(-(ACTION_HISTORY_LIMIT - 1)),
+      inputValues
+    ]);
+    setRedoHistory([]);
+    setInputValues(nextValues);
+    resetResults();
+  };
+
+  const handleUndo = () => {
+    const previousValues = undoHistory[undoHistory.length - 1];
+
+    if (!previousValues) {
+      return;
+    }
+
+    setUndoHistory(undoHistory.slice(0, -1));
+    setRedoHistory((current) => [
+      ...current.slice(-(ACTION_HISTORY_LIMIT - 1)),
+      inputValues
+    ]);
+    setInputValues(previousValues);
+    resetResults();
+  };
+
+  const handleRedo = () => {
+    const nextValues = redoHistory[redoHistory.length - 1];
+
+    if (!nextValues) {
+      return;
+    }
+
+    setRedoHistory(redoHistory.slice(0, -1));
+    setUndoHistory((current) => [
+      ...current.slice(-(ACTION_HISTORY_LIMIT - 1)),
+      inputValues
+    ]);
+    setInputValues(nextValues);
     resetResults();
   };
 
   const handleCountInputStep = (key: string, step: -1 | 1) => {
-    const currentValue = Math.max(0, Math.floor(toNumber(inputValues[key] ?? "")));
+    applyUndoableInputUpdate((current) => {
+      const currentValue = Math.max(0, Math.floor(toNumber(current[key] ?? "")));
 
-    if (step === -1 && currentValue === 0) {
-      return;
-    }
+      if (step === -1 && currentValue === 0) {
+        return current;
+      }
 
-    handleInputChange(key, String(currentValue + step));
+      return {
+        ...current,
+        [key]: String(currentValue + step)
+      };
+    });
   };
 
   const handleCharacterPointIncrement = (
     group: CharacterPointGroup,
     button: CharacterPointButton
   ) => {
-    setInputValues((current) => {
+    applyUndoableInputUpdate((current) => {
       return {
         ...current,
         [group.pointKey]: String(
@@ -2185,7 +2294,7 @@ export default function Kabaneri2Page() {
     group: CharacterPointGroup,
     button: CharacterPointButton
   ) => {
-    setInputValues((current) => {
+    applyUndoableInputUpdate((current) => {
       const buttonCount = Math.max(
         0,
         Math.trunc(toNumber(current[button.countKey] ?? "0"))
@@ -2210,7 +2319,7 @@ export default function Kabaneri2Page() {
 
   const handleSpecialPointIncrement = (button: CharacterSpecialPointButton) => {
     if (button.key === "all-star") {
-      setInputValues((current) => {
+      applyUndoableInputUpdate((current) => {
         const counts = Object.fromEntries(
           ALL_STAR_RESET_COUNT_KEYS.map((key) => [
             key,
@@ -2240,11 +2349,10 @@ export default function Kabaneri2Page() {
 
         return nextValues;
       });
-      resetResults();
       return;
     }
 
-    setInputValues((current) => {
+    applyUndoableInputUpdate((current) => {
       const nextValues: Record<string, string> = {
         ...current,
         mumeiPoints: String(
@@ -2274,7 +2382,7 @@ export default function Kabaneri2Page() {
   };
 
   const handleSpecialPointDecrement = (button: CharacterSpecialPointButton) => {
-    setInputValues((current) => {
+    applyUndoableInputUpdate((current) => {
       if (button.key === "all-star") {
         const currentHistory = parseCharacterPointHistory(
           current.characterPointHistory ?? "[]"
@@ -2345,11 +2453,10 @@ export default function Kabaneri2Page() {
 
       return nextValues;
     });
-    resetResults();
   };
 
   const handleCharacterCzWin = (group: CharacterPointGroup) => {
-    setInputValues((current) => {
+    applyUndoableInputUpdate((current) => {
       const resetCountKeys = CHARACTER_RESET_COUNT_KEYS[group.character];
       const counts = Object.fromEntries(
         ALL_STAR_RESET_COUNT_KEYS.map((key) => [
@@ -2384,11 +2491,10 @@ export default function Kabaneri2Page() {
 
       return nextValues;
     });
-    resetResults();
   };
 
   const handleCharacterHistoryDelete = (index: number) => {
-    setInputValues((current) => {
+    applyUndoableInputUpdate((current) => {
       const currentHistory = parseCharacterPointHistory(
         current.characterPointHistory ?? "[]"
       );
@@ -2400,7 +2506,6 @@ export default function Kabaneri2Page() {
         )
       };
     });
-    resetResults();
   };
 
   const handleEstimate = (event: React.FormEvent<HTMLFormElement>) => {
@@ -3006,8 +3111,14 @@ export default function Kabaneri2Page() {
       <div className="card card-wide">
         <MachinePageHeader
           title="Lカバネリ 海門決戦"
-          onClear={saveSlots.onClearCurrentData}
-          onClearAll={saveSlots.onClearAllData}
+          onClear={() => {
+            clearActionHistory();
+            saveSlots.onClearCurrentData();
+          }}
+          onClearAll={() => {
+            clearActionHistory();
+            saveSlots.onClearAllData();
+          }}
         />
         <form className="input-form" onSubmit={handleEstimate}>
           <AutoEstimate inputValues={inputValues} isReady={hasLoadedSavedValues} />
@@ -3038,16 +3149,21 @@ export default function Kabaneri2Page() {
                   );
                 })}
                 {[CHARACTER_SPECIAL_POINT_BUTTONS.mumeiIkoma].map((button) => (
-                  <CharacterSpecialPointControl
-                    button={button}
-                    ikomaCount={getCharacterSpecialButtonCount(button.ikomaCountKey)}
-                    key={button.key}
-                    mumeiCount={getCharacterSpecialButtonCount(button.mumeiCountKey)}
-                    onDecrement={handleSpecialPointDecrement}
-                    onIncrement={handleSpecialPointIncrement}
-                    shared
-                    totalCount={getCharacterSpecialButtonTotalCount(button)}
-                  />
+                  <div className="character-shared-action-row" key={button.key}>
+                    <CharacterSpecialPointControl
+                      button={button}
+                      ikomaCount={getCharacterSpecialButtonCount(button.ikomaCountKey)}
+                      mumeiCount={getCharacterSpecialButtonCount(button.mumeiCountKey)}
+                      onDecrement={handleSpecialPointDecrement}
+                      onIncrement={handleSpecialPointIncrement}
+                      totalCount={getCharacterSpecialButtonTotalCount(button)}
+                    />
+                    <CharacterActionHistoryButton
+                      direction="undo"
+                      disabled={undoHistory.length === 0}
+                      onClick={handleUndo}
+                    />
+                  </div>
                 ))}
                 <div className="character-special-point-row">
                   {characterPointGroups.map((group) => {
@@ -3081,22 +3197,27 @@ export default function Kabaneri2Page() {
                       : 0;
 
                   return (
-                    <CharacterSpecialPointControl
-                      button={button}
-                      ikomaCount={Math.max(
-                        allStarUndoCount,
-                        getCharacterSpecialButtonCount(button.ikomaCountKey)
-                      )}
-                      key={button.key}
-                      mumeiCount={Math.max(
-                        allStarUndoCount,
-                        getCharacterSpecialButtonCount(button.mumeiCountKey)
-                      )}
-                      onDecrement={handleSpecialPointDecrement}
-                      onIncrement={handleSpecialPointIncrement}
-                      shared
-                      totalCount={getCharacterSpecialButtonTotalCount(button)}
-                    />
+                    <div className="character-shared-action-row" key={button.key}>
+                      <CharacterSpecialPointControl
+                        button={button}
+                        ikomaCount={Math.max(
+                          allStarUndoCount,
+                          getCharacterSpecialButtonCount(button.ikomaCountKey)
+                        )}
+                        mumeiCount={Math.max(
+                          allStarUndoCount,
+                          getCharacterSpecialButtonCount(button.mumeiCountKey)
+                        )}
+                        onDecrement={handleSpecialPointDecrement}
+                        onIncrement={handleSpecialPointIncrement}
+                        totalCount={getCharacterSpecialButtonTotalCount(button)}
+                      />
+                      <CharacterActionHistoryButton
+                        direction="redo"
+                        disabled={redoHistory.length === 0}
+                        onClick={handleRedo}
+                      />
+                    </div>
                   );
                 })}
                 <div className="character-cz-win-row">
