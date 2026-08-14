@@ -896,6 +896,7 @@ a {
 }
 
 .character-point-summary-item-inline {
+  align-items: baseline;
   flex-direction: row;
   gap: 2px;
   white-space: nowrap;
