@@ -1608,51 +1608,63 @@ function CharacterCzHistory({
   history: CharacterPointHistoryEntry[];
   onDelete: (index: number) => void;
 }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const alwaysVisibleCount = 5;
+  const hiddenHistoryCount = Math.max(0, history.length - alwaysVisibleCount);
+  const visibleHistory = isExpanded ? history : history.slice(0, alwaysVisibleCount);
+
+  useEffect(() => {
+    if (hiddenHistoryCount === 0 && isExpanded) {
+      setIsExpanded(false);
+    }
+  }, [hiddenHistoryCount, isExpanded]);
+
   if (history.length === 0) {
     return <p className="character-cz-history-empty">当選履歴はまだありません。</p>;
   }
 
   return (
-    <div className="table-wrap character-cz-history-wrap">
-      <table className="data-table data-table-compact character-cz-history-table">
-        <thead>
-          <tr>
-            <th scope="col">回</th>
-            <th scope="col">当選CZ</th>
-            <th scope="col">獲得pt</th>
-            <th scope="col">発光</th>
-            <th scope="col">削除</th>
-          </tr>
-        </thead>
-        <tbody>
-          {history.map((entry, index) => {
-            const isAllStar = entry.kind === "all-star";
-            const pointProgress = isAllStar
-              ? null
-              : calculateCharacterPointProgress(
-                  entry.points,
-                  CHARACTER_STANDARD_POINTS[entry.character]
-                );
-            const lightRate = isAllStar
-              ? null
-              : calculateCharacterLightRate(entry.noLightCount, entry.withLightCount);
-            const allStarMumeiLightRate = isAllStar
-              ? calculateCharacterLightRate(
-                  entry.counts.mumeiNoLightCount,
-                  entry.counts.mumeiWithLightCount
-                )
-              : null;
-            const allStarIkomaLightRate = isAllStar
-              ? calculateCharacterLightRate(
-                  entry.counts.ikomaNoLightCount,
-                  entry.counts.ikomaWithLightCount
-                )
-              : null;
-            const historyNumber = history.length - index;
-            const historyLabel = isAllStar ? "オールスター" : `${entry.character}CZ`;
+    <div className="character-cz-history-container">
+      <div className="table-wrap character-cz-history-wrap">
+        <table className="data-table data-table-compact character-cz-history-table">
+          <thead>
+            <tr>
+              <th scope="col">回</th>
+              <th scope="col">当選CZ</th>
+              <th scope="col">獲得pt</th>
+              <th scope="col">発光</th>
+              <th scope="col">削除</th>
+            </tr>
+          </thead>
+          <tbody>
+            {visibleHistory.map((entry, index) => {
+              const isAllStar = entry.kind === "all-star";
+              const pointProgress = isAllStar
+                ? null
+                : calculateCharacterPointProgress(
+                    entry.points,
+                    CHARACTER_STANDARD_POINTS[entry.character]
+                  );
+              const lightRate = isAllStar
+                ? null
+                : calculateCharacterLightRate(entry.noLightCount, entry.withLightCount);
+              const allStarMumeiLightRate = isAllStar
+                ? calculateCharacterLightRate(
+                    entry.counts.mumeiNoLightCount,
+                    entry.counts.mumeiWithLightCount
+                  )
+                : null;
+              const allStarIkomaLightRate = isAllStar
+                ? calculateCharacterLightRate(
+                    entry.counts.ikomaNoLightCount,
+                    entry.counts.ikomaWithLightCount
+                  )
+                : null;
+              const historyNumber = history.length - index;
+              const historyLabel = isAllStar ? "オールスター" : `${entry.character}CZ`;
 
-            return (
-              <tr key={`${entry.recordedAt}-${entry.kind}-${index}`}>
+              return (
+                <tr key={`${entry.recordedAt}-${entry.kind}-${index}`}>
                 <th scope="row">{historyNumber}</th>
                 <td>{historyLabel}</td>
                 <td>
@@ -1707,11 +1719,24 @@ function CharacterCzHistory({
                     削除
                   </button>
                 </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      {hiddenHistoryCount > 0 ? (
+        <button
+          aria-expanded={isExpanded}
+          className="character-cz-history-toggle-button"
+          type="button"
+          onClick={() => setIsExpanded((current) => !current)}
+        >
+          {isExpanded
+            ? "過去の履歴を折りたたむ"
+            : `過去の履歴を表示（残り${hiddenHistoryCount}件）`}
+        </button>
+      ) : null}
     </div>
   );
 }

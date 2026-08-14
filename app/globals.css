@@ -1287,10 +1287,12 @@ a {
 
 .character-cz-history-wrap {
   margin-top: 0;
+  overflow-x: hidden;
 }
 
 .data-table.character-cz-history-table {
-  min-width: 560px;
+  width: 100%;
+  min-width: 0;
   table-layout: fixed;
   font-size: 0.68rem;
 }
@@ -1334,8 +1336,34 @@ a {
 }
 
 .character-cz-history-value-all-star {
-  gap: 5px;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
   font-size: 0.54rem;
+}
+
+.character-cz-history-toggle-button {
+  display: block;
+  width: 100%;
+  margin-top: 7px;
+  border: 1px solid rgba(141, 85, 46, 0.3);
+  border-radius: 9px;
+  background: #fffaf1;
+  color: #704322;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 8px 10px;
+}
+
+.character-cz-history-toggle-button:hover {
+  background: #fff1da;
+}
+
+.character-cz-history-toggle-button:focus-visible {
+  outline: 3px solid rgba(197, 75, 44, 0.2);
+  outline-offset: 2px;
 }
 
 .character-cz-history-delete-button {
@@ -2842,6 +2870,52 @@ a {
 
   .data-table thead th {
     white-space: normal;
+  }
+
+  .data-table.character-cz-history-table {
+    font-size: 0.58rem;
+  }
+
+  .data-table.character-cz-history-table th,
+  .data-table.character-cz-history-table td {
+    padding: 4px 1px;
+  }
+
+  .character-cz-history-table th:first-child {
+    width: 7%;
+  }
+
+  .character-cz-history-table th:nth-child(2) {
+    width: 20%;
+  }
+
+  .character-cz-history-table th:nth-child(3) {
+    width: 25%;
+  }
+
+  .character-cz-history-table th:nth-child(4) {
+    width: 31%;
+  }
+
+  .character-cz-history-table th:nth-child(5) {
+    width: 17%;
+  }
+
+  .character-cz-history-main {
+    font-size: 0.64rem;
+  }
+
+  .character-cz-history-sub {
+    font-size: 0.52rem;
+  }
+
+  .character-cz-history-value-all-star {
+    font-size: 0.48rem;
+  }
+
+  .character-cz-history-delete-button {
+    font-size: 0.56rem;
+    padding: 4px 5px;
   }
 
   .table-head-main {
