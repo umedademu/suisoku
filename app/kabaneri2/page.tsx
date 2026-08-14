@@ -1893,7 +1893,7 @@ function CharacterPointColumn({
       <div className={`character-point-panel character-point-panel-${group.theme}`}>
         <div className="character-point-summary">
           <div
-            aria-label={`${group.character}の現在のpt ${pointProgress.points}pt 到達率${pointProgress.percentageText}`}
+            aria-label={`${group.character}の現在のpt ${pointProgress.points}pt`}
             aria-live="polite"
             className="character-point-summary-item"
             role="status"
@@ -1904,9 +1904,6 @@ function CharacterPointColumn({
                 {pointProgress.points}
               </strong>
               <span className="character-point-summary-unit">pt</span>
-              <span className="character-point-summary-detail">
-                ({pointProgress.percentageText})
-              </span>
             </span>
           </div>
           <div
