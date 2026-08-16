@@ -774,6 +774,135 @@ a {
   grid-template-columns: minmax(0, 1fr);
 }
 
+.kabaneri-operation-meter {
+  grid-column: 1 / -1;
+  min-width: 0;
+  padding-block: 1px;
+}
+
+.kabaneri-operation-meter-track {
+  position: relative;
+  height: 14px;
+  border: 1px solid rgba(77, 66, 54, 0.42);
+  border-radius: 999px;
+  background: linear-gradient(180deg, #302a24, #171411);
+  box-shadow:
+    inset 0 2px 5px rgba(0, 0, 0, 0.48),
+    0 1px 2px rgba(79, 62, 45, 0.12);
+  overflow: hidden;
+}
+
+.kabaneri-operation-meter-track::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), transparent 52%);
+  pointer-events: none;
+}
+
+.kabaneri-operation-meter-block {
+  position: absolute;
+  top: 1px;
+  z-index: 1;
+  width: 10px;
+  height: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  border-radius: 3px;
+  box-shadow:
+    0 0 5px rgba(255, 255, 255, 0.22),
+    inset 0 0 2px rgba(255, 255, 255, 0.28);
+  transition: right 100ms linear;
+  animation: kabaneri-operation-meter-block-arrive 180ms ease-out;
+  will-change: right;
+}
+
+.kabaneri-operation-meter-block-crimson {
+  background: linear-gradient(135deg, #b94449, #82252f);
+}
+
+.kabaneri-operation-meter-block-rose {
+  background: linear-gradient(135deg, #d47771, #ad4747);
+}
+
+.kabaneri-operation-meter-block-wine {
+  background: linear-gradient(135deg, #96323d, #681b27);
+}
+
+.kabaneri-operation-meter-block-coral {
+  background: linear-gradient(135deg, #c95d57, #9b3438);
+}
+
+.kabaneri-operation-meter-block-deep {
+  background: linear-gradient(135deg, #3f8e46, #22682d);
+}
+
+.kabaneri-operation-meter-block-soft {
+  background: linear-gradient(135deg, #6baa5e, #448a3f);
+}
+
+.kabaneri-operation-meter-block-forest {
+  background: linear-gradient(135deg, #307a3b, #195625);
+}
+
+.kabaneri-operation-meter-block-leaf {
+  background: linear-gradient(135deg, #559b4a, #2f7935);
+}
+
+.kabaneri-operation-meter-block-red {
+  background: linear-gradient(135deg, #9f3340, #651a26);
+}
+
+.kabaneri-operation-meter-block-green {
+  background: linear-gradient(135deg, #347d3e, #185423);
+}
+
+.kabaneri-operation-meter-block-red-blue {
+  background: linear-gradient(135deg, #9f3340 0 50%, #2d6fa8 50% 100%);
+}
+
+.kabaneri-operation-meter-block-red-green {
+  background: linear-gradient(135deg, #9f3340 0 50%, #347d3e 50% 100%);
+}
+
+.kabaneri-operation-meter-block-blue-green {
+  background: linear-gradient(135deg, #2d6fa8 0 50%, #347d3e 50% 100%);
+}
+
+.kabaneri-operation-meter-block-all-star {
+  background: linear-gradient(
+    135deg,
+    #9f3340 0 33.333%,
+    #2d6fa8 33.333% 66.667%,
+    #347d3e 66.667% 100%
+  );
+}
+
+.kabaneri-operation-meter-block-gold {
+  background: linear-gradient(135deg, #d2a34b, #78591f);
+}
+
+.kabaneri-operation-meter-block-gray {
+  background: linear-gradient(135deg, #9ca5ad, #4d565e);
+}
+
+.kabaneri-operation-meter-block-white {
+  background: linear-gradient(135deg, #ffffff, #cfd6de);
+  border-color: rgba(255, 255, 255, 0.82);
+}
+
+@keyframes kabaneri-operation-meter-block-arrive {
+  from {
+    opacity: 0;
+    filter: brightness(1.8);
+  }
+
+  to {
+    opacity: 1;
+    filter: brightness(1);
+  }
+}
+
 .light-rate-estimation-toggle {
   display: flex;
   align-items: center;

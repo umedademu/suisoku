@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { parseMyslotTotalGames } from "../../lib/kabaneri2-myslot";
 import { SaveSlotControls, useSaveSlots } from "../save-slots";
 import { AutoEstimate, MachinePageHeader } from "../machine-page-controls";
@@ -252,7 +252,7 @@ type CharacterPointButton = {
   key: string;
   label: string;
   points: 1 | 15;
-  tone: string;
+  tone: "soft" | "leaf" | "deep" | "forest" | "rose" | "coral" | "crimson" | "wine";
   countKey: CharacterPointCountKey;
 };
 
@@ -413,6 +413,27 @@ type CharacterPointHistoryEntry = CharacterCzHistoryEntry | AllStarHistoryEntry;
 type KabaneriActionSnapshot = Record<string, string>;
 
 const ACTION_HISTORY_LIMIT = 50;
+
+type KabaneriOperationMeterTone =
+  | CharacterPointButton["tone"]
+  | CharacterSpecialPointButton["tone"]
+  | "red"
+  | "green"
+  | "gold"
+  | "gray"
+  | "white";
+
+type KabaneriOperationMeterBlock = {
+  id: number;
+  label: string;
+  progress: number;
+  tone: KabaneriOperationMeterTone;
+};
+
+const OPERATION_METER_DURATION_MS = 12_000;
+const OPERATION_METER_TICK_MS = 100;
+const OPERATION_METER_MINIMUM_GAP = 0.035;
+const OPERATION_METER_MAX_BLOCKS = 40;
 
 type InputGroup =
   | StandardInputGroup
@@ -1799,6 +1820,31 @@ function CharacterCzHistory({
   );
 }
 
+function KabaneriOperationMeter({
+  blocks
+}: {
+  blocks: KabaneriOperationMeterBlock[];
+}) {
+  return (
+    <div
+      aria-label="直近のカウント操作を色付きブロックで確認する表示"
+      className="kabaneri-operation-meter"
+      role="img"
+    >
+      <div className="kabaneri-operation-meter-track" aria-hidden="true">
+        {blocks.map((block) => (
+          <span
+            className={`kabaneri-operation-meter-block kabaneri-operation-meter-block-${block.tone}`}
+            key={block.id}
+            style={{ right: `${block.progress * 100}%` }}
+            title={block.label}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function CharacterSpecialPointControl({
   button,
   mumeiCount,
@@ -2043,6 +2089,10 @@ export default function Kabaneri2Page() {
   const [hasLoadedSavedValues, setHasLoadedSavedValues] = useState(false);
   const [undoHistory, setUndoHistory] = useState<KabaneriActionSnapshot[]>([]);
   const [redoHistory, setRedoHistory] = useState<KabaneriActionSnapshot[]>([]);
+  const [operationMeterBlocks, setOperationMeterBlocks] = useState<
+    KabaneriOperationMeterBlock[]
+  >([]);
+  const operationMeterBlockIdRef = useRef(0);
   const characterPointHistory = parseCharacterPointHistory(
     inputValues.characterPointHistory ?? "[]"
   );
@@ -2050,6 +2100,29 @@ export default function Kabaneri2Page() {
   const useCharacterLightRate = inputValues.useCharacterLightRate === "1";
   const useItemLottery = inputValues.useItemLottery === "1";
   const useTrophy = inputValues.useTrophy === "1";
+  const hasOperationMeterBlocks = operationMeterBlocks.length > 0;
+
+  useEffect(() => {
+    if (!hasOperationMeterBlocks) {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      const progressIncrement =
+        OPERATION_METER_TICK_MS / OPERATION_METER_DURATION_MS;
+
+      setOperationMeterBlocks((current) =>
+        current
+          .map((block) => ({
+            ...block,
+            progress: block.progress + progressIncrement
+          }))
+          .filter((block) => block.progress <= 1.05)
+      );
+    }, OPERATION_METER_TICK_MS);
+
+    return () => window.clearInterval(intervalId);
+  }, [hasOperationMeterBlocks]);
 
   const resetResults = () => {
     setEstimateResult(null);
@@ -2059,6 +2132,39 @@ export default function Kabaneri2Page() {
   const clearActionHistory = () => {
     setUndoHistory([]);
     setRedoHistory([]);
+  };
+
+  const addOperationMeterBlock = (
+    tone: KabaneriOperationMeterTone,
+    label: string
+  ) => {
+    operationMeterBlockIdRef.current += 1;
+    const nextBlock: KabaneriOperationMeterBlock = {
+      id: operationMeterBlockIdRef.current,
+      label,
+      progress: 0,
+      tone
+    };
+
+    setOperationMeterBlocks((current) => {
+      const separatedBlocks = current
+        .filter((block) => block.progress <= 1.05)
+        .slice(-(OPERATION_METER_MAX_BLOCKS - 1));
+      let minimumProgress = OPERATION_METER_MINIMUM_GAP;
+
+      for (let index = separatedBlocks.length - 1; index >= 0; index -= 1) {
+        const block = separatedBlocks[index];
+        const separatedProgress = Math.max(block.progress, minimumProgress);
+
+        separatedBlocks[index] = {
+          ...block,
+          progress: separatedProgress
+        };
+        minimumProgress = separatedProgress + OPERATION_METER_MINIMUM_GAP;
+      }
+
+      return [...separatedBlocks, nextBlock];
+    });
   };
 
   const saveSlots = useSaveSlots({
@@ -2238,7 +2344,7 @@ export default function Kabaneri2Page() {
     const nextValues = updater(inputValues);
 
     if (nextValues === inputValues) {
-      return;
+      return false;
     }
 
     setUndoHistory((current) => [
@@ -2248,6 +2354,7 @@ export default function Kabaneri2Page() {
     setRedoHistory([]);
     setInputValues(nextValues);
     resetResults();
+    return true;
   };
 
   const handleUndo = () => {
@@ -2264,6 +2371,7 @@ export default function Kabaneri2Page() {
     ]);
     setInputValues(previousValues);
     resetResults();
+    addOperationMeterBlock("gray", "元に戻す");
   };
 
   const handleRedo = () => {
@@ -2280,10 +2388,11 @@ export default function Kabaneri2Page() {
     ]);
     setInputValues(nextValues);
     resetResults();
+    addOperationMeterBlock("gray", "やり直し");
   };
 
   const handleCountInputStep = (key: string, step: -1 | 1) => {
-    applyUndoableInputUpdate((current) => {
+    const wasUpdated = applyUndoableInputUpdate((current) => {
       const currentValue = Math.max(0, Math.floor(toNumber(current[key] ?? "")));
 
       if (step === -1 && currentValue === 0) {
@@ -2295,13 +2404,20 @@ export default function Kabaneri2Page() {
         [key]: String(currentValue + step)
       };
     });
+
+    if (wasUpdated && key === "lowerBells") {
+      addOperationMeterBlock(
+        step === 1 ? "gold" : "white",
+        `下段ベルを1${step === 1 ? "増加" : "減少"}`
+      );
+    }
   };
 
   const handleCharacterPointIncrement = (
     group: CharacterPointGroup,
     button: CharacterPointButton
   ) => {
-    applyUndoableInputUpdate((current) => {
+    const wasUpdated = applyUndoableInputUpdate((current) => {
       return {
         ...current,
         [group.pointKey]: String(
@@ -2312,13 +2428,17 @@ export default function Kabaneri2Page() {
         )
       };
     });
+
+    if (wasUpdated) {
+      addOperationMeterBlock(button.tone, `${group.character} ${button.label}`);
+    }
   };
 
   const handleCharacterPointDecrement = (
     group: CharacterPointGroup,
     button: CharacterPointButton
   ) => {
-    applyUndoableInputUpdate((current) => {
+    const wasUpdated = applyUndoableInputUpdate((current) => {
       const buttonCount = Math.max(
         0,
         Math.trunc(toNumber(current[button.countKey] ?? "0"))
@@ -2339,11 +2459,15 @@ export default function Kabaneri2Page() {
         [button.countKey]: String(buttonCount - 1)
       };
     });
+
+    if (wasUpdated) {
+      addOperationMeterBlock("white", `${group.character} ${button.label} 取り消し`);
+    }
   };
 
   const handleSpecialPointIncrement = (button: CharacterSpecialPointButton) => {
     if (button.key === "all-star") {
-      applyUndoableInputUpdate((current) => {
+      const wasUpdated = applyUndoableInputUpdate((current) => {
         const counts = Object.fromEntries(
           ALL_STAR_RESET_COUNT_KEYS.map((key) => [
             key,
@@ -2373,10 +2497,14 @@ export default function Kabaneri2Page() {
 
         return nextValues;
       });
+
+      if (wasUpdated) {
+        addOperationMeterBlock(button.tone, button.label);
+      }
       return;
     }
 
-    applyUndoableInputUpdate((current) => {
+    const wasUpdated = applyUndoableInputUpdate((current) => {
       const nextValues: Record<string, string> = {
         ...current,
         mumeiPoints: String(
@@ -2403,10 +2531,14 @@ export default function Kabaneri2Page() {
 
       return nextValues;
     });
+
+    if (wasUpdated) {
+      addOperationMeterBlock(button.tone, button.label);
+    }
   };
 
   const handleSpecialPointDecrement = (button: CharacterSpecialPointButton) => {
-    applyUndoableInputUpdate((current) => {
+    const wasUpdated = applyUndoableInputUpdate((current) => {
       if (button.key === "all-star") {
         const currentHistory = parseCharacterPointHistory(
           current.characterPointHistory ?? "[]"
@@ -2477,10 +2609,14 @@ export default function Kabaneri2Page() {
 
       return nextValues;
     });
+
+    if (wasUpdated) {
+      addOperationMeterBlock("white", `${button.label} 取り消し`);
+    }
   };
 
   const handleCharacterCzWin = (group: CharacterPointGroup) => {
-    applyUndoableInputUpdate((current) => {
+    const wasUpdated = applyUndoableInputUpdate((current) => {
       const resetCountKeys = CHARACTER_RESET_COUNT_KEYS[group.character];
       const counts = Object.fromEntries(
         ALL_STAR_RESET_COUNT_KEYS.map((key) => [
@@ -2515,6 +2651,10 @@ export default function Kabaneri2Page() {
 
       return nextValues;
     });
+
+    if (wasUpdated) {
+      addOperationMeterBlock(group.theme, `${group.character}CZ当選`);
+    }
   };
 
   const handleCharacterHistoryDelete = (index: number) => {
@@ -3170,6 +3310,7 @@ export default function Kabaneri2Page() {
                     />
                   );
                 })}
+                <KabaneriOperationMeter blocks={operationMeterBlocks} />
                 {[CHARACTER_SPECIAL_POINT_BUTTONS.mumeiIkoma].map((button) => (
                   <div className="character-shared-action-row" key={button.key}>
                     <CharacterSpecialPointControl
