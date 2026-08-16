@@ -1318,7 +1318,7 @@ a {
 .character-special-point-button-count {
   grid-column: 2;
   justify-self: end;
-  font-size: 1.24rem;
+  font-size: 1.61rem;
   line-height: 1;
   white-space: nowrap;
 }
@@ -1434,7 +1434,7 @@ a {
 }
 
 .character-point-button-count {
-  font-size: 1.3rem;
+  font-size: 1.69rem;
   line-height: 1;
   white-space: nowrap;
 }
@@ -1452,7 +1452,7 @@ a {
 
 .character-point-button-light-rate {
   color: rgba(255, 255, 255, 0.9);
-  font-size: 0.72rem;
+  font-size: 0.94rem;
   font-weight: 800;
   line-height: 1;
   white-space: nowrap;
@@ -2895,11 +2895,11 @@ a {
   }
 
   .character-point-column .character-point-button-count {
-    font-size: 1.06rem;
+    font-size: 1.38rem;
   }
 
   .character-point-column .character-point-button-light-rate {
-    font-size: 0.66rem;
+    font-size: 0.86rem;
   }
 
   .character-special-point-control {
@@ -2923,7 +2923,7 @@ a {
   }
 
   .character-special-point-button-count {
-    font-size: 0.9rem;
+    font-size: 1.17rem;
   }
 
   .character-point-summary-item {
