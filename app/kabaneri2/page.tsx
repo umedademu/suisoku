@@ -1880,7 +1880,7 @@ function CharacterActionHistoryButton({
   return (
     <button
       aria-label={`${label}（直近の操作）`}
-      className="character-action-history-button"
+      className="character-side-square-button character-side-square-button-left character-action-history-button"
       disabled={disabled}
       type="button"
       onClick={onClick}
@@ -1904,6 +1904,30 @@ function CharacterActionHistoryButton({
         )}
       </svg>
       <span className="character-action-history-label">{label}</span>
+    </button>
+  );
+}
+
+function CharacterLowerBellQuickButton({
+  step,
+  onClick
+}: {
+  step: -1 | 1;
+  onClick: () => void;
+}) {
+  const isIncrement = step === 1;
+
+  return (
+    <button
+      aria-label={`下段ベルを1${isIncrement ? "増やす" : "減らす"}（上部ショートカット）`}
+      className="character-side-square-button character-side-square-button-right character-lower-bell-quick-button"
+      type="button"
+      onClick={onClick}
+    >
+      <span aria-hidden="true" className="character-lower-bell-quick-symbol">
+        {isIncrement ? "＋" : "−"}
+      </span>
+      <span className="character-lower-bell-quick-label">下段ベル</span>
     </button>
   );
 }
@@ -3163,6 +3187,10 @@ export default function Kabaneri2Page() {
                       disabled={undoHistory.length === 0}
                       onClick={handleUndo}
                     />
+                    <CharacterLowerBellQuickButton
+                      step={1}
+                      onClick={() => handleCountInputStep("lowerBells", 1)}
+                    />
                   </div>
                 ))}
                 <div className="character-special-point-row">
@@ -3216,6 +3244,10 @@ export default function Kabaneri2Page() {
                         direction="redo"
                         disabled={redoHistory.length === 0}
                         onClick={handleRedo}
+                      />
+                      <CharacterLowerBellQuickButton
+                        step={-1}
+                        onClick={() => handleCountInputStep("lowerBells", -1)}
                       />
                     </div>
                   );

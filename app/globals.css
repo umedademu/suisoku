@@ -1135,10 +1135,9 @@ a {
   width: calc((100% - var(--character-point-column-gap)) / 2);
 }
 
-.character-action-history-button {
+.character-side-square-button {
   position: absolute;
   top: 0;
-  left: calc(75% + 4px);
   display: flex;
   width: clamp(58px, 18vw, 69px);
   min-height: 69px;
@@ -1149,8 +1148,6 @@ a {
   gap: 3px;
   border: 1px solid #5c6268;
   border-radius: 12px;
-  background: linear-gradient(145deg, #768089, #4d565e);
-  box-shadow: 0 4px 10px rgba(49, 57, 64, 0.23);
   color: #ffffff;
   cursor: pointer;
   font: inherit;
@@ -1158,6 +1155,19 @@ a {
     transform 0.15s ease,
     filter 0.15s ease,
     box-shadow 0.15s ease;
+}
+
+.character-side-square-button-left {
+  right: calc(75% + 4px);
+}
+
+.character-side-square-button-right {
+  left: calc(75% + 4px);
+}
+
+.character-action-history-button {
+  background: linear-gradient(145deg, #768089, #4d565e);
+  box-shadow: 0 4px 10px rgba(49, 57, 64, 0.23);
 }
 
 .character-action-history-icon {
@@ -1193,6 +1203,39 @@ a {
 
 .character-action-history-button:disabled {
   cursor: default;
+}
+
+.character-lower-bell-quick-button {
+  border-color: #72541f;
+  background: linear-gradient(145deg, #b68c3f, #78591f);
+  box-shadow: 0 4px 10px rgba(95, 68, 23, 0.25);
+}
+
+.character-lower-bell-quick-symbol {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 0.8;
+}
+
+.character-lower-bell-quick-label {
+  font-size: 0.6rem;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.character-lower-bell-quick-button:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+.character-lower-bell-quick-button:active {
+  transform: translateY(1px);
+}
+
+.character-lower-bell-quick-button:focus-visible {
+  outline: 3px solid rgba(114, 84, 31, 0.3);
+  outline-offset: 2px;
 }
 
 .character-cz-win-row {
