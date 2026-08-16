@@ -430,7 +430,7 @@ type KabaneriOperationMeterBlock = {
   tone: KabaneriOperationMeterTone;
 };
 
-const OPERATION_METER_DURATION_MS = 12_000;
+const OPERATION_METER_DURATION_MS = 17_000;
 const OPERATION_METER_TICK_MS = 100;
 const OPERATION_METER_MINIMUM_GAP = 0.035;
 const OPERATION_METER_MAX_BLOCKS = 40;
