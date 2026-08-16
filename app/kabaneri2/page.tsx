@@ -1909,9 +1909,11 @@ function CharacterActionHistoryButton({
 }
 
 function CharacterLowerBellQuickButton({
+  count,
   step,
   onClick
 }: {
+  count: number;
   step: -1 | 1;
   onClick: () => void;
 }) {
@@ -1919,11 +1921,12 @@ function CharacterLowerBellQuickButton({
 
   return (
     <button
-      aria-label={`下段ベルを1${isIncrement ? "増やす" : "減らす"}（上部ショートカット）`}
+      aria-label={`下段ベルを1${isIncrement ? "増やす" : "減らす"}（現在${count}回・上部ショートカット）`}
       className="character-side-square-button character-side-square-button-right character-lower-bell-quick-button"
       type="button"
       onClick={onClick}
     >
+      <span className="character-lower-bell-quick-count">{count}</span>
       <span aria-hidden="true" className="character-lower-bell-quick-symbol">
         {isIncrement ? "＋" : "−"}
       </span>
@@ -3188,6 +3191,10 @@ export default function Kabaneri2Page() {
                       onClick={handleUndo}
                     />
                     <CharacterLowerBellQuickButton
+                      count={Math.max(
+                        0,
+                        Math.floor(toNumber(inputValues.lowerBells ?? ""))
+                      )}
                       step={1}
                       onClick={() => handleCountInputStep("lowerBells", 1)}
                     />
@@ -3246,6 +3253,10 @@ export default function Kabaneri2Page() {
                         onClick={handleRedo}
                       />
                       <CharacterLowerBellQuickButton
+                        count={Math.max(
+                          0,
+                          Math.floor(toNumber(inputValues.lowerBells ?? ""))
+                        )}
                         step={-1}
                         onClick={() => handleCountInputStep("lowerBells", -1)}
                       />

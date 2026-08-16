@@ -1209,6 +1209,21 @@ a {
   border-color: #72541f;
   background: linear-gradient(145deg, #b68c3f, #78591f);
   box-shadow: 0 4px 10px rgba(95, 68, 23, 0.25);
+  padding: 20px 3px 2px;
+}
+
+.character-lower-bell-quick-count {
+  position: absolute;
+  top: 5px;
+  right: 6px;
+  min-width: 18px;
+  border-radius: 999px;
+  background: rgba(45, 30, 8, 0.42);
+  padding: 2px 5px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  line-height: 1;
+  text-align: center;
 }
 
 .character-lower-bell-quick-symbol {
