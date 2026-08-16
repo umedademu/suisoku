@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { parseMyslotTotalGames } from "../../lib/kabaneri2-myslot";
 import { SaveSlotControls, useSaveSlots } from "../save-slots";
 import { AutoEstimate, MachinePageHeader } from "../machine-page-controls";
 
@@ -2235,6 +2236,23 @@ export default function Kabaneri2Page() {
     resetResults();
   };
 
+  const handleMyslotInputChange = (value: string) => {
+    const totalGames = parseMyslotTotalGames(value);
+
+    setInputValues((current) => ({
+      ...current,
+      myslotText: value,
+      ...(totalGames === null
+        ? {}
+        : {
+            beforeGames: "0",
+            currentGames: String(totalGames)
+          })
+    }));
+    clearActionHistory();
+    resetResults();
+  };
+
   const applyUndoableInputUpdate = (
     updater: (current: Record<string, string>) => Record<string, string>
   ) => {
@@ -3300,7 +3318,7 @@ export default function Kabaneri2Page() {
               {"myslot" in group ? (
                 <MyslotInput
                   value={inputValues.myslotText ?? ""}
-                  onChange={(value) => handleInputChange("myslotText", value)}
+                  onChange={handleMyslotInputChange}
                   onUseItemLotteryChange={(checked) =>
                     handleInputChange("useItemLottery", checked ? "1" : "0")
                   }
