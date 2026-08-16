@@ -1939,7 +1939,6 @@ function CharacterLowerBellQuickButton({
 function CharacterPointColumn({
   group,
   pointProgress,
-  totalPointProgress,
   lightRate,
   getButtonCount,
   getButtonTotalCount,
@@ -1948,10 +1947,6 @@ function CharacterPointColumn({
 }: {
   group: CharacterPointGroup;
   pointProgress: ReturnType<typeof calculateCharacterPointProgress>;
-  totalPointProgress: {
-    percentageText: string;
-    historyCount: number;
-  };
   lightRate: ReturnType<typeof calculateCharacterLightRate>;
   getButtonCount: (countKey: CharacterPointCountKey) => number;
   getButtonTotalCount: (countKey: CharacterPointCountKey) => number;
@@ -1977,22 +1972,6 @@ function CharacterPointColumn({
                 {pointProgress.points}
               </strong>
               <span className="character-point-summary-unit">pt</span>
-            </span>
-          </div>
-          <div
-            aria-label={`${group.character}の平均到達率 ${totalPointProgress.percentageText} 履歴${totalPointProgress.historyCount}件`}
-            aria-live="polite"
-            className="character-point-summary-item character-point-summary-item-average"
-            role="status"
-          >
-            <span className="character-point-summary-value-row">
-              <span className="character-point-summary-label">平均</span>
-              <strong className="character-point-summary-value">
-                {totalPointProgress.percentageText}
-              </strong>
-              <span className="character-point-summary-detail">
-                (履歴:{totalPointProgress.historyCount})
-              </span>
             </span>
           </div>
         </div>
@@ -3173,7 +3152,6 @@ export default function Kabaneri2Page() {
                 {characterPointGroups.map((group) => {
                   const lightRate = getCharacterLightRate(group);
                   const pointProgress = getCharacterPointProgress(group);
-                  const totalPointProgress = getCharacterTotalPointProgress(group);
 
                   return (
                     <CharacterPointColumn
@@ -3189,7 +3167,6 @@ export default function Kabaneri2Page() {
                         handleCharacterPointIncrement(group, button)
                       }
                       pointProgress={pointProgress}
-                      totalPointProgress={totalPointProgress}
                     />
                   );
                 })}
@@ -3282,16 +3259,40 @@ export default function Kabaneri2Page() {
                   );
                 })}
                 <div className="character-cz-win-row">
-                  {characterPointGroups.map((group) => (
-                    <button
-                      className={`character-cz-win-button character-cz-win-button-${group.theme}`}
-                      key={group.character}
-                      type="button"
-                      onClick={() => handleCharacterCzWin(group)}
-                    >
-                      {group.character}CZ当選
-                    </button>
-                  ))}
+                  {characterPointGroups.map((group) => {
+                    const totalPointProgress = getCharacterTotalPointProgress(group);
+
+                    return (
+                      <div
+                        className={`character-cz-win-column character-point-panel-${group.theme}`}
+                        key={group.character}
+                      >
+                        <button
+                          className={`character-cz-win-button character-cz-win-button-${group.theme}`}
+                          type="button"
+                          onClick={() => handleCharacterCzWin(group)}
+                        >
+                          {group.character}CZ当選
+                        </button>
+                        <div
+                          aria-label={`${group.character}の平均到達率 ${totalPointProgress.percentageText} 履歴${totalPointProgress.historyCount}件`}
+                          aria-live="polite"
+                          className="character-point-summary-item character-point-summary-item-average"
+                          role="status"
+                        >
+                          <span className="character-point-summary-value-row">
+                            <span className="character-point-summary-label">平均</span>
+                            <strong className="character-point-summary-value">
+                              {totalPointProgress.percentageText}
+                            </strong>
+                            <span className="character-point-summary-detail">
+                              (履歴:{totalPointProgress.historyCount})
+                            </span>
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
               <div className="character-point-estimation-toggle">

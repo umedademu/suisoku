@@ -1275,6 +1275,14 @@ a {
   gap: var(--character-point-column-gap);
 }
 
+.character-cz-win-column {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+}
+
 .character-special-point-button:hover {
   filter: brightness(1.07);
   transform: translateY(-1px);
