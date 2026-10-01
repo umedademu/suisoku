@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 const SAVE_SLOT_NUMBERS = [1, 2, 3, 4, 5];
-const NON_ADDITIVE_INPUT_KEYS = new Set(["medalRent", "exchangeRate", "strategyRate", "payoutMode"]);
+const NON_ADDITIVE_INPUT_KEYS = new Set(["medalRent", "exchangeRate", "strategyRate", "payoutMode", "settingMode"]);
 
 type SaveSlotPayload = {
   inputValues?: unknown;

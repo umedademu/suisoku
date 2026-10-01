@@ -83,14 +83,14 @@ type StandardInputGroup = {
 };
 
 type ChoiceOption = {
-  value: PayoutMode;
+  value: PayoutMode | SettingMode;
   label: string;
 };
 
 type ChoiceInputGroup = {
   title: string;
   note?: string;
-  choiceKey: "payoutMode";
+  choiceKey: "payoutMode" | "settingMode";
   options: ChoiceOption[];
 };
 
@@ -98,7 +98,8 @@ type InputGroup = StandardInputGroup | ChoiceInputGroup;
 
 type PayoutMode = "public" | "cherry" | "full";
 type GrapeGameMode = "fromStart" | "practice" | "total";
-type InputValue = string | PayoutMode | GrapeGameMode;
+type SettingMode = "all" | "withoutSix";
+type InputValue = string | PayoutMode | GrapeGameMode | SettingMode;
 
 const payoutModeLabels: Record<PayoutMode, string> = {
   public: "公表値",
@@ -108,6 +109,7 @@ const payoutModeLabels: Record<PayoutMode, string> = {
 
 const defaultPayoutMode: PayoutMode = "cherry";
 const defaultGrapeGameMode: GrapeGameMode = "fromStart";
+const defaultSettingMode: SettingMode = "all";
 
 const grapeGameModeLabels: Record<GrapeGameMode, string> = {
   fromStart: "開始前G数",
@@ -122,6 +124,15 @@ const grapeGameModeOptions: Array<{ value: GrapeGameMode; label: string }> = [
 ];
 
 const inputGroups: InputGroup[] = [
+  {
+    title: "設定の候補",
+    note: "推測割合・期待値に反映",
+    choiceKey: "settingMode",
+    options: [
+      { value: "all", label: "設定1〜6" },
+      { value: "withoutSix", label: "設定6を除外" }
+    ]
+  },
   {
     title: "開始前",
     fields: [
@@ -191,10 +202,27 @@ const initialValues = {
   grapeDiff: "",
   grapePracticeGames: "",
   grapeGameMode: defaultGrapeGameMode,
-  payoutMode: defaultPayoutMode
+  payoutMode: defaultPayoutMode,
+  settingMode: defaultSettingMode
 };
 
 const STORAGE_KEY = "suisoku-neoimjugglerex-inputs";
+
+function isValidInputValue(key: string, value: unknown) {
+  if (key === "settingMode") {
+    return value === "all" || value === "withoutSix";
+  }
+
+  if (key === "payoutMode") {
+    return value === "public" || value === "cherry" || value === "full";
+  }
+
+  if (key === "grapeGameMode") {
+    return value === "fromStart" || value === "practice" || value === "total";
+  }
+
+  return typeof value === "string";
+}
 
 const specGroups = [
   {
@@ -403,20 +431,6 @@ function calculateLogBinomialProbability(
   return logProbability;
 }
 
-function calculateBinomialProbability(successCount: number, totalCount: number, probability: number) {
-  const logProbability = calculateLogBinomialProbability(
-    successCount,
-    totalCount,
-    probability
-  );
-
-  if (!Number.isFinite(logProbability)) {
-    return 0;
-  }
-
-  return Math.exp(logProbability);
-}
-
 function formatPercent(probability: number) {
   const percent = probability * 100;
 
@@ -527,12 +541,19 @@ function interpolateProbability(
   return first.probability;
 }
 
-function calculateBonusAverageSetting(games: number, bb: number, rb: number) {
+function calculateBonusAverageSetting(
+  games: number,
+  bb: number,
+  rb: number,
+  candidateSettingRates: typeof settingRates
+) {
+  const defaultAverage = (candidateSettingRates.length + 1) / 2;
+
   if (games <= 0 || bb < 0 || rb < 0 || bb + rb <= 0) {
-    return 3.5;
+    return defaultAverage;
   }
 
-  const logRows = settingRates.map((setting, index) => ({
+  const logRows = candidateSettingRates.map((setting, index) => ({
     settingNumber: index + 1,
     logValue:
       calculateLogBinomialProbability(bb, games, setting.bb) +
@@ -541,7 +562,7 @@ function calculateBonusAverageSetting(games: number, bb: number, rb: number) {
   const maxLogValue = Math.max(...logRows.map((row) => row.logValue));
 
   if (!Number.isFinite(maxLogValue)) {
-    return 3.5;
+    return defaultAverage;
   }
 
   const weightedRows = logRows.map((row) => ({
@@ -551,7 +572,7 @@ function calculateBonusAverageSetting(games: number, bb: number, rb: number) {
   const totalWeight = weightedRows.reduce((sum, row) => sum + row.weight, 0);
 
   if (totalWeight <= 0) {
-    return 3.5;
+    return defaultAverage;
   }
 
   return (
@@ -571,7 +592,8 @@ function calculateResetOneBetDisplayGames(postAnnouncementBonusCount: number) {
 
 function calculateEstimatedGrape(
   differenceValue: number,
-  source: GrapeEstimateSource
+  source: GrapeEstimateSource,
+  candidateSettingRates: typeof settingRates
 ): GrapeEstimateResult {
   if (source.games <= 0 || source.bb < 0 || source.rb < 0) {
     return {
@@ -581,7 +603,12 @@ function calculateEstimatedGrape(
   }
 
   const bonusCount = source.bb + source.rb;
-  const averageSetting = calculateBonusAverageSetting(source.games, source.bb, source.rb);
+  const averageSetting = calculateBonusAverageSetting(
+    source.games,
+    source.bb,
+    source.rb,
+    candidateSettingRates
+  );
   const cherryProbability = interpolateProbability(
     averageSetting,
     grapeEstimateSpec.cherryDenominatorsBySetting
@@ -663,6 +690,7 @@ export default function NeoImJugglerExPage() {
   const [inputValues, setInputValues] = useState<Record<string, InputValue>>(initialValues);
   const [settingExpectationTable, setSettingExpectationTable] = useState<
     | {
+        candidateText: string;
         headerText: string;
         payoutHeaderText: string;
         hourlyText: string;
@@ -704,6 +732,7 @@ export default function NeoImJugglerExPage() {
     storageKey: STORAGE_KEY,
     inputValues,
     initialValues,
+    isValidInputValue,
     isReady: hasLoadedSavedValues,
     onLoad: (nextValues) => {
       setInputValues(nextValues);
@@ -720,24 +749,8 @@ export default function NeoImJugglerExPage() {
         const nextValues: Record<string, InputValue> = { ...initialValues };
 
         Object.entries(parsed).forEach(([key, value]) => {
-          if (key === "payoutMode") {
-            if (value === "public" || value === "cherry" || value === "full") {
-              nextValues[key] = value;
-            }
-
-            return;
-          }
-
-          if (key === "grapeGameMode") {
-            if (value === "fromStart" || value === "practice" || value === "total") {
-              nextValues[key] = value;
-            }
-
-            return;
-          }
-
-          if (typeof value === "string" && key in nextValues) {
-            nextValues[key] = value;
+          if (key in nextValues && isValidInputValue(key, value)) {
+            nextValues[key] = value as InputValue;
           }
         });
 
@@ -757,6 +770,10 @@ export default function NeoImJugglerExPage() {
 
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(inputValues));
   }, [hasLoadedSavedValues, inputValues]);
+
+  const candidateSettingCount = inputValues.settingMode === "withoutSix" ? 5 : settings.length;
+  const candidateSettings = settings.slice(0, candidateSettingCount);
+  const candidateSettingRates = settingRates.slice(0, candidateSettingCount);
 
   const medalRentValue = toNumber(String(inputValues.medalRent ?? ""));
   const exchangeRateValue = toNumber(String(inputValues.exchangeRate ?? ""));
@@ -813,7 +830,7 @@ export default function NeoImJugglerExPage() {
   const grapeDiffRaw = String(inputValues.grapeDiff ?? "");
   const hasGrapeDiffInput = grapeDiffRaw.trim() !== "";
   const estimatedGrape: GrapeEstimateResult = hasGrapeDiffInput
-    ? calculateEstimatedGrape(toNumber(grapeDiffRaw), grapeEstimateSource)
+    ? calculateEstimatedGrape(toNumber(grapeDiffRaw), grapeEstimateSource, candidateSettingRates)
     : {
         status: "empty",
         message: "差枚数を入力すると推定ブドウを表示します。"
@@ -889,7 +906,11 @@ export default function NeoImJugglerExPage() {
 
     const practiceGames = currentGames - beforeGames;
     const totalBonus = currentBig + currentReg;
-    const settingExpectationValues = settings.map((setting) => {
+    const candidateText =
+      candidateSettingCount === 5
+        ? "設定1〜5で推測（設定6を除外）"
+        : "設定1〜6で推測";
+    const settingExpectationValues = candidateSettings.map((setting) => {
       const payoutRate = getSelectedPayout(setting, payoutMode);
 
       return {
@@ -953,20 +974,25 @@ export default function NeoImJugglerExPage() {
             return {
               label: item.title,
               summaryText: "未入力",
-              values: settings.map((setting) => ({
+              values: candidateSettings.map((setting) => ({
                 label: setting.setting,
                 value: "-"
               }))
             };
           }
 
-          const weights = settingRates.map((setting) => ({
+          const logRows = candidateSettingRates.map((setting) => ({
             label: setting.label,
-            weight: calculateBinomialProbability(
+            logValue: calculateLogBinomialProbability(
               definition.count,
               definition.base,
               setting[item.key]
             )
+          }));
+          const maxLogValue = Math.max(...logRows.map((row) => row.logValue));
+          const weights = logRows.map((row) => ({
+            label: row.label,
+            weight: Number.isFinite(maxLogValue) ? Math.exp(row.logValue - maxLogValue) : 0
           }));
           const totalWeight = weights.reduce((sum, row) => sum + row.weight, 0);
 
@@ -985,6 +1011,7 @@ export default function NeoImJugglerExPage() {
     if (validProbabilityDefinitions.length === 0) {
       setOverallSettingRows(null);
       setSettingExpectationTable({
+        candidateText,
         headerText: `${practiceGames}G`,
         payoutHeaderText: payoutModeLabels[payoutMode],
         hourlyText: "-",
@@ -1001,7 +1028,7 @@ export default function NeoImJugglerExPage() {
       return;
     }
 
-    const totalLogRows = settingRates.map((setting) => ({
+    const totalLogRows = candidateSettingRates.map((setting) => ({
       label: setting.label,
       logValue: validProbabilityDefinitions.reduce(
         (sum, definition) =>
@@ -1057,6 +1084,7 @@ export default function NeoImJugglerExPage() {
       practiceGames > 0 ? (totalExpectedYen * 700) / practiceGames : null;
 
     setSettingExpectationTable({
+      candidateText,
       headerText: `${practiceGames}G`,
       payoutHeaderText: payoutModeLabels[payoutMode],
       hourlyText: hourlyExpectedYen !== null ? formatHourlyYen(hourlyExpectedYen) : "-",
@@ -1273,6 +1301,7 @@ export default function NeoImJugglerExPage() {
           <h2 className="result-title">推測結果</h2>
           {settingExpectationTable ? (
             <>
+              <p className="result-placeholder">{settingExpectationTable.candidateText}</p>
               {overallSettingRows ? (
                 <div className="result-list">
                   {overallSettingRows.map((row) => (
@@ -1350,11 +1379,11 @@ export default function NeoImJugglerExPage() {
                             </tr>
                           </thead>
                           <tbody>
-                            {settings.map((setting, index) => (
-                              <tr key={`${group.title}-${setting.setting}`}>
-                                <th scope="row">{setting.setting}</th>
+                            {group.columns[0].values.map((row, index) => (
+                              <tr key={`${group.title}-${row.label}`}>
+                                <th scope="row">{row.label}</th>
                                 {group.columns.map((column) => (
-                                  <td key={`${setting.setting}-${column.label}`}>
+                                  <td key={`${row.label}-${column.label}`}>
                                     {column.values[index].value}
                                   </td>
                                 ))}
