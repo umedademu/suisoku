@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { JugglerBudoCounterButton } from "../juggler-budo-counter-button";
 import { SaveSlotControls, useSaveSlots } from "../save-slots";
 import { AutoEstimate, MachinePageHeader } from "../machine-page-controls";
@@ -191,12 +191,15 @@ const inputGroups: InputGroup[] = [
   }
 ];
 
+const priorFieldKeys = settings.map((_, index) => `priorSetting${index + 1}`);
+
 const initialValues = {
   ...Object.fromEntries(
     inputGroups.flatMap((group) =>
       "fields" in group ? group.fields.map((field) => [field.key, ""] as const) : []
     )
   ),
+  ...Object.fromEntries(priorFieldKeys.map((key) => [key, ""] as const)),
   medalRent: "46",
   exchangeRate: "5.0",
   grapeDiff: "",
@@ -222,6 +225,92 @@ function isValidInputValue(key: string, value: unknown) {
   }
 
   return typeof value === "string";
+}
+
+// 複数の保存データを合算するときは、打つ前の見込みを足し合わせず、
+// 見込みを入力済みの保存データのうち保存番号が最も小さいものをまとめて引き継ぐ
+function mergeSettingPriorValues(
+  slotValues: Array<Record<string, InputValue>>,
+  defaultMergedValues: Record<string, InputValue>
+) {
+  const sourceValues = slotValues.find((values) =>
+    priorFieldKeys.some((key) => String(values[key] ?? "").trim() !== "")
+  );
+  const nextValues = { ...defaultMergedValues };
+
+  priorFieldKeys.forEach((key) => {
+    nextValues[key] = sourceValues?.[key] ?? "";
+  });
+
+  return nextValues;
+}
+
+type SettingPrior = {
+  status: "equal" | "custom" | "invalid";
+  weights: number[];
+  fillValue: number | null;
+  message: string;
+};
+
+function formatPriorPercent(value: number) {
+  return `${Math.round(value * 100) / 100}%`;
+}
+
+function calculateSettingPrior(
+  inputValues: Record<string, InputValue>,
+  candidateCount: number
+): SettingPrior {
+  const equalWeights = Array.from({ length: candidateCount }, () => 1 / candidateCount);
+  const enteredValues = priorFieldKeys.slice(0, candidateCount).map((key) => {
+    const raw = String(inputValues[key] ?? "").trim();
+    return raw === "" ? null : Number(raw);
+  });
+  const blankCount = enteredValues.filter((value) => value === null).length;
+
+  if (blankCount === candidateCount) {
+    return {
+      status: "equal",
+      weights: equalWeights,
+      fillValue: 100 / candidateCount,
+      message: "未入力のため、各設定を同じ割合として計算します。"
+    };
+  }
+
+  if (enteredValues.some((value) => value !== null && (!Number.isFinite(value) || value < 0))) {
+    return {
+      status: "invalid",
+      weights: equalWeights,
+      fillValue: null,
+      message: "0以上の数字を入力してください。入力し直すまでは各設定を同じ割合として計算します。"
+    };
+  }
+
+  const enteredTotal = enteredValues.reduce<number>((sum, value) => sum + (value ?? 0), 0);
+  const fillValue = blankCount > 0 ? Math.max(0, 100 - enteredTotal) / blankCount : null;
+  const percentValues = enteredValues.map((value) => value ?? fillValue ?? 0);
+  const total = percentValues.reduce((sum, value) => sum + value, 0);
+
+  if (total <= 0) {
+    return {
+      status: "invalid",
+      weights: equalWeights,
+      fillValue: null,
+      message: "合計が0%のため、各設定を同じ割合として計算します。"
+    };
+  }
+
+  const isTotalHundred = Math.abs(total - 100) < 1e-9;
+
+  return {
+    status: "custom",
+    weights: percentValues.map((value) => value / total),
+    fillValue,
+    message: !isTotalHundred
+      ? `合計が${formatPriorPercent(total)}のため、比率を保ったまま合計100%に直して計算します。`
+      : fillValue !== null
+        ? `未入力の欄には、残りの${formatPriorPercent(100 - enteredTotal)}を均等に割り当てます。`
+        : "入力した割合を推測割合と期待値に反映します。"
+  };
 }
 
 const specGroups = [
@@ -545,9 +634,13 @@ function calculateBonusAverageSetting(
   games: number,
   bb: number,
   rb: number,
-  candidateSettingRates: typeof settingRates
+  candidateSettingRates: typeof settingRates,
+  priorWeights: number[]
 ) {
-  const defaultAverage = (candidateSettingRates.length + 1) / 2;
+  const defaultAverage = priorWeights.reduce(
+    (sum, weight, index) => sum + (index + 1) * weight,
+    0
+  );
 
   if (games <= 0 || bb < 0 || rb < 0 || bb + rb <= 0) {
     return defaultAverage;
@@ -556,6 +649,7 @@ function calculateBonusAverageSetting(
   const logRows = candidateSettingRates.map((setting, index) => ({
     settingNumber: index + 1,
     logValue:
+      Math.log(priorWeights[index]) +
       calculateLogBinomialProbability(bb, games, setting.bb) +
       calculateLogBinomialProbability(rb, games, setting.rb)
   }));
@@ -593,7 +687,8 @@ function calculateResetOneBetDisplayGames(postAnnouncementBonusCount: number) {
 function calculateEstimatedGrape(
   differenceValue: number,
   source: GrapeEstimateSource,
-  candidateSettingRates: typeof settingRates
+  candidateSettingRates: typeof settingRates,
+  priorWeights: number[]
 ): GrapeEstimateResult {
   if (source.games <= 0 || source.bb < 0 || source.rb < 0) {
     return {
@@ -607,7 +702,8 @@ function calculateEstimatedGrape(
     source.games,
     source.bb,
     source.rb,
-    candidateSettingRates
+    candidateSettingRates,
+    priorWeights
   );
   const cherryProbability = interpolateProbability(
     averageSetting,
@@ -734,6 +830,7 @@ export default function NeoImJugglerExPage() {
     initialValues,
     isValidInputValue,
     isReady: hasLoadedSavedValues,
+    mergeValues: mergeSettingPriorValues,
     onLoad: (nextValues) => {
       setInputValues(nextValues);
       resetResults();
@@ -774,6 +871,7 @@ export default function NeoImJugglerExPage() {
   const candidateSettingCount = inputValues.settingMode === "withoutSix" ? 5 : settings.length;
   const candidateSettings = settings.slice(0, candidateSettingCount);
   const candidateSettingRates = settingRates.slice(0, candidateSettingCount);
+  const settingPrior = calculateSettingPrior(inputValues, candidateSettingCount);
 
   const medalRentValue = toNumber(String(inputValues.medalRent ?? ""));
   const exchangeRateValue = toNumber(String(inputValues.exchangeRate ?? ""));
@@ -830,7 +928,12 @@ export default function NeoImJugglerExPage() {
   const grapeDiffRaw = String(inputValues.grapeDiff ?? "");
   const hasGrapeDiffInput = grapeDiffRaw.trim() !== "";
   const estimatedGrape: GrapeEstimateResult = hasGrapeDiffInput
-    ? calculateEstimatedGrape(toNumber(grapeDiffRaw), grapeEstimateSource, candidateSettingRates)
+    ? calculateEstimatedGrape(
+        toNumber(grapeDiffRaw),
+        grapeEstimateSource,
+        candidateSettingRates,
+        settingPrior.weights
+      )
     : {
         status: "empty",
         message: "差枚数を入力すると推定ブドウを表示します。"
@@ -906,10 +1009,9 @@ export default function NeoImJugglerExPage() {
 
     const practiceGames = currentGames - beforeGames;
     const totalBonus = currentBig + currentReg;
-    const candidateText =
-      candidateSettingCount === 5
-        ? "設定1〜5で推測（設定6を除外）"
-        : "設定1〜6で推測";
+    const candidateText = `${
+      candidateSettingCount === 5 ? "設定1〜5で推測（設定6を除外）" : "設定1〜6で推測"
+    }${settingPrior.status === "custom" ? "・打つ前の見込みを反映" : ""}`;
     const settingExpectationValues = candidateSettings.map((setting) => {
       const payoutRate = getSelectedPayout(setting, payoutMode);
 
@@ -1008,7 +1110,8 @@ export default function NeoImJugglerExPage() {
       }))
     );
 
-    if (validProbabilityDefinitions.length === 0) {
+    // 打つ前の見込みを入力していれば、データがなくても見込みそのものを推測割合として表示する
+    if (validProbabilityDefinitions.length === 0 && settingPrior.status !== "custom") {
       setOverallSettingRows(null);
       setSettingExpectationTable({
         candidateText,
@@ -1028,18 +1131,20 @@ export default function NeoImJugglerExPage() {
       return;
     }
 
-    const totalLogRows = candidateSettingRates.map((setting) => ({
+    const totalLogRows = candidateSettingRates.map((setting, index) => ({
       label: setting.label,
-      logValue: validProbabilityDefinitions.reduce(
-        (sum, definition) =>
-          sum +
-          calculateLogBinomialProbability(
-            definition.count,
-            definition.base,
-            setting[definition.key]
-          ),
-        0
-      )
+      logValue:
+        Math.log(settingPrior.weights[index]) +
+        validProbabilityDefinitions.reduce(
+          (sum, definition) =>
+            sum +
+            calculateLogBinomialProbability(
+              definition.count,
+              definition.base,
+              setting[definition.key]
+            ),
+          0
+        )
     }));
 
     const maxLogValue = Math.max(...totalLogRows.map((row) => row.logValue));
@@ -1105,75 +1210,138 @@ export default function NeoImJugglerExPage() {
         <form className="input-form" onSubmit={handleEstimate}>
           <AutoEstimate inputValues={inputValues} isReady={hasLoadedSavedValues} />
           {inputGroups.map((group, index) => (
-            <section className="input-group" key={`${group.title}-${index}`}>
-              <div className="group-title-row">
-                <p className="group-title">【{group.title}】</p>
-                {group.note ? <p className="group-note">{group.note}</p> : null}
-              </div>
-              {"fields" in group ? (
-                <>
-                  <div className={`input-row input-row-${Math.min(group.fields.length, 3)}`}>
-                    {group.fields.map((field) => (
-                      <div className="input-field-wrap" key={field.key}>
-                        <label className="input-field">
-                          <span className="input-label">{field.label}</span>
-                          <span className="input-control">
-                            <input
-                              className={`number-input${field.compact ? " number-input-compact" : ""}${field.widthClass ? ` ${field.widthClass}` : ""}`}
-                              type="number"
-                              inputMode="numeric"
-                              value={String(inputValues[field.key] ?? "")}
-                              onChange={(event) =>
-                                setInputValues((current) => ({
-                                  ...current,
-                                  [field.key]: event.target.value
-                                }))
-                              }
-                            />
-                            {field.unit ? <span className="input-unit">{field.unit}</span> : null}
-                            {liveFieldTexts[field.key] ? (
-                              <span className="input-live-text">{liveFieldTexts[field.key]}</span>
-                            ) : null}
-                          </span>
-                        </label>
+            <Fragment key={`${group.title}-${index}`}>
+              <section className="input-group">
+                <div className="group-title-row">
+                  <p className="group-title">【{group.title}】</p>
+                  {group.note ? <p className="group-note">{group.note}</p> : null}
+                </div>
+                {"fields" in group ? (
+                  <>
+                    <div className={`input-row input-row-${Math.min(group.fields.length, 3)}`}>
+                      {group.fields.map((field) => (
+                        <div className="input-field-wrap" key={field.key}>
+                          <label className="input-field">
+                            <span className="input-label">{field.label}</span>
+                            <span className="input-control">
+                              <input
+                                className={`number-input${field.compact ? " number-input-compact" : ""}${field.widthClass ? ` ${field.widthClass}` : ""}`}
+                                type="number"
+                                inputMode="numeric"
+                                value={String(inputValues[field.key] ?? "")}
+                                onChange={(event) =>
+                                  setInputValues((current) => ({
+                                    ...current,
+                                    [field.key]: event.target.value
+                                  }))
+                                }
+                              />
+                              {field.unit ? <span className="input-unit">{field.unit}</span> : null}
+                              {liveFieldTexts[field.key] ? (
+                                <span className="input-live-text">{liveFieldTexts[field.key]}</span>
+                              ) : null}
+                            </span>
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                    {group.fields.some((field) => field.key === "budo") ? (
+                      <div className="budo-counter-wrap">
+                        <JugglerBudoCounterButton
+                          count={inputValues.budo}
+                          onIncrement={handleBudoIncrement}
+                          onDecrement={handleBudoDecrement}
+                          onSingleRegIncrement={handleSingleRegIncrement}
+                          onSingleRegDecrement={handleSingleRegDecrement}
+                        />
                       </div>
+                    ) : null}
+                  </>
+                ) : (
+                  <div className="choice-group">
+                    {group.options.map((option) => (
+                      <label className="choice-option" key={option.value}>
+                        <input
+                          className="choice-radio"
+                          type="radio"
+                          name={group.choiceKey}
+                          value={option.value}
+                          checked={inputValues[group.choiceKey] === option.value}
+                          onChange={() =>
+                            setInputValues((current) => ({
+                              ...current,
+                              [group.choiceKey]: option.value
+                            }))
+                          }
+                        />
+                        <span className="choice-text">{option.label}</span>
+                      </label>
                     ))}
                   </div>
-                  {group.fields.some((field) => field.key === "budo") ? (
-                    <div className="budo-counter-wrap">
-                      <JugglerBudoCounterButton
-                        count={inputValues.budo}
-                        onIncrement={handleBudoIncrement}
-                        onDecrement={handleBudoDecrement}
-                        onSingleRegIncrement={handleSingleRegIncrement}
-                        onSingleRegDecrement={handleSingleRegDecrement}
-                      />
-                    </div>
+                )}
+              </section>
+              {"choiceKey" in group && group.choiceKey === "settingMode" ? (
+                <section className="input-group">
+                  <div className="group-title-row">
+                    <p className="group-title">【打つ前の見込み】</p>
+                    <p className="group-note">空欄は残りを均等に割り当て</p>
+                  </div>
+                  <div className="input-row input-row-3">
+                    {candidateSettings.map((setting, settingIndex) => {
+                      const key = priorFieldKeys[settingIndex];
+  
+                      return (
+                        <div className="input-field-wrap" key={key}>
+                          <label className="input-field">
+                            <span className="input-label">{setting.setting}</span>
+                            <span className="input-control">
+                              <input
+                                className="number-input number-input-short"
+                                type="number"
+                                inputMode="decimal"
+                                placeholder={
+                                  settingPrior.fillValue !== null
+                                    ? String(Math.round(settingPrior.fillValue * 100) / 100)
+                                    : ""
+                                }
+                                value={String(inputValues[key] ?? "")}
+                                onChange={(event) =>
+                                  setInputValues((current) => ({
+                                    ...current,
+                                    [key]: event.target.value
+                                  }))
+                                }
+                              />
+                              <span className="input-unit">%</span>
+                            </span>
+                          </label>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <p
+                    className={`setting-prior-message${
+                      settingPrior.status === "invalid" ? " is-error" : ""
+                    }`}
+                  >
+                    {settingPrior.message}
+                  </p>
+                  {settingPrior.status === "custom" ? (
+                    <p className="setting-prior-message">
+                      計算に使う割合：
+                      {candidateSettings
+                        .map(
+                          (setting, settingIndex) =>
+                            `${setting.setting} ${formatPriorPercent(
+                              settingPrior.weights[settingIndex] * 100
+                            )}`
+                        )
+                        .join("・")}
+                    </p>
                   ) : null}
-                </>
-              ) : (
-                <div className="choice-group">
-                  {group.options.map((option) => (
-                    <label className="choice-option" key={option.value}>
-                      <input
-                        className="choice-radio"
-                        type="radio"
-                        name={group.choiceKey}
-                        value={option.value}
-                        checked={inputValues[group.choiceKey] === option.value}
-                        onChange={() =>
-                          setInputValues((current) => ({
-                            ...current,
-                            [group.choiceKey]: option.value
-                          }))
-                        }
-                      />
-                      <span className="choice-text">{option.label}</span>
-                    </label>
-                  ))}
-                </div>
-              )}
-            </section>
+                </section>
+              ) : null}
+            </Fragment>
           ))}
           <section className="input-group estimated-budo-group">
             <div className="group-title-row">
