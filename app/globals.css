@@ -409,8 +409,15 @@ a {
 }
 
 .myslot-input-actions {
-  display: flex;
-  justify-content: flex-end;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.clear-button.myslot-input-delete-button {
+  min-height: 69px;
+  border-radius: 12px;
+  white-space: nowrap;
 }
 
 .myslot-input-paste-button {
@@ -441,7 +448,8 @@ a {
   transform: translateY(1px);
 }
 
-.myslot-input-paste-button:focus-visible {
+.myslot-input-paste-button:focus-visible,
+.myslot-input-delete-button:focus-visible {
   outline: 3px solid rgba(112, 47, 47, 0.24);
   outline-offset: 2px;
 }

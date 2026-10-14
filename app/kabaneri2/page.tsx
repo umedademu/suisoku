@@ -1561,6 +1561,11 @@ function MyslotInput({
     }
   };
 
+  const handleDelete = () => {
+    setClipboardMessage(null);
+    onChange("");
+  };
+
   return (
     <div className="myslot-voice-panel">
       <textarea
@@ -1582,6 +1587,14 @@ function MyslotInput({
           onClick={handleClipboardPaste}
         >
           マイスロ貼り付け
+        </button>
+        <button
+          aria-label="マイスロの内容をすべて削除"
+          className="clear-button myslot-input-delete-button"
+          type="button"
+          onClick={handleDelete}
+        >
+          削除
         </button>
       </div>
       {clipboardMessage ? (
