@@ -1332,7 +1332,8 @@ export default function NeoImJugglerExPage() {
                             <span className="input-label">{setting.setting}</span>
                             <span className="input-control">
                               <input
-                                className="number-input number-input-short"
+                                className="number-input number-input-short setting-prior-input"
+                                disabled={!useSettingPrior}
                                 type="number"
                                 inputMode="decimal"
                                 placeholder={
