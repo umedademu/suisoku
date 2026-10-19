@@ -206,12 +206,17 @@ const initialValues = {
   grapePracticeGames: "",
   grapeGameMode: defaultGrapeGameMode,
   payoutMode: defaultPayoutMode,
-  settingMode: defaultSettingMode
+  settingMode: defaultSettingMode,
+  useSettingPrior: "on"
 };
 
 const STORAGE_KEY = "suisoku-neoimjugglerex-inputs";
 
 function isValidInputValue(key: string, value: unknown) {
+  if (key === "useSettingPrior") {
+    return value === "on" || value === "off";
+  }
+
   if (key === "settingMode") {
     return value === "all" || value === "withoutSix";
   }
@@ -228,16 +233,18 @@ function isValidInputValue(key: string, value: unknown) {
 }
 
 // 複数の保存データを合算するときは、打つ前の見込みを足し合わせず、
-// 見込みを入力済みの保存データのうち保存番号が最も小さいものをまとめて引き継ぐ
+// 見込みを入力済みの保存データのうち保存番号が最も小さいものから使用状態もまとめて引き継ぐ
 function mergeSettingPriorValues(
   slotValues: Array<Record<string, InputValue>>,
   defaultMergedValues: Record<string, InputValue>
 ) {
-  const sourceValues = slotValues.find((values) =>
-    priorFieldKeys.some((key) => String(values[key] ?? "").trim() !== "")
-  );
+  const sourceValues =
+    slotValues.find((values) =>
+      priorFieldKeys.some((key) => String(values[key] ?? "").trim() !== "")
+    ) ?? slotValues[0];
   const nextValues = { ...defaultMergedValues };
 
+  nextValues.useSettingPrior = sourceValues?.useSettingPrior ?? initialValues.useSettingPrior;
   priorFieldKeys.forEach((key) => {
     nextValues[key] = sourceValues?.[key] ?? "";
   });
@@ -261,6 +268,16 @@ function calculateSettingPrior(
   candidateCount: number
 ): SettingPrior {
   const equalWeights = Array.from({ length: candidateCount }, () => 1 / candidateCount);
+
+  if (inputValues.useSettingPrior === "off") {
+    return {
+      status: "equal",
+      weights: equalWeights,
+      fillValue: null,
+      message: "打つ前の見込みは使わず、各設定を同じ割合として計算します。入力内容はそのまま残ります。"
+    };
+  }
+
   const enteredValues = priorFieldKeys.slice(0, candidateCount).map((key) => {
     const raw = String(inputValues[key] ?? "").trim();
     return raw === "" ? null : Number(raw);
@@ -871,6 +888,7 @@ export default function NeoImJugglerExPage() {
   const candidateSettingCount = inputValues.settingMode === "withoutSix" ? 5 : settings.length;
   const candidateSettings = settings.slice(0, candidateSettingCount);
   const candidateSettingRates = settingRates.slice(0, candidateSettingCount);
+  const useSettingPrior = inputValues.useSettingPrior !== "off";
   const settingPrior = calculateSettingPrior(inputValues, candidateSettingCount);
 
   const medalRentValue = toNumber(String(inputValues.medalRent ?? ""));
@@ -1284,7 +1302,25 @@ export default function NeoImJugglerExPage() {
                 <section className="input-group">
                   <div className="group-title-row">
                     <p className="group-title">【打つ前の見込み】</p>
-                    <p className="group-note">空欄は残りを均等に割り当て</p>
+                    <label className="light-rate-estimation-toggle light-rate-estimation-toggle-compact">
+                      <input
+                        aria-label="打つ前の見込みを推測に使用"
+                        checked={useSettingPrior}
+                        className="light-rate-estimation-input"
+                        role="switch"
+                        type="checkbox"
+                        onChange={(event) => {
+                          const checked = event.currentTarget.checked;
+                          setInputValues((current) => ({
+                            ...current,
+                            useSettingPrior: checked ? "on" : "off"
+                          }));
+                        }}
+                      />
+                      <span aria-hidden="true" className="light-rate-estimation-track" />
+                      <span className="light-rate-estimation-label">推測に使用</span>
+                      <strong className="light-rate-estimation-state">{useSettingPrior ? "ON" : "OFF"}</strong>
+                    </label>
                   </div>
                   <div className="input-row input-row-3">
                     {candidateSettings.map((setting, settingIndex) => {
