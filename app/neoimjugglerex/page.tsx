@@ -211,6 +211,59 @@ const initialValues = {
 };
 
 const STORAGE_KEY = "suisoku-neoimjugglerex-inputs";
+const PRIOR_PRESET_STORAGE_KEY = "suisoku-neoimjugglerex-prior-presets";
+
+// 打つ前の見込みをボタン1つで入れ替えるためのセット（設定1〜6の順、%）
+const priorPresetDefinitions = [
+  { id: "rank1", label: "1位の台", defaultValues: ["25", "5", "5", "5", "60", "0"] },
+  { id: "rank2", label: "2位の台", defaultValues: ["35", "5", "5", "5", "50", "0"] },
+  { id: "rank3", label: "3位以下の台", defaultValues: ["40", "5", "5", "5", "45", "0"] }
+] as const;
+
+type PriorPresetId = (typeof priorPresetDefinitions)[number]["id"];
+type PriorPresetValues = Record<PriorPresetId, string[]>;
+
+function getDefaultPriorPresetValues() {
+  return Object.fromEntries(
+    priorPresetDefinitions.map((preset) => [preset.id, [...preset.defaultValues]])
+  ) as PriorPresetValues;
+}
+
+function readPriorPresetValues() {
+  const nextValues = getDefaultPriorPresetValues();
+
+  try {
+    const raw = window.localStorage.getItem(PRIOR_PRESET_STORAGE_KEY);
+    const parsed = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
+
+    priorPresetDefinitions.forEach((preset) => {
+      const values = parsed[preset.id];
+
+      if (
+        Array.isArray(values) &&
+        values.length === priorFieldKeys.length &&
+        values.every((value) => typeof value === "string")
+      ) {
+        nextValues[preset.id] = values;
+      }
+    });
+  } catch {
+    // 端末内保存の読込に失敗した場合はセットの初期値を使う
+  }
+
+  return nextValues;
+}
+
+function isSamePriorValue(left: string, right: string) {
+  const leftText = left.trim();
+  const rightText = right.trim();
+
+  if (leftText === "" || rightText === "") {
+    return leftText === rightText;
+  }
+
+  return Number(leftText) === Number(rightText);
+}
 
 function isValidInputValue(key: string, value: unknown) {
   if (key === "useSettingPrior") {
@@ -834,6 +887,9 @@ export default function NeoImJugglerExPage() {
     }> | null
   >(null);
   const [hasLoadedSavedValues, setHasLoadedSavedValues] = useState(false);
+  const [priorPresetValues, setPriorPresetValues] = useState<PriorPresetValues>(
+    getDefaultPriorPresetValues
+  );
 
   const resetResults = () => {
     setSettingExpectationTable(null);
@@ -874,6 +930,7 @@ export default function NeoImJugglerExPage() {
       // 端末内保存の読込に失敗した場合は初期値を使う
     }
 
+    setPriorPresetValues(readPriorPresetValues());
     setHasLoadedSavedValues(true);
   }, []);
 
@@ -890,6 +947,54 @@ export default function NeoImJugglerExPage() {
   const candidateSettingRates = settingRates.slice(0, candidateSettingCount);
   const useSettingPrior = inputValues.useSettingPrior !== "off";
   const settingPrior = calculateSettingPrior(inputValues, candidateSettingCount);
+  // 入力欄の値がセットと一致している間だけ選択中として表示し、手で変えたら自然に解除する
+  const activePriorPresetId =
+    priorPresetDefinitions.find((preset) =>
+      priorFieldKeys.every((key, index) =>
+        isSamePriorValue(String(inputValues[key] ?? ""), priorPresetValues[preset.id][index])
+      )
+    )?.id ?? null;
+
+  const handleApplyPriorPreset = (presetId: PriorPresetId) => {
+    const presetValues = priorPresetValues[presetId];
+
+    setInputValues((current) => ({
+      ...current,
+      ...Object.fromEntries(priorFieldKeys.map((key, index) => [key, presetValues[index]]))
+    }));
+  };
+
+  const handleSavePriorPreset = (presetId: PriorPresetId, label: string) => {
+    const nextPresetValues = priorFieldKeys.map((key) => String(inputValues[key] ?? "").trim());
+    const valueText = nextPresetValues.map((value) => (value === "" ? "空欄" : value)).join("・");
+
+    if (!window.confirm(`「${label}」のセットを今の見込み（${valueText}）で上書きしますか？`)) {
+      return;
+    }
+
+    const nextValues = { ...priorPresetValues, [presetId]: nextPresetValues };
+    setPriorPresetValues(nextValues);
+
+    try {
+      window.localStorage.setItem(PRIOR_PRESET_STORAGE_KEY, JSON.stringify(nextValues));
+    } catch {
+      // 端末内保存に失敗した場合も、画面を開いている間は変更したセットを使う
+    }
+  };
+
+  const handleResetPriorPresets = () => {
+    if (!window.confirm("3つのセットを全て初期値に戻しますか？")) {
+      return;
+    }
+
+    setPriorPresetValues(getDefaultPriorPresetValues());
+
+    try {
+      window.localStorage.removeItem(PRIOR_PRESET_STORAGE_KEY);
+    } catch {
+      // 端末内保存の削除に失敗した場合も、画面上は初期値に戻す
+    }
+  };
 
   const medalRentValue = toNumber(String(inputValues.medalRent ?? ""));
   const exchangeRateValue = toNumber(String(inputValues.exchangeRate ?? ""));
@@ -1321,6 +1426,48 @@ export default function NeoImJugglerExPage() {
                       <span className="light-rate-estimation-label">推測に使用</span>
                       <strong className="light-rate-estimation-state">{useSettingPrior ? "ON" : "OFF"}</strong>
                     </label>
+                  </div>
+                  <div className="setting-prior-preset-list">
+                    {priorPresetDefinitions.map((preset) => {
+                      const isActive = activePriorPresetId === preset.id;
+
+                      return (
+                        <div className="setting-prior-preset-item" key={preset.id}>
+                          <button
+                            aria-pressed={isActive}
+                            className={`setting-prior-preset-button${isActive ? " is-active" : ""}`}
+                            disabled={!useSettingPrior}
+                            type="button"
+                            onClick={() => handleApplyPriorPreset(preset.id)}
+                          >
+                            <span className="setting-prior-preset-label">{preset.label}</span>
+                            <span className="setting-prior-preset-values">
+                              {priorPresetValues[preset.id]
+                                .slice(0, candidateSettingCount)
+                                .map((value) => (value === "" ? "-" : value))
+                                .join("/")}
+                            </span>
+                          </button>
+                          <button
+                            className="setting-prior-preset-save-button"
+                            disabled={!useSettingPrior}
+                            type="button"
+                            onClick={() => handleSavePriorPreset(preset.id, preset.label)}
+                          >
+                            今の値を保存
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="setting-prior-preset-reset-row">
+                    <button
+                      className="setting-prior-preset-save-button"
+                      type="button"
+                      onClick={handleResetPriorPresets}
+                    >
+                      セットを初期値に戻す
+                    </button>
                   </div>
                   <div className="input-row input-row-3">
                     {candidateSettings.map((setting, settingIndex) => {

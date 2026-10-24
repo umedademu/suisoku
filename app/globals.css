@@ -1801,6 +1801,100 @@ a {
   color: #a13535;
 }
 
+.setting-prior-preset-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.setting-prior-preset-item {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.setting-prior-preset-button {
+  display: grid;
+  gap: 3px;
+  justify-items: center;
+  min-width: 0;
+  min-height: 52px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  padding: 8px 4px;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.setting-prior-preset-button:hover:not(:disabled) {
+  background: #fff;
+  border-color: rgba(143, 47, 24, 0.35);
+  transform: translateY(-1px);
+}
+
+.setting-prior-preset-button.is-active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fffaf4;
+}
+
+.setting-prior-preset-label {
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.setting-prior-preset-values {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 0.64rem;
+  font-weight: 700;
+  line-height: 1.1;
+  opacity: 0.78;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.setting-prior-preset-save-button {
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.7);
+  color: rgba(29, 29, 27, 0.78);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.1;
+  padding: 6px 4px;
+  white-space: nowrap;
+}
+
+.setting-prior-preset-button:disabled,
+.setting-prior-preset-save-button:disabled {
+  background: #e4e4e4;
+  border-color: #c6c6c6;
+  color: #777;
+  cursor: not-allowed;
+}
+
+.setting-prior-preset-reset-row {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.setting-prior-preset-reset-row .setting-prior-preset-save-button {
+  padding: 6px 12px;
+}
+
 .estimated-budo-apply-button {
   width: 100%;
   border: 0;
