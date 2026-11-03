@@ -771,10 +771,46 @@ a {
 
 .character-point-columns-grid {
   --character-point-column-gap: 8px;
+  --character-point-panel-inset: 11px;
+  --character-light-rate-total-width: 100px;
+  --character-light-rate-total-clearance: calc(
+    var(--character-light-rate-total-width) / 2 - var(--character-point-column-gap) / 2 -
+      var(--character-point-panel-inset) + 4px
+  );
+  position: relative;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--character-point-column-gap);
   min-width: 0;
+}
+
+/* 無名と生駒の現在ptの間へ合算発光率を置くため、内側に空きを作る */
+.character-point-columns-grid .character-point-panel-red .character-point-summary {
+  margin-right: var(--character-light-rate-total-clearance);
+}
+
+.character-point-columns-grid .character-point-panel-green .character-point-summary {
+  margin-left: var(--character-light-rate-total-clearance);
+}
+
+.character-light-rate-total {
+  position: absolute;
+  top: var(--character-point-panel-inset);
+  left: 50%;
+  z-index: 1;
+  width: var(--character-light-rate-total-width);
+  gap: 3px;
+  transform: translateX(-50%);
+  border: 1px solid rgba(77, 66, 54, 0.26);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 1px 3px rgba(79, 62, 45, 0.12);
+  color: #4a3f34;
+}
+
+.character-light-rate-total-value {
+  font-size: 1.3rem;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .character-point-column .character-point-summary,
@@ -3123,6 +3159,12 @@ a {
 
   .character-point-columns-grid {
     --character-point-column-gap: 5px;
+    --character-point-panel-inset: 7px;
+    --character-light-rate-total-width: 80px;
+  }
+
+  .character-light-rate-total-value {
+    font-size: 1.1rem;
   }
 
   .character-point-column .character-point-panel {

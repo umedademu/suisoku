@@ -3283,6 +3283,23 @@ export default function Kabaneri2Page() {
     });
   };
 
+  const totalCharacterLightCounts = characterPointGroups.reduce(
+    (totals, group) => {
+      const lightRate = getCharacterLightRate(group);
+
+      totals.withLightCount += lightRate.numerator;
+      totals.noLightCount += lightRate.denominator - lightRate.numerator;
+      return totals;
+    },
+    { noLightCount: 0, withLightCount: 0 }
+  );
+  const totalCharacterLightRate = calculateCharacterLightRate(
+    totalCharacterLightCounts.noLightCount,
+    totalCharacterLightCounts.withLightCount
+  );
+  const totalCharacterLightRateText =
+    totalCharacterLightRate.denominator > 0 ? totalCharacterLightRate.percentageText : "0%";
+
   return (
     <main className="page-shell">
       <div className="card card-wide">
@@ -3323,6 +3340,17 @@ export default function Kabaneri2Page() {
                     />
                   );
                 })}
+                <div
+                  aria-label={`無名と生駒の合算発光率 ${totalCharacterLightRateText}`}
+                  aria-live="polite"
+                  className="character-point-summary-item character-light-rate-total"
+                  role="status"
+                >
+                  <span className="character-point-summary-label">合算発光率</span>
+                  <strong className="character-light-rate-total-value">
+                    {totalCharacterLightRateText}
+                  </strong>
+                </div>
                 <KabaneriOperationMeter blocks={operationMeterBlocks} />
                 {[CHARACTER_SPECIAL_POINT_BUTTONS.mumeiIkoma].map((button) => (
                   <div className="character-shared-action-row" key={button.key}>
