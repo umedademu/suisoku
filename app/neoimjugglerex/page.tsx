@@ -285,26 +285,6 @@ function isValidInputValue(key: string, value: unknown) {
   return typeof value === "string";
 }
 
-// 複数の保存データを合算するときは、打つ前の見込みを足し合わせず、
-// 見込みを入力済みの保存データのうち保存番号が最も小さいものから使用状態もまとめて引き継ぐ
-function mergeSettingPriorValues(
-  slotValues: Array<Record<string, InputValue>>,
-  defaultMergedValues: Record<string, InputValue>
-) {
-  const sourceValues =
-    slotValues.find((values) =>
-      priorFieldKeys.some((key) => String(values[key] ?? "").trim() !== "")
-    ) ?? slotValues[0];
-  const nextValues = { ...defaultMergedValues };
-
-  nextValues.useSettingPrior = sourceValues?.useSettingPrior ?? initialValues.useSettingPrior;
-  priorFieldKeys.forEach((key) => {
-    nextValues[key] = sourceValues?.[key] ?? "";
-  });
-
-  return nextValues;
-}
-
 type SettingPrior = {
   status: "equal" | "custom" | "invalid";
   weights: number[];
@@ -903,7 +883,6 @@ export default function NeoImJugglerExPage() {
     initialValues,
     isValidInputValue,
     isReady: hasLoadedSavedValues,
-    mergeValues: mergeSettingPriorValues,
     onLoad: (nextValues) => {
       setInputValues(nextValues);
       resetResults();
@@ -1329,7 +1308,9 @@ export default function NeoImJugglerExPage() {
           title="ネオアイムジャグラーEX"
           onClear={handleClear}
           onClearAll={saveSlots.onClearAllData}
-        />
+        >
+          <SaveSlotControls {...saveSlots} />
+        </MachinePageHeader>
         <form className="input-form" onSubmit={handleEstimate}>
           <AutoEstimate inputValues={inputValues} isReady={hasLoadedSavedValues} />
           {inputGroups.map((group, index) => (
@@ -1647,7 +1628,6 @@ export default function NeoImJugglerExPage() {
               )}
             </div>
           </section>
-          <SaveSlotControls {...saveSlots} />
         </form>
         <section className="result-group" id="estimate-results">
           <h2 className="result-title">推測結果</h2>

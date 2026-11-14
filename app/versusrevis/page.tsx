@@ -1504,7 +1504,9 @@ export default function VersusRevisPage() {
           title="バーサス リヴァイズ"
           onClear={handleClear}
           onClearAll={saveSlots.onClearAllData}
-        />
+        >
+          <SaveSlotControls {...saveSlots} />
+        </MachinePageHeader>
         <section className="mode-switch">
           <p className="mode-switch-label">入力モード</p>
           <div className="mode-switch-options">
@@ -1600,7 +1602,6 @@ export default function VersusRevisPage() {
               )}
             </section>
           ))}
-          <SaveSlotControls {...saveSlots} />
         </form>
         <section className="result-group" id="estimate-results">
           <h2 className="result-title">推測結果</h2>

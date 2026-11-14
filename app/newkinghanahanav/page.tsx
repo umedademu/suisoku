@@ -1175,7 +1175,9 @@ export default function NewKingHanaHanaVPage() {
           title="ニューキングハナハナV"
           onClear={handleClear}
           onClearAll={saveSlots.onClearAllData}
-        />
+        >
+          <SaveSlotControls {...saveSlots} />
+        </MachinePageHeader>
         <form className="input-form" onSubmit={handleEstimate}>
           <AutoEstimate inputValues={inputValues} isReady={hasLoadedSavedValues} />
           {inputGroups.map((group, index) => (
@@ -1288,7 +1290,6 @@ export default function NewKingHanaHanaVPage() {
               )}
             </section>
           ))}
-          <SaveSlotControls {...saveSlots} />
         </form>
         <section className="result-group" id="estimate-results">
           <h2 className="result-title">推測結果</h2>

@@ -1144,7 +1144,9 @@ export default function LHanabiPage() {
           title="スマスロ Lハナビ"
           onClear={handleClear}
           onClearAll={saveSlots.onClearAllData}
-        />
+        >
+          <SaveSlotControls {...saveSlots} />
+        </MachinePageHeader>
         <section className="mode-switch">
           <p className="mode-switch-label">入力モード</p>
           <div className="mode-switch-options">
@@ -1246,7 +1248,6 @@ export default function LHanabiPage() {
               )}
             </section>
           ))}
-          <SaveSlotControls {...saveSlots} />
         </form>
         <section className="result-group" id="estimate-results">
           <h2 className="result-title">推測結果</h2>

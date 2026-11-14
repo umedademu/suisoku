@@ -107,6 +107,10 @@ a {
   text-align: left;
 }
 
+.machine-heading-row + .save-slot-group {
+  margin: 0 0 10px;
+}
+
 .machine-header-actions {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

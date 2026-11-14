@@ -785,7 +785,9 @@ export default function SFunkyJuggler2Page() {
           title="Sファンキージャグラー2"
           onClear={handleClear}
           onClearAll={saveSlots.onClearAllData}
-        />
+        >
+          <SaveSlotControls {...saveSlots} />
+        </MachinePageHeader>
         <form className="input-form" onSubmit={handleEstimate}>
           <AutoEstimate inputValues={inputValues} isReady={hasLoadedSavedValues} />
           {inputGroups.map((group, index) => (
@@ -871,7 +873,6 @@ export default function SFunkyJuggler2Page() {
             currentBig={toNumber(String(inputValues.currentBig ?? ""))}
             currentReg={toNumber(String(inputValues.currentReg ?? ""))}
           />
-          <SaveSlotControls {...saveSlots} />
         </form>
         <section className="result-group" id="estimate-results">
           <h2 className="result-title">推測結果</h2>

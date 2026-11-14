@@ -1660,39 +1660,6 @@ function MyslotInput({
   );
 }
 
-function mergeKabaneriInputValues(
-  slotValues: Array<Record<string, string>>,
-  defaultMergedValues: Record<string, string>
-) {
-  const mergedHistory = slotValues
-    .flatMap((values) => parseCharacterPointHistory(values.characterPointHistory ?? "[]"))
-    .sort((first, second) => second.recordedAt - first.recordedAt);
-  const mergedMyslotText = slotValues
-    .map((values) => values.myslotText?.trim() ?? "")
-    .filter((value) => value !== "")
-    .join("\n\n");
-
-  return {
-    ...defaultMergedValues,
-    useCharacterPointRate: slotValues.some(
-      (values) => values.useCharacterPointRate === "1"
-    )
-      ? "1"
-      : "0",
-    useCharacterLightRate: slotValues.some(
-      (values) => values.useCharacterLightRate === "1"
-    )
-      ? "1"
-      : "0",
-    useItemLottery: slotValues.some((values) => values.useItemLottery === "1")
-      ? "1"
-      : "0",
-    useTrophy: slotValues.some((values) => values.useTrophy === "1") ? "1" : "0",
-    characterPointHistory: JSON.stringify(mergedHistory),
-    myslotText: mergedMyslotText
-  };
-}
-
 function CharacterCzHistory({
   history,
   onDelete
@@ -2185,7 +2152,6 @@ export default function Kabaneri2Page() {
     inputValues,
     initialValues,
     isReady: hasLoadedSavedValues,
-    mergeValues: mergeKabaneriInputValues,
     onLoad: (nextValues) => {
       setInputValues(nextValues);
       clearActionHistory();
@@ -3313,7 +3279,9 @@ export default function Kabaneri2Page() {
             clearActionHistory();
             saveSlots.onClearAllData();
           }}
-        />
+        >
+          <SaveSlotControls {...saveSlots} />
+        </MachinePageHeader>
         <form className="input-form" onSubmit={handleEstimate}>
           <AutoEstimate inputValues={inputValues} isReady={hasLoadedSavedValues} />
           <div className="kabaneri-input-layout">
@@ -3659,7 +3627,6 @@ export default function Kabaneri2Page() {
               </section>
             ))}
           </div>
-          <SaveSlotControls {...saveSlots} />
         </form>
 
         <section className="result-group" id="estimate-results">

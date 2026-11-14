@@ -1,17 +1,20 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 
 const ESTIMATE_RESULTS_ID = "estimate-results";
 
+// children には保存データの切替欄を渡し、機種名と操作ボタンの間に表示する
 export function MachinePageHeader({
   title,
   onClear,
-  onClearAll
+  onClearAll,
+  children
 }: {
   title: string;
   onClear: () => void;
   onClearAll: () => void;
+  children?: ReactNode;
 }) {
   const handleShowResults = () => {
     document.getElementById(ESTIMATE_RESULTS_ID)?.scrollIntoView({
@@ -28,6 +31,7 @@ export function MachinePageHeader({
         </a>
         <h1 className="title machine-title">{title}</h1>
       </div>
+      {children}
       <div aria-label="ページ操作" className="machine-header-actions" role="group">
         <button className="clear-button" type="button" onClick={onClear}>
           クリア
