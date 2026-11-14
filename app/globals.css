@@ -2797,6 +2797,42 @@ a {
   font-size: 1.05rem;
 }
 
+.data-copy-row {
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+}
+
+.data-copy-button {
+  border: 1px solid rgba(197, 75, 44, 0.45);
+  border-radius: 999px;
+  background: #fff3ec;
+  color: var(--accent-strong);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 8px 16px;
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.data-copy-button:hover {
+  background: #ffe7dc;
+  transform: translateY(-1px);
+}
+
+.data-copy-message {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #2f6b3a;
+}
+
+.data-copy-message.is-error {
+  color: #a12d2d;
+}
+
 .result-section-title {
   margin: 0;
   font-size: 1.05rem;

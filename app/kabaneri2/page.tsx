@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { parseMyslotTotalGames } from "../../lib/kabaneri2-myslot";
 import { SaveSlotControls, useSaveSlots } from "../save-slots";
 import { AutoEstimate, MachinePageHeader } from "../machine-page-controls";
+import { MachineDataCopyButton } from "../machine-data-copy";
 
 const settings = [
   {
@@ -1660,6 +1661,37 @@ function MyslotInput({
   );
 }
 
+// データのテキストコピー用に、折りたたみ中の分も含めた全履歴を古い順の1行ずつにまとめる
+function formatCharacterCzHistoryCopyText(history: CharacterPointHistoryEntry[]) {
+  return history
+    .map((entry, index) => {
+      const historyNumber = history.length - index;
+
+      if (entry.kind === "all-star") {
+        const mumeiLightRate = calculateCharacterLightRate(
+          entry.counts.mumeiNoLightCount,
+          entry.counts.mumeiWithLightCount
+        );
+        const ikomaLightRate = calculateCharacterLightRate(
+          entry.counts.ikomaNoLightCount,
+          entry.counts.ikomaWithLightCount
+        );
+
+        return `${historyNumber}回目 オールスター 発光 無名${mumeiLightRate.numerator}/${mumeiLightRate.denominator}(${mumeiLightRate.percentageText}) 生駒${ikomaLightRate.numerator}/${ikomaLightRate.denominator}(${ikomaLightRate.percentageText})`;
+      }
+
+      const pointProgress = calculateCharacterPointProgress(
+        entry.points,
+        CHARACTER_STANDARD_POINTS[entry.character]
+      );
+      const lightRate = calculateCharacterLightRate(entry.noLightCount, entry.withLightCount);
+
+      return `${historyNumber}回目 ${entry.character}CZ ${entry.points}pt(${pointProgress.percentageText}) 発光${lightRate.numerator}/${lightRate.denominator}(${lightRate.percentageText})`;
+    })
+    .reverse()
+    .join("\n");
+}
+
 function CharacterCzHistory({
   history,
   onDelete
@@ -1684,7 +1716,8 @@ function CharacterCzHistory({
 
   return (
     <div className="character-cz-history-container">
-      <div className="table-wrap character-cz-history-wrap">
+      <div data-copy-block={formatCharacterCzHistoryCopyText(history)} hidden />
+      <div className="table-wrap character-cz-history-wrap" data-copy-skip="">
         <table className="data-table data-table-compact character-cz-history-table">
           <thead>
             <tr>
@@ -1865,6 +1898,8 @@ function CharacterSpecialPointControl({
     <button
       aria-label={`${button.label} ${targetText}`}
       className={`character-special-point-button character-special-point-button-${button.tone}`}
+      data-copy-label={`${button.label}（累計）`}
+      data-copy-value={totalCount > 0 ? `${totalCount}回` : ""}
       type="button"
       onClick={() => onIncrement(button)}
     >
@@ -1990,6 +2025,8 @@ function CharacterPointColumn({
             aria-label={`${group.character}の現在のpt ${pointProgress.points}pt`}
             aria-live="polite"
             className="character-point-summary-item"
+            data-copy-label={`${group.character} 現在pt`}
+            data-copy-value={pointProgress.points > 0 ? `${pointProgress.points}pt` : ""}
             role="status"
           >
             <span className="character-point-summary-value-row">
@@ -2022,6 +2059,8 @@ function CharacterPointColumn({
               <button
                 aria-label={`${group.character} ${button.label} ${button.points}pt加算${showsLightRate ? ` 発光率${lightRatePercentageText}` : ""}`}
                 className={`character-point-button character-point-button-${button.tone}`}
+                data-copy-label={`${group.character} ${button.label}（累計）`}
+                data-copy-value={buttonTotalCount > 0 ? `${buttonTotalCount}回` : ""}
                 type="button"
                 onClick={() => onIncrement(button)}
               >
@@ -3631,6 +3670,7 @@ export default function Kabaneri2Page() {
 
         <section className="result-group" id="estimate-results">
           <h2 className="result-title">推測結果</h2>
+          <MachineDataCopyButton />
           {errorMessage ? (
             <p className="result-placeholder" role="alert">
               {errorMessage}

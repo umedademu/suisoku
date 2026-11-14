@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { SaveSlotControls, useSaveSlots } from "../save-slots";
 import { AutoEstimate, MachinePageHeader } from "../machine-page-controls";
+import { MachineDataCopyButton } from "../machine-data-copy";
 import { UnimemoImageUpload } from "../unimemo-image-upload";
 
 type InputMode = "unimemo" | "normal";
@@ -1277,6 +1278,7 @@ export default function ShinHanabiPage() {
         </form>
         <section className="result-group" id="estimate-results">
           <h2 className="result-title">推測結果</h2>
+          <MachineDataCopyButton />
           {settingExpectationTable ? (
             <>
               {overallSettingRows ? (

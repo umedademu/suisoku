@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { JugglerBudoCounterButton } from "../juggler-budo-counter-button";
 import { SaveSlotControls, useSaveSlots } from "../save-slots";
 import { AutoEstimate, MachinePageHeader } from "../machine-page-controls";
+import { MachineDataCopyButton } from "../machine-data-copy";
 
 const settings = [
   {
@@ -816,6 +817,7 @@ export default function HappyJugglerPage() {
         </form>
         <section className="result-group" id="estimate-results">
           <h2 className="result-title">推測結果</h2>
+          <MachineDataCopyButton />
           {settingExpectationTable ? (
             <>
               {overallSettingRows ? (
